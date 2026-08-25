@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
-    "generate-demo-data": "node scripts/generate-demo-data.js"
+    "generate-demo-data": "node scripts/generate-demo-data.js",
+    "test-reconciliation": "node scripts/test-reconciliation.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",
