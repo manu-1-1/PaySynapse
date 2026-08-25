@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id             String    @id @default(uuid())
+  externalOrderId String?  @unique
+  merchantId     String
+  amount         Decimal
+  currency       String    @default("INR")
+  status         String
+  createdAt      DateTime  @default(now())
+  
+  merchant       Merchant  @relation(fields: [merchantId], references: [id])
+  payments       Payment[]
+}
+
+model Payment {
+  id                String    @id @default(uuid())
+  externalPaymentId String?   @unique
+  orderId           String
+  amount            Decimal
+  currency          String    @default("INR")
+  status            String
+  method            String?
+  createdAt         DateTime  @default(now())
+  capturedAt        DateTime?
+
+  order             Order     @relation(fields: [orderId], references: [id])
+  fees              Fee[]
+  refunds           Refund[]
+  settlements       Settlement[]
+  reconciliations   Reconciliation[]
+  exceptions        Exception[]
+}
+
+model Fee {
+  id        String   @id @default(uuid())
+  paymentId String
+  amount    Decimal
+  tax       Decimal
+  createdAt DateTime @default(now())
+
+  payment   Payment  @relation(fields: [paymentId], references: [id])
+}
+
+model Refund {
+  id               String   @id @default(uuid())
+  externalRefundId String?  @unique
+  paymentId        String
+  amount           Decimal
+  status           String
+  createdAt        DateTime @default(now())
+
+  payment          Payment  @relation(fields: [paymentId], references: [id])
+}
+
+model Settlement {
+  id                   String    @id @default(uuid())
+  externalSettlementId String?   @unique
+  paymentId            String
+  amount               Decimal
+  status               String
+  createdAt            DateTime  @default(now())
+  settledAt            DateTime?
+
+  payment              Payment   @relation(fields: [paymentId], references: [id])
+  bankTransactions     BankTransaction[]
+}
+
+model BankTransaction {
+  id                    String    @id @default(uuid())
+  externalTransactionId String?   @unique
+  settlementId          String?
+  amount                Decimal
+  transactionType       String
+  reference             String?
+  transactionDate       DateTime
+  status                String
+  createdAt             DateTime  @default(now())
+
+  settlement            Settlement? @relation(fields: [settlementId], references: [id])
+}
+
+model Reconciliation {
+  id             String    @id @default(uuid())
+  paymentId      String
+  expectedAmount Decimal
+  actualAmount   Decimal
+  difference     Decimal
+  status         String
+  matchedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  payment        Payment   @relation(fields: [paymentId], references: [id])
+}
+
+model Exception {
+  id                String    @id @default(uuid())
+  paymentId         String
+  type              String
+  severity          String
+  financialImpact   Decimal
+  status            String
+  description       String?
+  aiExplanation     String?
+  aiConfidence      Float?
+  recommendedAction String?
+  createdAt         DateTime  @default(now())
+  resolvedAt        DateTime?
+
+  payment           Payment   @relation(fields: [paymentId], references: [id])
+}
+
+model WebhookEvent {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  event     String
+  payload   Json
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  entityId  String?
+  entityType String?
+  action    String
+  details   Json?
+  userId    String?
+  createdAt DateTime @default(now())
+}
