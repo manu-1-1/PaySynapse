@@ -5,8 +5,9 @@ const prisma = new PrismaClient();
 
 export async function GET(request, { params }) {
   try {
-    const transaction = await prisma.payment.findUnique({
-      where: { id: params.id },
+    const isUuid = params.id.includes('-') && params.id.length === 36;
+    const transaction = await prisma.payment.findFirst({
+      where: isUuid ? { id: params.id } : { externalPaymentId: params.id },
       include: {
         order: { include: { merchant: true } },
         fees: true,
