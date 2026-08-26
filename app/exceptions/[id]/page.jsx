@@ -131,8 +131,8 @@ export default function ExceptionDetailPage() {
               <div className="text-sm font-medium text-slate-500 mb-3">Associated Payment</div>
               <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border">
                 <div>
-                  <div className="font-semibold">{ex.payment.externalPaymentId}</div>
-                  <div className="text-xs text-slate-500 mt-1">Order: {ex.payment.order?.externalOrderId}</div>
+                  <div className="font-semibold">{ex.payment?.externalPaymentId || 'N/A'}</div>
+                  <div className="text-xs text-slate-500 mt-1">Order: {ex.payment?.order?.externalOrderId || 'N/A'}</div>
                 </div>
                 <Link href={`/transactions/${ex.paymentId}`} className="text-primary hover:underline text-sm font-medium flex items-center">
                   View Lineage <ExternalLink className="w-3 h-3 ml-1" />
