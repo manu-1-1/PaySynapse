@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, AlertCircle, FileText, CheckCircle2, Search, ExternalLink } from 'lucide-react';
+import { ArrowLeft, AlertCircle, FileText, CheckCircle2, Search, ExternalLink, Sparkles, Bot } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ExceptionDetailPage() {
@@ -15,6 +15,16 @@ export default function ExceptionDetailPage() {
   const [note, setNote] = useState('');
   const [targetStatus, setTargetStatus] = useState('INVESTIGATING');
   const [submitting, setSubmitting] = useState(false);
+  
+  // AI Investigation State
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
+  useEffect(() => {
+    if (ex?.aiExplanation) {
+      setAiResult({ explanation: ex.aiExplanation, recommendedAction: ex.recommendedAction, confidence: ex.aiConfidence });
+    }
+  }, [ex]);
 
   useEffect(() => {
     const fetchEx = async () => {
@@ -32,6 +42,27 @@ export default function ExceptionDetailPage() {
     };
     fetchEx();
   }, [params.id]);
+
+  const handleInvestigateAI = async () => {
+    setAiLoading(true);
+    try {
+      const res = await fetch('/api/ai/investigate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exceptionId: params.id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAiResult(data.data);
+      } else {
+        alert(data.error);
+      }
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleResolve = async (e) => {
     e.preventDefault();
@@ -126,6 +157,37 @@ export default function ExceptionDetailPage() {
             </div>
           </div>
           
+          {!aiResult && !aiLoading && (
+            <button onClick={handleInvestigateAI} className="mt-4 w-full flex items-center justify-center p-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 transition-colors font-medium text-sm">
+              <Sparkles className="w-4 h-4 mr-2" /> Run AI Root Cause Investigation
+            </button>
+          )}
+          {aiLoading && (
+            <div className="mt-4 w-full flex items-center justify-center p-3 bg-slate-50 border rounded-lg text-slate-500 text-sm">
+              <div className="animate-pulse flex items-center"><Sparkles className="w-4 h-4 mr-2" /> AI is analyzing financial nodes...</div>
+            </div>
+          )}
+          {aiResult && (
+            <div className="mt-6 border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-950/20 dark:border-indigo-800 rounded-xl overflow-hidden">
+              <div className="bg-indigo-100 dark:bg-indigo-900/50 px-4 py-2 border-b border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+                <div className="flex items-center text-indigo-800 dark:text-indigo-300 font-semibold text-sm">
+                  <Bot className="w-4 h-4 mr-2" /> AI Investigation Report
+                </div>
+                <div className="text-xs font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-200 dark:bg-indigo-900 px-2 py-0.5 rounded">Confidence: {(aiResult.confidence * 100).toFixed(1)}%</div>
+              </div>
+              <div className="p-4 space-y-4">
+                <div>
+                  <div className="text-xs font-semibold text-indigo-800/70 dark:text-indigo-400/70 uppercase tracking-wider mb-1">Findings</div>
+                  <div className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">{aiResult.explanation}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-indigo-800/70 dark:text-indigo-400/70 uppercase tracking-wider mb-1">Recommended Action</div>
+                  <div className="text-sm font-medium text-indigo-900 dark:text-indigo-100 bg-white dark:bg-slate-900 p-2 rounded border border-indigo-100 dark:border-indigo-800">{aiResult.recommendedAction}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {ex.paymentId && (
             <div className="border-t pt-6">
               <div className="text-sm font-medium text-slate-500 mb-3">Associated Payment</div>
