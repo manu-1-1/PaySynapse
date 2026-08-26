@@ -3,10 +3,10 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(request, { params }) {
+export async function GET(request, context) { const { params } = context; const id = (await params).id;
   try {
     const exception = await prisma.exception.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         payment: {
           include: {

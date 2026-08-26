@@ -3,11 +3,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(request, { params }) {
+export async function GET(request, context) { const { params } = context; const id = (await params).id;
   try {
-    const isUuid = params.id.includes('-') && params.id.length === 36;
+    const isUuid = id.includes('-') && id.length === 36;
     const transaction = await prisma.payment.findFirst({
-      where: isUuid ? { id: params.id } : { externalPaymentId: params.id },
+      where: isUuid ? { id: id } : { externalPaymentId: id },
       include: {
         order: { include: { merchant: true } },
         fees: true,

@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function POST(request, { params }) {
+export async function POST(request, context) { const { params } = context; const id = (await params).id;
   try {
     const body = await request.json();
     const { note, newStatus } = body; // newStatus can be 'INVESTIGATING' or 'RESOLVED'
@@ -16,7 +16,7 @@ export async function POST(request, { params }) {
     const targetStatus = validStatuses.includes(newStatus) ? newStatus : 'RESOLVED';
 
     const exception = await prisma.exception.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status: targetStatus,
         resolvedAt: targetStatus === 'RESOLVED' ? new Date() : null,
