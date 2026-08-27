@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, AlertTriangle, FileText, Filter } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, AlertTriangle, FileText, Filter, Download } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ExceptionsPage() {
@@ -43,6 +43,11 @@ export default function ExceptionsPage() {
 
   const totalPages = Math.ceil(total / limit);
 
+  const handleExport = () => {
+    const url = `/api/export${filter ? `?status=${filter}` : ''}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div className="flex items-center justify-between">
@@ -78,6 +83,13 @@ export default function ExceptionsPage() {
               <option value="RESOLVED">Resolved</option>
               <option value="OBSOLETE">Obsolete</option>
             </select>
+            <button 
+              onClick={handleExport}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium border bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-2 transition-colors text-slate-700 dark:text-slate-300 w-full sm:w-auto"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </button>
           </div>
         </div>
 
