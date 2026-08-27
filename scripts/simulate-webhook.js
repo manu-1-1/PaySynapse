@@ -42,7 +42,8 @@ fetch(webhookUrl, {
   headers: {
     'Content-Type': 'application/json',
     'x-razorpay-signature': signature,
-    'x-razorpay-event-id': 'evt_demo_' + Date.now()
+    'x-razorpay-event-id': 'evt_demo_' + Date.now(),
+    'x-test-mode': 'true'
   },
   body: rawBody
 })

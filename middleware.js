@@ -7,7 +7,7 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
   // Paths that do not require authentication
-  const isPublicPath = pathname === '/' || pathname.startsWith('/api/auth') || pathname.startsWith('/_next');
+  const isPublicPath = pathname === '/' || pathname.startsWith('/api/auth') || pathname.startsWith('/api/webhooks') || pathname.startsWith('/_next');
 
   if (isPublicPath) {
     return NextResponse.next();

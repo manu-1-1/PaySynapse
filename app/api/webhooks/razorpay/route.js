@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
+import { reconcilePayment } from '@/lib/reconciliation/engine';
 
 const prisma = new PrismaClient();
 
@@ -100,6 +101,12 @@ export async function POST(request) {
             }
           });
         }
+      }
+
+      // Automatically run reconciliation on this new payment so exceptions appear instantly on dashboard
+      const finalPayment = await prisma.payment.findUnique({ where: { externalPaymentId: paymentEntity.id } });
+      if (finalPayment) {
+        await reconcilePayment(finalPayment.id);
       }
 
     } else if (event === 'settlement.processed') {
