@@ -67,7 +67,10 @@ export default function ExceptionsPage() {
     <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
       <div className="flex items-center justify-between animate-fade-in-up">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 dark:from-rose-400 dark:via-rose-300 dark:to-orange-300 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 dark:from-rose-400 dark:via-rose-300 dark:to-orange-300 bg-clip-text text-transparent">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 shadow-lg shadow-rose-500/20">
+              <AlertTriangle className="h-5 w-5 text-white" />
+            </div>
             Exception Center
           </h2>
           <p className="text-muted-foreground mt-1">

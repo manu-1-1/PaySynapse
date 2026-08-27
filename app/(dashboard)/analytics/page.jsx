@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Activity, AlertTriangle, CheckCircle2, IndianRupee } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle2, IndianRupee, BarChart3 } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const [data, setData] = useState(null);
@@ -80,9 +80,12 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 min-h-screen">
+    <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
       <div className="animate-fade-in-up">
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
+            <BarChart3 className="h-5 w-5 text-white" />
+          </div>
           Operations Analytics
         </h2>
         <p className="text-muted-foreground mt-1">

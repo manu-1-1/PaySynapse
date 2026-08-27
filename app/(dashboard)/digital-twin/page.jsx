@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Activity, CreditCard, Building2, Receipt, ArrowRightLeft, Clock, AlertTriangle, ArrowRight, Brain, Wrench, Download, Calendar, Loader2, CheckCircle2, Zap } from 'lucide-react';
+import { Search, Activity, CreditCard, Building2, Receipt, ArrowRightLeft, Clock, AlertTriangle, ArrowRight, Brain, Wrench, Download, Calendar, Loader2, CheckCircle2, Zap, GitBranch } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function DigitalTwinPage() {
@@ -200,7 +200,10 @@ export default function DigitalTwinPage() {
       {/* Header - Hidden in Print */}
       <div className="flex items-center justify-between print:hidden animate-fade-in-up">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
+              <GitBranch className="h-5 w-5 text-white" />
+            </div>
             Digital Twin
           </h2>
           <p className="text-muted-foreground mt-1">

@@ -55,8 +55,10 @@ export default function CopilotPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 animate-fade-in-up">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-            <Sparkles className="w-8 h-8 text-indigo-500 mr-3" />
+          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
             AI Copilot
           </h2>
           <p className="text-muted-foreground mt-1">
