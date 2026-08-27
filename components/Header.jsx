@@ -121,7 +121,7 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center gap-4 border-b border-border/50 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xl px-6 sticky top-0 z-40">
+    <header className="flex h-16 items-center gap-4 border-b border-border/50 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xl px-6 sticky top-0 z-40 print:hidden">
       {/* Search */}
       <div className="w-full flex-1">
         <form>
