@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Activity, Box, CreditCard, Building2, Receipt, ArrowRightLeft, Clock, AlertTriangle, ArrowRight, Brain, Wrench, Download, Calendar } from 'lucide-react';
+import { Search, Activity, CreditCard, Building2, Receipt, ArrowRightLeft, Clock, AlertTriangle, ArrowRight, Brain, Wrench, Download, Calendar, Loader2, CheckCircle2, Zap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function DigitalTwinPage() {
@@ -139,50 +139,85 @@ export default function DigitalTwinPage() {
     }
   };
 
+  // Simulation scenarios config
+  const scenarios = [
+    { id: 'PERFECT_MATCH', label: 'Perfect Flow', color: 'emerald' },
+    { id: 'MISSING_SETTLEMENT', label: 'Drop Settlement', color: 'rose' },
+    { id: 'FEE_MISMATCH', label: 'Gateway Overcharge', color: 'amber' },
+    { id: 'AMOUNT_MISMATCH', label: 'Short Settlement', color: 'orange' },
+    { id: 'DELAYED_SETTLEMENT', label: 'Late Settlement (10d)', color: 'blue' },
+    { id: 'DUPLICATE_TRANSACTION', label: 'Duplicate Settlement', color: 'purple' },
+    { id: 'STATUS_MISMATCH', label: 'Status Mismatch', color: 'pink' },
+    { id: 'MISSING_REFUND', label: 'Missing Refund', color: 'cyan' },
+  ];
+
   // Build timeline events
   let timelineEvents = [];
   if (tx) {
-    if (tx.order) timelineEvents.push({ time: tx.order.createdAt, title: 'Order Created', desc: tx.order.externalOrderId, icon: Receipt, color: 'text-slate-400', bg: 'bg-slate-800' });
-    if (tx.createdAt) timelineEvents.push({ time: tx.createdAt, title: 'Payment Initiated', desc: tx.externalPaymentId, icon: CreditCard, color: 'text-slate-400', bg: 'bg-slate-800' });
-    if (tx.capturedAt) timelineEvents.push({ time: tx.capturedAt, title: 'Payment Captured', desc: tx.status, icon: CreditCard, color: 'text-indigo-400', bg: 'bg-indigo-900/40' });
+    if (tx.order) timelineEvents.push({ time: tx.order.createdAt, title: 'Order Created', desc: tx.order.externalOrderId, icon: Receipt, color: 'text-slate-400', bg: 'bg-slate-700/60', ring: 'ring-slate-600/30' });
+    if (tx.createdAt) timelineEvents.push({ time: tx.createdAt, title: 'Payment Initiated', desc: tx.externalPaymentId, icon: CreditCard, color: 'text-slate-400', bg: 'bg-slate-700/60', ring: 'ring-slate-600/30' });
+    if (tx.capturedAt) timelineEvents.push({ time: tx.capturedAt, title: 'Payment Captured', desc: tx.status, icon: CreditCard, color: 'text-indigo-400', bg: 'bg-indigo-900/50', ring: 'ring-indigo-500/30' });
     if (tx.settlements?.length > 0) {
       tx.settlements.forEach(s => {
-        timelineEvents.push({ time: s.settledAt || s.createdAt, title: 'Settlement Processed', desc: s.externalSettlementId, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-900/40' });
+        timelineEvents.push({ time: s.settledAt || s.createdAt, title: 'Settlement Processed', desc: s.externalSettlementId, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-900/50', ring: 'ring-blue-500/30' });
         s.bankTransactions?.forEach(bt => {
-          timelineEvents.push({ time: bt.transactionDate, title: 'Bank Clear', desc: bt.reference, icon: Building2, color: 'text-emerald-400', bg: 'bg-emerald-900/40' });
+          timelineEvents.push({ time: bt.transactionDate, title: 'Bank Clear', desc: bt.reference, icon: Building2, color: 'text-emerald-400', bg: 'bg-emerald-900/50', ring: 'ring-emerald-500/30' });
         });
       });
     }
     if (tx.exceptions?.length > 0) {
       tx.exceptions.forEach(ex => {
-        timelineEvents.push({ time: ex.createdAt, title: 'Anomaly Detected', desc: ex.type, icon: AlertTriangle, color: 'text-rose-400', bg: 'bg-rose-900/40' });
+        timelineEvents.push({ time: ex.createdAt, title: 'Anomaly Detected', desc: ex.type.replace(/_/g, ' '), icon: AlertTriangle, color: 'text-rose-400', bg: 'bg-rose-900/50', ring: 'ring-rose-500/30' });
       });
     }
     timelineEvents.sort((a, b) => new Date(a.time) - new Date(b.time));
   }
 
+  // Graph node component
+  const GraphNode = ({ icon: Icon, title, iconColor, borderColor, bgColor, children }) => (
+    <div className="flex flex-col items-center flex-1 min-w-[120px] max-w-[180px] relative group animate-fade-in-up">
+      <div className={`w-[72px] h-[72px] lg:w-[80px] lg:h-[80px] rounded-2xl ${bgColor} border-2 ${borderColor} flex items-center justify-center shadow-xl z-10 transition-transform duration-300 group-hover:scale-105 print:shadow-none`}>
+        <Icon className={`w-7 h-7 lg:w-8 lg:h-8 ${iconColor}`} />
+      </div>
+      <div className="mt-3 text-center space-y-1 w-full overflow-hidden">
+        <div className="font-bold text-sm lg:text-base text-slate-100 print:text-black truncate">{title}</div>
+        {children}
+      </div>
+    </div>
+  );
+
+  // Connection arrow
+  const ConnectArrow = () => (
+    <div className="hidden lg:flex items-center justify-center shrink-0 print:hidden">
+      <div className="w-4 xl:w-8 h-[2px] bg-gradient-to-r from-slate-600 to-slate-500" />
+      <ArrowRight className="w-4 h-4 text-slate-500 -ml-1" />
+    </div>
+  );
+
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 bg-slate-900 min-h-screen text-slate-100 print:bg-white print:text-black">
+    <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen print:bg-white print:text-black">
       
       {/* Header - Hidden in Print */}
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex items-center justify-between print:hidden animate-fade-in-up">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
             Digital Twin
           </h2>
-          <p className="text-slate-400 mt-1">
-            Visual reconstruction of a transaction's physical lifecycle.
+          <p className="text-muted-foreground mt-1">
+            Visual reconstruction of a transaction&apos;s physical lifecycle.
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <button onClick={() => setViewMode('graph')} className={`px-4 py-2 rounded-md font-medium flex items-center ${viewMode === 'graph' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
-            <Activity className="w-4 h-4 mr-2" /> Graph View
-          </button>
-          <button onClick={() => setViewMode('timeline')} className={`px-4 py-2 rounded-md font-medium flex items-center ${viewMode === 'timeline' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
-            <Calendar className="w-4 h-4 mr-2" /> Timeline View
-          </button>
-          <button onClick={handleExportPDF} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md font-medium transition-colors flex items-center">
-            <Download className="w-4 h-4 mr-2" /> Export Evidence
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800/60 rounded-xl p-1">
+            <button onClick={() => setViewMode('graph')} className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center transition-all duration-200 ${viewMode === 'graph' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+              <Activity className="w-4 h-4 mr-2" /> Graph
+            </button>
+            <button onClick={() => setViewMode('timeline')} className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center transition-all duration-200 ${viewMode === 'timeline' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+              <Calendar className="w-4 h-4 mr-2" /> Timeline
+            </button>
+          </div>
+          <button onClick={handleExportPDF} className="group px-4 py-2.5 rounded-xl border border-border/50 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-medium text-sm transition-all duration-200 flex items-center hover:shadow-sm">
+            <Download className="w-4 h-4 mr-2 text-slate-400 group-hover:text-blue-500 group-hover:-translate-y-0.5 transition-all duration-200" /> Export Evidence
           </button>
         </div>
       </div>
@@ -197,195 +232,190 @@ export default function DigitalTwinPage() {
         </div>
       </div>
 
-      {/* Search Bar - Hidden in Print */}
-      <div className="relative w-full max-w-2xl bg-slate-800 rounded-lg p-2 border border-slate-700 shadow-xl flex items-center space-x-2 print:hidden">
-        <Search className="h-5 w-5 text-slate-400 ml-2" />
-        <input 
-          type="text" 
-          value={searchId}
-          onChange={(e) => setSearchId(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="Enter Payment Internal UUID to reconstruct..."
-          className="w-full bg-transparent border-none text-slate-200 pl-2 py-2 focus:outline-none focus:ring-0 placeholder:text-slate-500"
-        />
-        <button 
-          onClick={() => handleSearch()}
-          disabled={loading || !searchId}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Reconstructing...' : 'Render Twin'}
-        </button>
-      </div>
-
-      {/* Simulation Control Panel - Hidden in Print */}
-      <div className="w-full max-w-5xl bg-slate-900 border border-slate-700/50 rounded-lg p-4 print:hidden">
-        <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Simulation Sandbox (Inject Anomalies)</h3>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => handleSimulate('PERFECT_MATCH')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20">
-            {simulating === 'PERFECT_MATCH' ? 'Injecting...' : 'Perfect Flow'}
-          </button>
-          <button onClick={() => handleSimulate('MISSING_SETTLEMENT')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20">
-            {simulating === 'MISSING_SETTLEMENT' ? 'Injecting...' : 'Drop Settlement'}
-          </button>
-          <button onClick={() => handleSimulate('FEE_MISMATCH')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20">
-            {simulating === 'FEE_MISMATCH' ? 'Injecting...' : 'Gateway Overcharge'}
-          </button>
-          <button onClick={() => handleSimulate('AMOUNT_MISMATCH')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20">
-            {simulating === 'AMOUNT_MISMATCH' ? 'Injecting...' : 'Short Settlement'}
-          </button>
-          <button onClick={() => handleSimulate('DELAYED_SETTLEMENT')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20">
-            {simulating === 'DELAYED_SETTLEMENT' ? 'Injecting...' : 'Late Settlement (10d)'}
-          </button>
-          <button onClick={() => handleSimulate('DUPLICATE_TRANSACTION')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20">
-            {simulating === 'DUPLICATE_TRANSACTION' ? 'Injecting...' : 'Duplicate Settlement'}
-          </button>
-          <button onClick={() => handleSimulate('STATUS_MISMATCH')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 hover:bg-pink-500/20">
-            {simulating === 'STATUS_MISMATCH' ? 'Injecting...' : 'Status Mismatch (Failed/Paid)'}
-          </button>
-          <button onClick={() => handleSimulate('MISSING_REFUND')} disabled={simulating} className="text-xs px-3 py-1.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20">
-            {simulating === 'MISSING_REFUND' ? 'Injecting...' : 'Simulate Missing Refund'}
+      {/* Search Bar */}
+      <div className="relative w-full max-w-2xl animate-fade-in-up stagger-2 print:hidden">
+        <div className="relative flex items-center bg-white dark:bg-slate-800/60 rounded-2xl border border-border/50 shadow-sm overflow-hidden group focus-within:border-blue-300 dark:focus-within:border-blue-700 focus-within:shadow-[0_0_0_3px_rgba(45,136,255,0.1)] transition-all duration-300">
+          <Search className="h-5 w-5 text-slate-400 ml-4 group-focus-within:text-blue-500 transition-colors" />
+          <input 
+            type="text" 
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="Enter Payment Internal UUID to reconstruct..."
+            className="w-full bg-transparent border-none text-slate-800 dark:text-slate-200 pl-3 py-3.5 focus:outline-none focus:ring-0 placeholder:text-slate-400 text-sm"
+          />
+          <button 
+            onClick={() => handleSearch()}
+            disabled={loading || !searchId}
+            className="mr-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 shadow-sm hover:shadow-lg hover:shadow-blue-500/20 whitespace-nowrap flex items-center"
+          >
+            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Rendering...</> : <><Zap className="w-4 h-4 mr-1.5" /> Render Twin</>}
           </button>
         </div>
       </div>
 
+      {/* Simulation Control Panel */}
+      <div className="w-full max-w-5xl animate-fade-in-up stagger-3 print:hidden">
+        <div className="rounded-2xl border border-border/50 bg-white dark:bg-slate-800/40 backdrop-blur-sm p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/30">
+              <Zap className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Simulation Sandbox</h3>
+            <span className="text-[10px] text-slate-400 font-normal normal-case ml-1">— Inject anomalies to test detection</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {scenarios.map(s => (
+              <button
+                key={s.id}
+                onClick={() => handleSimulate(s.id)}
+                disabled={simulating}
+                className={`text-xs px-3.5 py-2 rounded-xl font-medium transition-all duration-200 border flex items-center gap-1.5
+                  bg-${s.color}-50 dark:bg-${s.color}-950/20 text-${s.color}-600 dark:text-${s.color}-400 border-${s.color}-200/50 dark:border-${s.color}-800/30
+                  hover:bg-${s.color}-100 dark:hover:bg-${s.color}-950/30 hover:shadow-sm disabled:opacity-50`}
+              >
+                {simulating === s.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                {simulating === s.id ? 'Injecting...' : s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Error */}
       {error && (
-        <div className="p-4 bg-rose-900/40 border border-rose-500/50 rounded-lg text-rose-300 flex items-center print:hidden">
-          <AlertTriangle className="w-5 h-5 mr-2" /> {error}
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl text-rose-600 dark:text-rose-400 flex items-center text-sm font-medium animate-fade-in-up print:hidden">
+          <AlertTriangle className="w-5 h-5 mr-3 flex-shrink-0" /> {error}
         </div>
       )}
 
+      {/* Transaction Visualization */}
       {tx && (
-        <div className="mt-8 relative">
+        <div className="mt-4 relative animate-fade-in-up">
           
           {viewMode === 'graph' ? (
             /* GRAPH VIEW */
-            <div className="flex flex-col md:flex-row items-center justify-between w-full space-y-8 md:space-y-0 md:space-x-4 relative z-10 print:flex-wrap print:justify-start print:gap-4">
-              
-              {/* NODE 1: ORDER */}
-              <div className="flex flex-col items-center w-48 relative">
-                <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10 print:border-gray-300 print:bg-gray-100 print:shadow-none">
-                  <Receipt className="w-10 h-10 text-slate-400 print:text-gray-600" />
-                </div>
-                <div className="mt-4 text-center">
-                  <div className="font-bold text-lg text-slate-200 print:text-black">Order</div>
+            <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/30 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 p-6 md:p-8 shadow-sm print:bg-white print:border-gray-200">
+              <div className="flex flex-wrap lg:flex-nowrap items-center justify-center lg:justify-between w-full gap-6 lg:gap-2 relative z-10 print:flex-wrap print:justify-start print:gap-4">
+                
+                {/* NODE 1: ORDER */}
+                <GraphNode 
+                  icon={Receipt} title="Order"
+                  iconColor="text-slate-300 print:text-gray-600"
+                  borderColor="border-slate-600/50 print:border-gray-300"
+                  bgColor="bg-slate-800/80 print:bg-gray-100"
+                >
                   {tx.order ? (
                     <>
-                      <div className="text-sm font-mono text-slate-400 mt-1 print:text-gray-600">{tx.order.externalOrderId}</div>
-                      <div className="text-emerald-400 font-semibold mt-1 print:text-green-700">{formatCurrency(tx.order.amount)}</div>
+                      <div className="text-xs font-mono text-slate-400 print:text-gray-600">{tx.order.externalOrderId}</div>
+                      <div className="text-emerald-400 font-semibold text-sm print:text-green-700">{formatCurrency(tx.order.amount)}</div>
                     </>
                   ) : (
-                    <div className="text-rose-400 font-bold mt-1 text-sm print:text-red-600">MISSING</div>
+                    <div className="text-rose-400 font-bold text-xs bg-rose-950/50 px-3 py-1 rounded-lg print:text-red-600 print:bg-red-100">MISSING</div>
                   )}
-                </div>
-              </div>
+                </GraphNode>
 
-              <ArrowRight className="hidden md:block w-8 h-8 text-slate-700 print:hidden" />
+                <ConnectArrow />
 
-              {/* NODE 2: PAYMENT */}
-              <div className="flex flex-col items-center w-48 relative">
-                <div className={`w-24 h-24 rounded-full border-4 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10 print:shadow-none ${
-                  tx.status === 'CAPTURED' ? 'bg-indigo-900/40 border-indigo-500 print:bg-blue-50 print:border-blue-500' : 'bg-rose-900/40 border-rose-500 print:bg-red-50 print:border-red-500'
-                }`}>
-                  <CreditCard className={`w-10 h-10 ${tx.status === 'CAPTURED' ? 'text-indigo-400 print:text-blue-600' : 'text-rose-400 print:text-red-600'}`} />
-                </div>
-                <div className="mt-4 text-center">
-                  <div className="font-bold text-lg text-slate-200 print:text-black">Payment</div>
-                  <div className="text-sm font-mono text-slate-400 mt-1 print:text-gray-600">{tx.externalPaymentId}</div>
-                  <div className={`${tx.status === 'CAPTURED' ? 'text-emerald-400 print:text-green-700' : 'text-rose-400 print:text-red-700'} font-semibold mt-1 flex flex-col items-center`}>
+                {/* NODE 2: PAYMENT */}
+                <GraphNode 
+                  icon={CreditCard} title="Payment"
+                  iconColor={tx.status === 'CAPTURED' ? 'text-indigo-300 print:text-blue-600' : 'text-rose-300 print:text-red-600'}
+                  borderColor={tx.status === 'CAPTURED' ? 'border-indigo-500/60 print:border-blue-500' : 'border-rose-500/60 print:border-red-500'}
+                  bgColor={tx.status === 'CAPTURED' ? 'bg-indigo-900/50 print:bg-blue-50' : 'bg-rose-900/50 print:bg-red-50'}
+                >
+                  <div className="text-xs font-mono text-slate-400 print:text-gray-600">{tx.externalPaymentId}</div>
+                  <div className={`${tx.status === 'CAPTURED' ? 'text-emerald-400 print:text-green-700' : 'text-rose-400 print:text-red-700'} font-semibold text-sm`}>
                     {formatCurrency(tx.amount)}
-                    <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded mt-1 text-slate-300 print:bg-gray-200 print:text-gray-800">{tx.status}</span>
                   </div>
-                </div>
-              </div>
+                  <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-lg mt-0.5 inline-block ${
+                    tx.status === 'CAPTURED' 
+                      ? 'bg-emerald-950/50 text-emerald-400 ring-1 ring-emerald-500/20 print:bg-green-100 print:text-green-700' 
+                      : 'bg-rose-950/50 text-rose-400 ring-1 ring-rose-500/20 print:bg-red-100 print:text-red-700'
+                  }`}>{tx.status}</span>
+                </GraphNode>
 
-              <ArrowRight className="hidden md:block w-8 h-8 text-slate-700 print:hidden" />
+                <ConnectArrow />
 
-              {/* NODE 3: FEES/TAXES */}
-              <div className="flex flex-col items-center w-48 relative">
-                <div className={`w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10 print:bg-gray-100 print:border-gray-300 print:shadow-none`}>
-                  <ArrowRightLeft className="w-10 h-10 text-slate-400 print:text-gray-600" />
-                </div>
-                <div className="mt-4 text-center">
-                  <div className="font-bold text-lg text-slate-200 print:text-black">Fees & Taxes</div>
+                {/* NODE 3: FEES/TAXES */}
+                <GraphNode 
+                  icon={ArrowRightLeft} title="Fees & Taxes"
+                  iconColor="text-slate-300 print:text-gray-600"
+                  borderColor="border-slate-600/50 print:border-gray-300"
+                  bgColor="bg-slate-800/80 print:bg-gray-100"
+                >
                   {tx.fees?.length > 0 ? (
-                    <div className="text-rose-400 font-semibold mt-1 print:text-red-700">
-                      -{formatCurrency(tx.fees.reduce((s,f) => s + parseFloat(f.amount.toString()), 0))} (Fee)
-                      <br/>
-                      -{formatCurrency(tx.fees.reduce((s,f) => s + parseFloat(f.tax.toString()), 0))} (Tax)
+                    <div className="text-rose-400 font-semibold text-xs space-y-0.5 print:text-red-700">
+                      <div>-{formatCurrency(tx.fees.reduce((s,f) => s + parseFloat(f.amount.toString()), 0))} (Fee)</div>
+                      <div>-{formatCurrency(tx.fees.reduce((s,f) => s + parseFloat(f.tax.toString()), 0))} (Tax)</div>
                     </div>
                   ) : (
-                    <div className="text-slate-500 font-medium mt-1 text-sm print:text-gray-500">No Fees Deducted</div>
+                    <div className="text-slate-500 font-medium text-xs print:text-gray-500">No Fees Deducted</div>
                   )}
-                </div>
-              </div>
+                </GraphNode>
 
-              <ArrowRight className="hidden md:block w-8 h-8 text-slate-700 print:hidden" />
+                <ConnectArrow />
 
-              {/* NODE 4: SETTLEMENT */}
-              <div className="flex flex-col items-center w-48 relative">
-                <div className={`w-24 h-24 rounded-full border-4 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10 print:shadow-none ${
-                  tx.settlements?.length > 0 ? 'bg-blue-900/40 border-blue-500 print:bg-blue-50 print:border-blue-500' : 'bg-rose-900/40 border-rose-500 print:bg-red-50 print:border-red-500'
-                }`}>
-                  <Clock className={`w-10 h-10 ${tx.settlements?.length > 0 ? 'text-blue-400 print:text-blue-600' : 'text-rose-400 print:text-red-600'}`} />
-                </div>
-                <div className="mt-4 text-center">
-                  <div className="font-bold text-lg text-slate-200 print:text-black">Settlement</div>
+                {/* NODE 4: SETTLEMENT */}
+                <GraphNode 
+                  icon={Clock} title="Settlement"
+                  iconColor={tx.settlements?.length > 0 ? 'text-blue-300 print:text-blue-600' : 'text-rose-300 print:text-red-600'}
+                  borderColor={tx.settlements?.length > 0 ? 'border-blue-500/60 print:border-blue-500' : 'border-rose-500/60 print:border-red-500'}
+                  bgColor={tx.settlements?.length > 0 ? 'bg-blue-900/50 print:bg-blue-50' : 'bg-rose-900/50 print:bg-red-50'}
+                >
                   {tx.settlements?.length > 0 ? (
                     <>
-                      <div className="text-sm font-mono text-slate-400 mt-1 truncate w-full print:text-gray-600" title={tx.settlements[0].externalSettlementId}>{tx.settlements[0].externalSettlementId}</div>
-                      <div className="text-emerald-400 font-semibold mt-1 print:text-green-700">{formatCurrency(tx.settlements[0].amount)}</div>
+                      <div className="text-xs font-mono text-slate-400 truncate w-full print:text-gray-600" title={tx.settlements[0].externalSettlementId}>{tx.settlements[0].externalSettlementId}</div>
+                      <div className="text-emerald-400 font-semibold text-sm print:text-green-700">{formatCurrency(tx.settlements[0].amount)}</div>
                       {tx.settlements.length > 1 && (
-                        <div className="text-rose-400 text-xs font-bold mt-1 bg-rose-900/50 px-2 py-0.5 rounded print:text-red-700 print:bg-red-100">DUPLICATE DETECTED</div>
+                        <div className="text-rose-400 text-[10px] font-bold bg-rose-950/50 px-2.5 py-0.5 rounded-lg ring-1 ring-rose-500/20 print:text-red-700 print:bg-red-100">DUPLICATE DETECTED</div>
                       )}
                     </>
                   ) : (
-                    <div className="text-rose-400 font-bold mt-1 text-sm bg-rose-900/30 px-3 py-1 rounded print:text-red-700 print:bg-red-100">MISSING</div>
+                    <div className="text-rose-400 font-bold text-xs bg-rose-950/50 px-3 py-1 rounded-lg print:text-red-700 print:bg-red-100">MISSING</div>
                   )}
-                </div>
-              </div>
+                </GraphNode>
 
-              <ArrowRight className="hidden md:block w-8 h-8 text-slate-700 print:hidden" />
+                <ConnectArrow />
 
-              {/* NODE 5: BANK CLEARING */}
-              <div className="flex flex-col items-center w-48 relative">
-                <div className={`w-24 h-24 rounded-full border-4 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10 print:shadow-none ${
-                  tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'bg-emerald-900/40 border-emerald-500 print:bg-green-50 print:border-green-500' : 'bg-rose-900/40 border-rose-500 print:bg-red-50 print:border-red-500'
-                }`}>
-                  <Building2 className={`w-10 h-10 ${tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'text-emerald-400 print:text-green-600' : 'text-rose-400 print:text-red-600'}`} />
-                </div>
-                <div className="mt-4 text-center">
-                  <div className="font-bold text-lg text-slate-200 print:text-black">Bank</div>
+                {/* NODE 5: BANK CLEARING */}
+                <GraphNode 
+                  icon={Building2} title="Bank"
+                  iconColor={tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'text-emerald-300 print:text-green-600' : 'text-rose-300 print:text-red-600'}
+                  borderColor={tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'border-emerald-500/60 print:border-green-500' : 'border-rose-500/60 print:border-red-500'}
+                  bgColor={tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'bg-emerald-900/50 print:bg-green-50' : 'bg-rose-900/50 print:bg-red-50'}
+                >
                   {tx.settlements?.map(s => s.bankTransactions?.map(bt => (
-                    <div key={bt.id} className="mt-1">
-                      <div className="text-sm font-mono text-slate-400 print:text-gray-600">{bt.reference}</div>
-                      <div className="text-emerald-400 font-semibold print:text-green-700">{formatCurrency(bt.amount)}</div>
+                    <div key={bt.id} className="space-y-0.5">
+                      <div className="text-xs font-mono text-slate-400 print:text-gray-600">{bt.reference}</div>
+                      <div className="text-emerald-400 font-semibold text-sm print:text-green-700">{formatCurrency(bt.amount)}</div>
                     </div>
                   )))}
                   {tx.settlements?.every(s => !s.bankTransactions || s.bankTransactions.length === 0) && (
-                    <div className="text-rose-400 font-bold mt-1 text-sm bg-rose-900/30 px-3 py-1 rounded print:text-red-700 print:bg-red-100">PENDING/MISSING</div>
+                    <div className="text-rose-400 font-bold text-xs bg-rose-950/50 px-3 py-1 rounded-lg print:text-red-700 print:bg-red-100">PENDING/MISSING</div>
                   )}
-                </div>
-              </div>
+                </GraphNode>
 
+              </div>
             </div>
           ) : (
             /* TIMELINE VIEW */
-            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 print:border-none print:p-0 print:bg-white relative">
-              <div className="absolute left-10 top-6 bottom-6 w-0.5 bg-slate-700 print:bg-gray-300"></div>
+            <div className="rounded-2xl border border-border/50 bg-white dark:bg-slate-900/60 backdrop-blur-sm p-6 md:p-8 shadow-sm print:border-none print:p-0 print:bg-white relative">
+              <div className="absolute left-[39px] md:left-[43px] top-8 bottom-8 w-[2px] bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 print:bg-gray-300" />
               {timelineEvents.map((evt, idx) => {
                 const Icon = evt.icon;
                 return (
-                  <div key={idx} className="flex items-start mb-8 relative z-10">
-                    <div className={`w-8 h-8 rounded-full ${evt.bg} ${evt.color} flex items-center justify-center shrink-0 mt-1 ring-4 ring-slate-900 print:ring-white border border-slate-700 print:border-gray-300`}>
+                  <div key={idx} className="flex items-start mb-6 last:mb-0 relative z-10 animate-fade-in-up" style={{ animationDelay: `${idx * 80}ms` }}>
+                    <div className={`w-9 h-9 rounded-xl ${evt.bg} ${evt.color} flex items-center justify-center shrink-0 mt-0.5 ring-4 ring-white dark:ring-slate-900 print:ring-white border border-white/10 shadow-lg`}>
                       <Icon className="w-4 h-4" />
                     </div>
-                    <div className="ml-6 flex-1 bg-slate-900/50 print:bg-gray-50 border border-slate-700 print:border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div className="ml-5 flex-1 bg-slate-50 dark:bg-slate-800/40 print:bg-gray-50 border border-border/50 print:border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-bold text-slate-200 print:text-black">{evt.title}</h4>
-                          <p className="text-sm font-mono text-slate-400 print:text-gray-600 mt-1">{evt.desc}</p>
+                          <h4 className="font-semibold text-slate-800 dark:text-slate-200 print:text-black">{evt.title}</h4>
+                          <p className="text-sm font-mono text-slate-500 print:text-gray-600 mt-0.5">{evt.desc}</p>
                         </div>
-                        <div className="text-xs text-slate-500 font-medium print:text-gray-500">
+                        <div className="text-[11px] text-slate-400 font-medium print:text-gray-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-md whitespace-nowrap">
                           {formatDate(evt.time)}
                         </div>
                       </div>
@@ -398,42 +428,54 @@ export default function DigitalTwinPage() {
 
           {/* Exceptions Overlay & Auto-Fix */}
           {tx.exceptions?.length > 0 && (
-            <div className="mt-12 bg-rose-950/30 border border-rose-500/30 rounded-xl p-6 relative overflow-hidden print:bg-red-50 print:border-red-200">
-              <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
-              <h3 className="text-xl font-bold text-rose-400 mb-4 flex items-center print:text-red-700">
-                <AlertTriangle className="w-6 h-6 mr-2" /> Detected Anomalies
+            <div className="mt-8 rounded-2xl border border-rose-200/50 dark:border-rose-800/30 bg-rose-50/50 dark:bg-rose-950/10 backdrop-blur-sm p-6 relative overflow-hidden shadow-sm print:bg-red-50 print:border-red-200 animate-fade-in-up">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-rose-500 to-orange-500 rounded-r" />
+              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-5 flex items-center print:text-red-700">
+                <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/30 mr-3">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                Detected Anomalies
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
-                {tx.exceptions.map(ex => (
-                  <div key={ex.id} className="bg-slate-900/50 print:bg-white p-4 rounded-lg border border-rose-500/20 print:border-red-200 shadow-sm">
-                    <div className="font-bold text-rose-300 print:text-red-700">{ex.type.replace(/_/g, ' ')}</div>
-                    <div className="text-slate-400 print:text-gray-700 text-sm mt-1">{ex.description}</div>
-                    <div className="text-rose-400 print:text-red-700 font-mono mt-2 mb-4">{formatCurrency(ex.financialImpact)}</div>
+                {tx.exceptions.map((ex, idx) => (
+                  <div key={ex.id} className="bg-white dark:bg-slate-900/60 print:bg-white p-5 rounded-xl border border-rose-200/50 dark:border-rose-800/20 print:border-red-200 shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                    <div className="font-bold text-rose-600 dark:text-rose-400 print:text-red-700">{ex.type.replace(/_/g, ' ')}</div>
+                    <div className="text-slate-500 dark:text-slate-400 print:text-gray-700 text-sm mt-1">{ex.description}</div>
+                    <div className="text-rose-600 dark:text-rose-400 print:text-red-700 font-mono font-bold text-lg mt-3">{formatCurrency(ex.financialImpact)}</div>
                     
-                    {/* Embedded AI & Auto-Fix Buttons - Hidden in Print */}
-                    <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-rose-500/20 print:hidden">
+                    {/* AI & Auto-Fix Buttons */}
+                    <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-rose-200/50 dark:border-rose-800/20 print:hidden">
                       <button 
                         onClick={() => handleAIInvestigate(ex.id)}
                         disabled={aiLoading}
-                        className="w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                        className="w-full flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50"
                       >
                         <Brain className="w-4 h-4 mr-2" />
-                        {aiLoading && activeExceptionId === ex.id ? 'Investigating...' : 'Ask AI to Investigate'}
+                        {aiLoading && activeExceptionId === ex.id ? (
+                          <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> Investigating...</>
+                        ) : 'Ask AI to Investigate'}
                       </button>
                       
                       <button 
                         onClick={() => handleAutoFix(ex.id, getActionForException(ex.type))}
                         disabled={fixingId === ex.id || fixedIds.includes(ex.id)}
-                        className={`w-full flex items-center justify-center px-4 py-2 rounded-md font-medium transition-colors ${
-                          fixedIds.includes(ex.id) ? 'bg-emerald-600 text-white cursor-not-allowed' : 'bg-slate-700 hover:bg-slate-600 text-white'
+                        className={`w-full flex items-center justify-center px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                          fixedIds.includes(ex.id) 
+                            ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 cursor-default' 
+                            : 'border border-border/50 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:shadow-sm'
                         }`}
                       >
-                        <Wrench className="w-4 h-4 mr-2" />
-                        {fixedIds.includes(ex.id) ? 'Resolution Applied' : (fixingId === ex.id ? 'Executing Fix...' : getActionForException(ex.type))}
+                        {fixedIds.includes(ex.id) ? (
+                          <><CheckCircle2 className="w-4 h-4 mr-2" /> Resolution Applied</>
+                        ) : fixingId === ex.id ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Executing Fix...</>
+                        ) : (
+                          <><Wrench className="w-4 h-4 mr-2 text-slate-400" /> {getActionForException(ex.type)}</>
+                        )}
                       </button>
                     </div>
                     
-                    {/* Print Only Action Record */}
+                    {/* Print Only */}
                     <div className="hidden print:block text-sm text-gray-500 mt-4 border-t pt-2 border-gray-200">
                       Suggested Action: {getActionForException(ex.type)}
                     </div>
@@ -443,12 +485,14 @@ export default function DigitalTwinPage() {
 
               {/* Inline AI Result */}
               {aiResult && (
-                <div className="mt-6 bg-slate-800/80 print:bg-white p-6 rounded-lg border border-indigo-500/30 print:border-gray-300 shadow-xl print:shadow-none">
-                  <div className="flex items-center text-indigo-400 print:text-indigo-700 font-bold text-lg mb-4">
-                    <Brain className="w-5 h-5 mr-2" />
+                <div className="mt-6 bg-white dark:bg-slate-900/60 print:bg-white p-6 rounded-xl border border-indigo-200/50 dark:border-indigo-800/30 print:border-gray-300 shadow-lg print:shadow-none animate-fade-in-up">
+                  <div className="flex items-center text-indigo-600 dark:text-indigo-400 print:text-indigo-700 font-bold text-lg mb-4">
+                    <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 mr-3">
+                      <Brain className="w-5 h-5" />
+                    </div>
                     AI Root Cause Analysis
                   </div>
-                  <div className="prose prose-invert prose-indigo max-w-none print:prose-slate">
+                  <div className="prose prose-slate dark:prose-invert prose-indigo max-w-none text-sm print:prose-slate">
                     <ReactMarkdown>{aiResult}</ReactMarkdown>
                   </div>
                 </div>
@@ -456,12 +500,16 @@ export default function DigitalTwinPage() {
             </div>
           )}
 
+          {/* Success state */}
           {tx.reconciliations?.[0]?.status === 'MATCHED' && (
-            <div className="mt-12 bg-emerald-950/30 print:bg-green-50 border border-emerald-500/30 print:border-green-200 rounded-xl p-6 text-center">
-              <h3 className="text-2xl font-bold text-emerald-400 print:text-green-700 flex items-center justify-center">
-                <Activity className="w-6 h-6 mr-2" /> Lifecycle Perfectly Reconciled
+            <div className="mt-8 rounded-2xl border border-emerald-200/50 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-950/10 print:bg-green-50 print:border-green-200 p-8 text-center animate-fade-in-up">
+              <div className="inline-flex p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 mb-4">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 print:text-green-700">
+                Lifecycle Perfectly Reconciled
               </h3>
-              <p className="text-slate-400 print:text-gray-600 mt-2">All financial nodes correspond flawlessly.</p>
+              <p className="text-slate-500 dark:text-slate-400 print:text-gray-600 mt-2">All financial nodes correspond flawlessly.</p>
             </div>
           )}
 
