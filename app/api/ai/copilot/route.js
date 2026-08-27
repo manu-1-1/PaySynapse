@@ -3,8 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import { GoogleGenAI } from '@google/genai';
 
 const prisma = new PrismaClient();
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export async function POST(request) {
   try {
@@ -13,6 +11,10 @@ export async function POST(request) {
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
+
+    const dbSetting = await prisma.setting.findUnique({ where: { key: 'GEMINI_API_KEY' } });
+    const apiKey = dbSetting?.value || process.env.GEMINI_API_KEY;
+    const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
     // 1. Fetch some global DB context to inform the AI
     const totalTx = await prisma.payment.count();
