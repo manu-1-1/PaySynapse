@@ -1,6 +1,16 @@
-import { Search, Bell, User, RefreshCw } from "lucide-react"
+'use client';
+
+import { Search, Bell, User, RefreshCw, Sun, Moon } from "lucide-react"
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function Header() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-6 lg:h-[60px]">
       <div className="w-full flex-1">
@@ -18,6 +28,17 @@ export function Header() {
       <button className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
         <RefreshCw className="h-4 w-4" />
         Sync
+      </button>
+      <button 
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        {mounted ? (
+          theme === 'dark' ? <Moon className="h-4 w-4 text-indigo-400" /> : <Sun className="h-4 w-4 text-amber-500" />
+        ) : (
+          <Sun className="h-4 w-4" />
+        )}
+        <span className="sr-only">Toggle Theme</span>
       </button>
       <button className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background">
         <Bell className="h-4 w-4" />
