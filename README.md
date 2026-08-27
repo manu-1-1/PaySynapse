@@ -10,7 +10,7 @@
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
   [![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
   [![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-8E75FF?style=flat-square&logo=google)](https://ai.google.dev/)
-  [![License](https://img.shields.io/badge/License-MIT-green.style=flat-square)](LICENSE)
+  [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
   *Catch missing settlements, gateway overcharges, short-settlements, and orphaned transactions instantly with 100% deterministic ledger matching and AI root-cause analysis.*
 
