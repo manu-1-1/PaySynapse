@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-primary: #2d88ff;
   --color-primary-foreground: #ffffff;
@@ -11,6 +13,9 @@
   --color-muted-foreground: var(--muted-foreground);
   
   --color-border: var(--border);
+  
+  --color-slate-950: #111c3a;
+  --color-slate-900: #1e2f50;
   
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -30,10 +35,10 @@
   --background: #0B192C;
   --foreground: #f8fafc;
   
-  --muted: #1e293b;
+  --muted: #162444;
   --muted-foreground: #94a3b8;
   
-  --border: #334155;
+  --border: #233554;
 }
 
 body {
