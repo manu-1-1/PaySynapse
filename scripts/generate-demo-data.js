@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 function randomAmount(min, max) {
@@ -22,10 +23,24 @@ async function clearData() {
   await prisma.payment.deleteMany();
   await prisma.order.deleteMany();
   await prisma.merchant.deleteMany();
+  await prisma.user.deleteMany();
 }
 
 async function main() {
   await clearData();
+
+  console.log('Creating demo user...');
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash('password123', salt);
+  
+  await prisma.user.create({
+    data: {
+      email: 'ops@demo.paysynapse.com',
+      passwordHash: passwordHash,
+      name: 'Operations Manager',
+      role: 'ADMIN'
+    }
+  });
 
   console.log('Creating demo merchant...');
   const merchant = await prisma.merchant.create({

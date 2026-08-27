@@ -9,13 +9,36 @@ export default function AuthPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = (e) => {
+  const [error, setError] = useState('');
+
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate auth delay for demo purposes
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 800);
+    setError('');
+
+    try {
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        router.push('/dashboard');
+        router.refresh();
+      } else {
+        setError(data.error || 'Authentication failed');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +61,12 @@ export default function AuthPage() {
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Sign in to your account to access your reconciliation dashboard.
             </p>
+            {error && (
+              <div className="mt-4 p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm flex items-center">
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                {error}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSignIn} className="space-y-6">
@@ -48,6 +77,7 @@ export default function AuthPage() {
                 </label>
                 <input
                   type="email"
+                  name="email"
                   defaultValue="ops@demo.paysynapse.com"
                   className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-[#111c3a] border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-primary text-slate-900 dark:text-white"
                   required
@@ -64,7 +94,8 @@ export default function AuthPage() {
                 </div>
                 <input
                   type="password"
-                  defaultValue="••••••••"
+                  name="password"
+                  defaultValue="password123"
                   className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-[#111c3a] border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-primary text-slate-900 dark:text-white"
                   required
                 />
