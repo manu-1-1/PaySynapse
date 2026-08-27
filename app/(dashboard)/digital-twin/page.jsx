@@ -155,6 +155,13 @@ export default function DigitalTwinPage() {
           >
             {simulating === 'STATUS_MISMATCH' ? 'Injecting...' : 'Status Mismatch (Failed/Paid)'}
           </button>
+          <button 
+            onClick={() => handleSimulate('MISSING_REFUND')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'MISSING_REFUND' ? 'Injecting...' : 'Simulate Missing Refund'}
+          </button>
         </div>
       </div>
 

@@ -46,7 +46,7 @@ export async function POST(request) {
         orderId: order.id,
         amount: grossAmount,
         currency: 'INR',
-        status: scenario === 'STATUS_MISMATCH' ? 'FAILED' : 'CAPTURED',
+        status: scenario === 'STATUS_MISMATCH' ? 'FAILED' : (scenario === 'MISSING_REFUND' ? 'REFUNDED' : 'CAPTURED'),
         method: 'UPI',
         capturedAt: new Date(),
       }
