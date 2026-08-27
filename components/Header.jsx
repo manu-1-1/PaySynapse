@@ -1,16 +1,59 @@
 'use client';
 
-import { Search, Bell, User, RefreshCw, Sun, Moon } from "lucide-react"
+import { Search, Bell, User, RefreshCw, Sun, Moon, AlertTriangle } from "lucide-react"
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  
+  // Notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Polling logic
+    const fetchNotifications = async () => {
+      try {
+        const lastChecked = localStorage.getItem('lastCheckedNotifs') || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const res = await fetch(`/api/exceptions/recent?since=${lastChecked}`);
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data.data || []);
+          setUnreadCount(data.data?.length || 0);
+        }
+      } catch (err) {}
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleOpenNotifications = () => {
+    setShowDropdown(!showDropdown);
+    if (!showDropdown) {
+      setUnreadCount(0);
+      localStorage.setItem('lastCheckedNotifs', new Date().toISOString());
+    }
+  };
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-6 lg:h-[60px]">
       <div className="w-full flex-1">
@@ -40,10 +83,57 @@ export function Header() {
         )}
         <span className="sr-only">Toggle Theme</span>
       </button>
-      <button className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background">
-        <Bell className="h-4 w-4" />
-        <span className="sr-only">Notifications</span>
-      </button>
+      <div className="relative" ref={dropdownRef}>
+        <button 
+          onClick={handleOpenNotifications}
+          className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <Bell className="h-4 w-4" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-950">
+              {unreadCount}
+            </span>
+          )}
+          <span className="sr-only">Notifications</span>
+        </button>
+        
+        {showDropdown && (
+          <div className="absolute right-0 mt-2 w-80 rounded-xl border bg-white dark:bg-slate-950 shadow-lg z-50 overflow-hidden">
+            <div className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50 font-semibold text-sm flex justify-between items-center">
+              <span>Notifications</span>
+              <span className="text-xs text-muted-foreground font-normal">{notifications.length} recent</span>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-slate-500">No new alerts.</div>
+              ) : (
+                notifications.map((notif) => (
+                  <Link 
+                    key={notif.id} 
+                    href={`/exceptions/${notif.id}`}
+                    onClick={() => setShowDropdown(false)}
+                    className="block p-4 border-b hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors last:border-0"
+                  >
+                    <div className="flex items-start">
+                      <AlertTriangle className={`w-4 h-4 mr-3 mt-0.5 flex-shrink-0 ${notif.severity === 'HIGH' ? 'text-rose-500' : 'text-amber-500'}`} />
+                      <div>
+                        <div className="text-sm font-medium">{notif.type.replace(/_/g, ' ')}</div>
+                        <div className="text-xs text-slate-500 mt-1 line-clamp-2">{notif.description}</div>
+                        <div className="text-xs font-semibold mt-2 text-primary">{notif.financialImpact} INR Impact</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+            <div className="p-2 border-t text-center">
+              <Link href="/exceptions" onClick={() => setShowDropdown(false)} className="text-xs text-primary hover:underline font-medium">
+                View all exceptions
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
       <button className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background">
         <User className="h-4 w-4" />
         <span className="sr-only">Profile</span>
