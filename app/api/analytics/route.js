@@ -25,6 +25,16 @@ export async function GET() {
       matchRate = parseFloat(((matched / totalTransactions) * 100).toFixed(2));
     }
 
+    const exceptionDistributionRaw = await prisma.exception.groupBy({
+      by: ['type'],
+      _count: { id: true },
+    });
+    
+    const exceptionDistribution = exceptionDistributionRaw.map(e => ({
+      name: e.type.replace(/_/g, ' '),
+      value: e._count.id
+    }));
+
     return NextResponse.json({
       data: {
         totalTransactions,
@@ -34,7 +44,8 @@ export async function GET() {
         investigating,
         resolved,
         matchRate,
-        financialImpact: parseFloat(financialImpact.toString())
+        financialImpact: parseFloat(financialImpact.toString()),
+        exceptionDistribution
       }
     });
   } catch (error) {
