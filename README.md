@@ -18,7 +18,7 @@
 
 ---
 
-## 🌟 Overview
+## Overview
 
 **PaySynapse** is an enterprise-grade financial operations platform designed for high-volume payment processing. It bridges the gap between payment gateways (Razorpay, Stripe, etc.), internal order ledgers, and bank clearing statements.
 
@@ -26,24 +26,24 @@ By replacing manual spreadsheet matching with a **deterministic reconciliation e
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 1. ⚡ 100% Deterministic Reconciliation Engine
+### 1. 100% Deterministic Reconciliation Engine
 * **5-Point Node Matching**: Validates Order $\rightarrow$ Payment $\rightarrow$ Gateway Fees & GST $\rightarrow$ Net Settlement $\rightarrow$ Bank UTR Clearance.
 * **Instant Discrepancy Detection**: Catches missing settlements, fee overcharges, short settlements, status mismatches, and duplicate transactions.
 * **Audit Compliant**: Strict ledger math without speculative or hallucinated numbers.
 
-### 2. 🌐 Transaction Digital Twin
+### 2. Transaction Digital Twin
 * **Visual Node Graph**: Interactive 5-stage node visualizer showing the exact physical lifecycle of every payment.
 * **Chronological Timeline View**: Audit trail of every gateway webhook, ledger entry, and bank clearing timestamp.
 * **Interactive Sandbox**: Inject synthetic anomalies (dropped settlements, fee overcharges, missing refunds) in real-time to test system resilience.
 
-### 3. 🤖 AI Copilot & Root Cause Analysis
+### 3. AI Copilot & Root Cause Analysis
 * **Gemini AI Integration**: Autonomous investigation engine powered by Google Gemini AI.
 * **Natural Language Copilot**: Ask questions like *"What is our total risk exposure?"* or *"Explain anomaly on payment rzp_pay_123"*.
 * **Automated Action Recommendations**: Provides step-by-step remediation advice for operations teams.
 
-### 4. 🛠️ One-Click & Autonomous Resolution
+### 4. One-Click & Autonomous Resolution
 * Execute automated recovery actions directly from the dashboard:
   * Force retry missing refunds
   * Query nodal bank settlement status
@@ -51,18 +51,18 @@ By replacing manual spreadsheet matching with a **deterministic reconciliation e
   * Request short-settlement true-ups
   * Auto-reverse duplicate ledger entries
 
-### 5. 📊 Operations Analytics & Settlement Velocity
+### 5. Operations Analytics & Settlement Velocity
 * Real-time metrics for Global Match Rate, Total Processed Volume, and Financial Risk Exposure.
 * **Settlement Velocity Charting**: T+0, T+1, T+2, and delayed settlement breakdown.
 * **Exception Distribution Breakdown**: Categorized pie chart analysis of open discrepancy types.
 
-### 6. 🎨 Premium Modern Fintech UI
+### 6. Premium Modern Fintech UI
 * Built with glassmorphism, dynamic dark/light mode, gradient accents, smooth keyframe animations, and animated KPI counters.
 * Fully responsive layout optimized for all desktop and mobile viewports.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## Architecture & Tech Stack
 
 ```
 PaySynapse Platform
@@ -75,7 +75,7 @@ PaySynapse Platform
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 * **Node.js**: v18.0.0 or higher
@@ -121,7 +121,7 @@ PaySynapse Platform
 
 ---
 
-## 🔑 Demo Account Credentials
+## Demo Account Credentials
 
 Default login credentials pre-configured for instant demo access:
 
@@ -131,7 +131,7 @@ Default login credentials pre-configured for instant demo access:
 
 ---
 
-## 🧪 Testing & Webhook Simulation
+## Testing & Webhook Simulation
 
 Simulate live Razorpay gateway webhooks to watch real-time exception detection in action:
 
@@ -145,7 +145,7 @@ npm run test-reconciliation
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 PaySynapse/
@@ -178,12 +178,12 @@ PaySynapse/
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by the PaySynapse Engineering Team.</sub>
+  <sub>PaySynapse Platform</sub>
 </div>
