@@ -134,6 +134,27 @@ export default function DigitalTwinPage() {
           >
             {simulating === 'AMOUNT_MISMATCH' ? 'Injecting...' : 'Short Settlement'}
           </button>
+          <button 
+            onClick={() => handleSimulate('DELAYED_SETTLEMENT')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'DELAYED_SETTLEMENT' ? 'Injecting...' : 'Late Settlement (10d)'}
+          </button>
+          <button 
+            onClick={() => handleSimulate('DUPLICATE_TRANSACTION')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'DUPLICATE_TRANSACTION' ? 'Injecting...' : 'Duplicate Settlement'}
+          </button>
+          <button 
+            onClick={() => handleSimulate('STATUS_MISMATCH')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 hover:bg-pink-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'STATUS_MISMATCH' ? 'Injecting...' : 'Status Mismatch (Failed/Paid)'}
+          </button>
         </div>
       </div>
 

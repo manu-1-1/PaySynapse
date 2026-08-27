@@ -89,6 +89,20 @@ export async function POST(request) {
         }
       });
 
+      if (scenario === 'DUPLICATE_TRANSACTION') {
+        // Create a second identical settlement to trigger duplicate
+        await prisma.settlement.create({
+          data: {
+            externalSettlementId: settlementId + '_dup',
+            paymentId: payment.id,
+            amount: actualSettlement,
+            status: 'PROCESSED',
+            settledAt: settledDate,
+            createdAt: new Date(),
+          }
+        });
+      }
+
       // 4. Create Bank Transaction
       if (scenario !== 'MISSING_BANK_TRANSACTION') {
         await prisma.bankTransaction.create({
