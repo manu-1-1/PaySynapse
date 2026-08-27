@@ -30,7 +30,16 @@ export default function AnalyticsPage() {
   const COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-[calc(100vh-4rem)]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <div className="relative">
+          <div className="h-14 w-14 rounded-full border-[3px] border-emerald-500/20 border-t-emerald-500 animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Activity className="h-5 w-5 text-emerald-500 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Fallback if exception distribution is empty
@@ -49,10 +58,31 @@ export default function AnalyticsPage() {
     { day: 'Sun', t0: 85, t1: 5, t2: 5, delayed: 5 },
   ];
 
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-border/50 rounded-xl px-4 py-3 shadow-xl shadow-black/5 dark:shadow-black/20">
+        <p className="text-xs text-slate-500 font-medium mb-2">{label}</p>
+        {payload.map((p, i) => (
+          <p key={i} className="text-xs font-semibold" style={{ color: p.color }}>
+            {p.name}: {p.value}%
+          </p>
+        ))}
+      </div>
+    );
+  };
+
+  const kpiCards = [
+    { label: 'Total Processed', value: data?.totalTransactions, icon: Activity, color: 'blue', gradient: 'from-blue-500 to-indigo-500' },
+    { label: 'Global Match Rate', value: `${data?.matchRate}%`, icon: CheckCircle2, color: 'emerald', gradient: 'from-emerald-500 to-teal-500', valueClass: 'text-emerald-600 dark:text-emerald-400' },
+    { label: 'Open Exceptions', value: data?.pending, icon: AlertTriangle, color: 'amber', gradient: 'from-amber-500 to-orange-500', valueClass: 'text-amber-600 dark:text-amber-400' },
+    { label: 'Risk Exposure', value: formatCurrency(data?.financialImpact), icon: IndianRupee, color: 'rose', gradient: 'from-rose-500 to-pink-500', valueClass: 'text-rose-600 dark:text-rose-400' },
+  ];
+
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">
+    <div className="flex-1 space-y-8 p-8 pt-6 min-h-screen">
+      <div className="animate-fade-in-up">
+        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
           Operations Analytics
         </h2>
         <p className="text-muted-foreground mt-1">
@@ -60,36 +90,32 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-4">
-        <div className="rounded-xl border bg-white dark:bg-slate-950 p-6 shadow-sm">
-          <div className="flex items-center text-slate-500 mb-2">
-            <Activity className="w-4 h-4 mr-2" /> <span>Total Processed</span>
-          </div>
-          <div className="text-3xl font-bold">{data?.totalTransactions}</div>
-        </div>
-        <div className="rounded-xl border bg-white dark:bg-slate-950 p-6 shadow-sm">
-          <div className="flex items-center text-emerald-500 mb-2">
-            <CheckCircle2 className="w-4 h-4 mr-2" /> <span>Global Match Rate</span>
-          </div>
-          <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{data?.matchRate}%</div>
-        </div>
-        <div className="rounded-xl border bg-white dark:bg-slate-950 p-6 shadow-sm">
-          <div className="flex items-center text-amber-500 mb-2">
-            <AlertTriangle className="w-4 h-4 mr-2" /> <span>Open Exceptions</span>
-          </div>
-          <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{data?.pending}</div>
-        </div>
-        <div className="rounded-xl border bg-white dark:bg-slate-950 p-6 shadow-sm">
-          <div className="flex items-center text-rose-500 mb-2">
-            <IndianRupee className="w-4 h-4 mr-2" /> <span>Risk Exposure</span>
-          </div>
-          <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">{formatCurrency(data?.financialImpact)}</div>
-        </div>
+      {/* KPI Cards */}
+      <div className="grid gap-5 md:grid-cols-4">
+        {kpiCards.map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <div 
+              key={card.label}
+              className={`animate-fade-in-up stagger-${idx + 1} group relative rounded-2xl border border-border/50 bg-white dark:bg-slate-950/60 backdrop-blur-sm p-6 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden`}
+            >
+              <div className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${card.gradient} opacity-60 group-hover:opacity-100 transition-opacity`} />
+              <div className={`flex items-center text-${card.color}-500 mb-3`}>
+                <div className={`p-2 rounded-xl bg-${card.color}-50 dark:bg-${card.color}-950/30 mr-3`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.label}</span>
+              </div>
+              <div className={`text-3xl font-bold tracking-tight ${card.valueClass || ''}`}>{card.value}</div>
+            </div>
+          );
+        })}
       </div>
 
+      {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Exception Distribution */}
-        <div className="rounded-xl border bg-white dark:bg-slate-950 shadow-sm p-6">
+        <div className="animate-fade-in-up stagger-5 rounded-2xl border border-border/50 bg-white dark:bg-slate-950/60 backdrop-blur-sm shadow-sm p-6">
           <h3 className="font-semibold mb-4">Exception Distribution</h3>
           <div className="h-[300px] w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -102,33 +128,30 @@ export default function AnalyticsPage() {
                   outerRadius={100}
                   paddingAngle={5}
                   dataKey="value"
+                  strokeWidth={0}
                 >
                   {exceptionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                />
-                <Legend verticalAlign="bottom" height={36}/>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend verticalAlign="bottom" height={36} formatter={(value) => <span className="text-xs text-slate-500">{value}</span>} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Settlement Velocity */}
-        <div className="rounded-xl border bg-white dark:bg-slate-950 shadow-sm p-6">
+        <div className="animate-fade-in-up stagger-6 rounded-2xl border border-border/50 bg-white dark:bg-slate-950/60 backdrop-blur-sm shadow-sm p-6">
           <h3 className="font-semibold mb-4">Settlement Velocity (T+ Days)</h3>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={delayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                />
-                <Legend />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.5} />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend formatter={(value) => <span className="text-xs text-slate-500">{value}</span>} />
                 <Bar dataKey="t0" stackId="a" fill="#10b981" name="T+0 (Same Day)" radius={[0, 0, 4, 4]} />
                 <Bar dataKey="t1" stackId="a" fill="#3b82f6" name="T+1" />
                 <Bar dataKey="t2" stackId="a" fill="#f59e0b" name="T+2" />
