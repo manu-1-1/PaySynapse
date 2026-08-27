@@ -106,7 +106,7 @@ export default function ExceptionDetailPage() {
     return <div className="p-8 text-center"><h2 className="text-xl">Exception not found.</h2><button onClick={() => router.back()} className="mt-4 text-primary">Go Back</button></div>;
   }
 
-  const isResolved = ex.status === 'RESOLVED';
+  const isResolved = ex.status === 'RESOLVED' || ex.status === 'OBSOLETE';
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
@@ -213,7 +213,7 @@ export default function ExceptionDetailPage() {
           {isResolved ? (
             <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 rounded-lg text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
-              <div className="font-semibold text-emerald-800 dark:text-emerald-400">Exception Resolved</div>
+              <div className="font-semibold text-emerald-800 dark:text-emerald-400">{ex.status === 'OBSOLETE' ? 'Exception Obsolete (Superseded)' : 'Exception Resolved'}</div>
               <div className="text-xs text-slate-500">Resolved at {formatDate(ex.resolvedAt)}</div>
             </div>
           ) : (

@@ -76,6 +76,7 @@ export default function ExceptionsPage() {
               <option value="OPEN">Open</option>
               <option value="INVESTIGATING">Investigating</option>
               <option value="RESOLVED">Resolved</option>
+              <option value="OBSOLETE">Obsolete</option>
             </select>
           </div>
         </div>
@@ -130,6 +131,7 @@ export default function ExceptionsPage() {
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         ex.status === 'OPEN' ? 'bg-rose-100 text-rose-800' : 
                         ex.status === 'INVESTIGATING' ? 'bg-amber-100 text-amber-800' : 
+                        ex.status === 'OBSOLETE' ? 'bg-slate-200 text-slate-700' : 
                         'bg-emerald-100 text-emerald-800'
                       }`}>
                         {ex.status}
