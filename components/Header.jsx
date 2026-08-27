@@ -1,13 +1,16 @@
 'use client';
 
-import { Search, Bell, User, RefreshCw, Sun, Moon, AlertTriangle } from "lucide-react"
+import { Search, Bell, User, RefreshCw, Sun, Moon, AlertTriangle, LogOut } from "lucide-react"
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function Header() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   
   // Notifications state
   const [notifications, setNotifications] = useState([]);
@@ -101,6 +104,19 @@ export function Header() {
       console.error(err);
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/');
+      router.refresh();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -249,13 +265,22 @@ export function Header() {
                     required
                   />
                 </div>
-                <div className="pt-1">
+                <div className="pt-1 space-y-2">
                   <button 
                     type="submit" 
                     disabled={savingProfile}
                     className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-blue-500/20 disabled:opacity-60"
                   >
                     {savingProfile ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="w-full flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-400 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-60"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {loggingOut ? 'Logging out...' : 'Sign Out'}
                   </button>
                 </div>
               </form>

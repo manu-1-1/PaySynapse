@@ -1,8 +1,9 @@
 'use client'
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { LayoutDashboard, ReceiptText, AlertCircle, GitBranch, BarChart3, Bot, Settings, Activity } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
+import { LayoutDashboard, ReceiptText, AlertCircle, GitBranch, BarChart3, Bot, Settings, Activity, LogOut } from "lucide-react"
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -16,6 +17,21 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/')
+      router.refresh()
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      setLoggingOut(false)
+    }
+  }
 
   return (
     <div className="flex h-full w-64 flex-col bg-white/50 dark:bg-slate-950/50 backdrop-blur-xl">
@@ -75,9 +91,9 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* System Status Footer */}
-      <div className="border-t border-border/50 px-4 py-3">
-        <div className="flex items-center gap-2 px-2">
+      {/* Footer: System Status & Logout */}
+      <div className="border-t border-border/50 p-3 space-y-2">
+        <div className="flex items-center gap-2 px-3 py-1">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -86,6 +102,14 @@ export function Sidebar() {
             System Operational
           </span>
         </div>
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 transition-all duration-200 disabled:opacity-50"
+        >
+          <LogOut className="h-[18px] w-[18px]" />
+          <span>{loggingOut ? 'Signing Out...' : 'Sign Out'}</span>
+        </button>
       </div>
     </div>
   )
