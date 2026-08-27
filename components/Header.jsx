@@ -15,6 +15,12 @@ export function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Profile state
+  const [showProfile, setShowProfile] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const profileRef = useRef(null);
+
   useEffect(() => {
     setMounted(true);
     
@@ -33,14 +39,30 @@ export function Header() {
 
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 10000);
+
+    // Fetch user profile
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+        }
+      } catch (err) {}
+    };
+    fetchProfile();
+
     return () => clearInterval(interval);
   }, []);
 
-  // Close dropdown on click outside
+  // Close dropdowns on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setShowDropdown(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfile(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -48,10 +70,37 @@ export function Header() {
   }, []);
 
   const handleOpenNotifications = () => {
+    setShowProfile(false);
     setShowDropdown(!showDropdown);
     if (!showDropdown) {
       setUnreadCount(0);
       localStorage.setItem('lastCheckedNotifs', new Date().toISOString());
+    }
+  };
+
+  const handleOpenProfile = () => {
+    setShowDropdown(false);
+    setShowProfile(!showProfile);
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: profile.name, email: profile.email })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProfile(updated);
+        setShowProfile(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingProfile(false);
     }
   };
   return (
@@ -134,10 +183,55 @@ export function Header() {
           </div>
         )}
       </div>
-      <button className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background">
-        <User className="h-4 w-4" />
-        <span className="sr-only">Profile</span>
-      </button>
+      <div className="relative" ref={profileRef}>
+        <button 
+          onClick={handleOpenProfile}
+          className="relative flex h-8 w-8 items-center justify-center rounded-full border bg-background hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <User className="h-4 w-4" />
+          <span className="sr-only">Profile</span>
+        </button>
+
+        {showProfile && profile && (
+          <div className="absolute right-0 mt-2 w-72 rounded-xl border bg-white dark:bg-slate-950 shadow-lg z-50 overflow-hidden">
+            <div className="p-4 border-b bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="font-semibold">{profile.name}</div>
+              <div className="text-xs text-muted-foreground">{profile.role}</div>
+            </div>
+            <form onSubmit={handleProfileUpdate} className="p-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium">Name</label>
+                <input 
+                  type="text" 
+                  value={profile.name}
+                  onChange={(e) => setProfile({...profile, name: e.target.value})}
+                  className="w-full text-sm px-3 py-2 rounded border bg-background"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium">Email</label>
+                <input 
+                  type="email" 
+                  value={profile.email}
+                  onChange={(e) => setProfile({...profile, email: e.target.value})}
+                  className="w-full text-sm px-3 py-2 rounded border bg-background"
+                  required
+                />
+              </div>
+              <div className="pt-2">
+                <button 
+                  type="submit" 
+                  disabled={savingProfile}
+                  className="w-full bg-primary text-primary-foreground py-2 rounded text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  {savingProfile ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
     </header>
   )
 }

@@ -76,6 +76,7 @@ export default function AuthPage() {
                   Email Address
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="email"
                   name="email"
                   defaultValue="ops@demo.paysynapse.com"
@@ -93,6 +94,7 @@ export default function AuthPage() {
                   </a>
                 </div>
                 <input
+                  suppressHydrationWarning
                   type="password"
                   name="password"
                   defaultValue="password123"
@@ -103,6 +105,7 @@ export default function AuthPage() {
             </div>
 
             <button
+              suppressHydrationWarning
               type="submit"
               disabled={loading}
               className="w-full flex items-center justify-center py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-70"
@@ -127,6 +130,7 @@ export default function AuthPage() {
           </div>
 
           <button
+            suppressHydrationWarning
             onClick={handleSignIn}
             type="button"
             className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111c3a] hover:bg-slate-50 dark:hover:bg-slate-900/50 text-slate-900 dark:text-white font-medium transition-colors focus:outline-none"

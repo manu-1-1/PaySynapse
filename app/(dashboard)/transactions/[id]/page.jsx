@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, AlertCircle, Clock, Building2, Receipt, ArrowRightLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, Clock, Building2, Receipt, ArrowRightLeft, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TransactionDetailPage() {
