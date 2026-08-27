@@ -7,6 +7,7 @@ export default function DigitalTwinPage() {
   const [searchId, setSearchId] = useState('');
   const [tx, setTx] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [simulating, setSimulating] = useState(false);
   const [error, setError] = useState('');
 
   // Auto-load the first transaction just to have a demo state if none provided
@@ -40,6 +41,27 @@ export default function DigitalTwinPage() {
       setTx(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSimulate = async (scenario) => {
+    setSimulating(scenario);
+    setError('');
+    try {
+      const res = await fetch('/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Simulation failed');
+      
+      // Auto-load the newly injected transaction
+      handleSearch(data.paymentId);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSimulating(false);
     }
   };
 
@@ -78,6 +100,41 @@ export default function DigitalTwinPage() {
         >
           {loading ? 'Reconstructing...' : 'Render Twin'}
         </button>
+      </div>
+
+      {/* Simulation Control Panel */}
+      <div className="w-full max-w-4xl bg-slate-900 border border-slate-700/50 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Simulation Sandbox (Inject Anomalies)</h3>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={() => handleSimulate('PERFECT_MATCH')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'PERFECT_MATCH' ? 'Injecting...' : 'Perfect Flow'}
+          </button>
+          <button 
+            onClick={() => handleSimulate('MISSING_SETTLEMENT')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'MISSING_SETTLEMENT' ? 'Injecting...' : 'Drop Settlement'}
+          </button>
+          <button 
+            onClick={() => handleSimulate('FEE_MISMATCH')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'FEE_MISMATCH' ? 'Injecting...' : 'Gateway Overcharge'}
+          </button>
+          <button 
+            onClick={() => handleSimulate('AMOUNT_MISMATCH')}
+            disabled={simulating}
+            className="text-xs px-3 py-1.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-colors disabled:opacity-50"
+          >
+            {simulating === 'AMOUNT_MISMATCH' ? 'Injecting...' : 'Short Settlement'}
+          </button>
+        </div>
       </div>
 
       {error && (

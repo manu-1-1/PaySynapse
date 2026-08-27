@@ -18,11 +18,11 @@ export async function GET(request) {
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    return NextResponse.json({ 
-      id: user.id, 
-      email: user.email, 
-      name: user.name, 
-      role: user.role 
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
     });
   } catch (error) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,7 +37,7 @@ export async function PUT(request) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    
+
     const { name, email } = await request.json();
 
     const updatedUser = await prisma.user.update({
@@ -45,11 +45,11 @@ export async function PUT(request) {
       data: { name, email },
     });
 
-    return NextResponse.json({ 
-      id: updatedUser.id, 
-      email: updatedUser.email, 
-      name: updatedUser.name, 
-      role: updatedUser.role 
+    return NextResponse.json({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      name: updatedUser.name,
+      role: updatedUser.role
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
