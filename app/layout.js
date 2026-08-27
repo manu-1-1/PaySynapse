@@ -15,6 +15,13 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "PaySynapse",
   description: "See the true state of your payment operations.",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }) {

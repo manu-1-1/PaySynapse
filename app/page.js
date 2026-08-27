@@ -48,9 +48,8 @@ export default function AuthPage() {
         {/* Brand */}
         <div className="absolute top-8 left-8 sm:left-16 md:left-24 xl:left-32">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
-              <Activity className="h-5 w-5 text-white" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="PaySynapse Logo" className="h-9 w-9 rounded-xl shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105" />
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               PaySynapse
             </span>

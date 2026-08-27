@@ -22,8 +22,9 @@ export function Sidebar() {
       {/* Brand */}
       <div className="flex h-16 items-center border-b border-border/50 px-6">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow duration-300">
-            <Activity className="h-5 w-5 text-white" />
+          <div className="relative flex h-9 w-9 items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="PaySynapse Logo" className="h-9 w-9 rounded-xl shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105" />
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-slate-950 animate-pulse" />
           </div>
           <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">

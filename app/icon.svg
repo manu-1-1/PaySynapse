@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B192C" />
+      <stop offset="50%" stop-color="#111C3A" />
+      <stop offset="100%" stop-color="#070F1E" />
+    </linearGradient>
+
+    <!-- Synapse Blue-Indigo Gradient -->
+    <linearGradient id="primary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D88FF" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+
+    <!-- Cyan-Emerald Pulse Gradient -->
+    <linearGradient id="pulse-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="50%" stop-color="#4FACFE" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <filter id="glow-intense" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="20" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Layer -->
+  <rect width="512" height="512" rx="128" fill="url(#bg-grad)" />
+  <rect width="510" height="510" x="1" y="1" rx="127" fill="none" stroke="url(#primary-grad)" stroke-width="2" stroke-opacity="0.3" />
+
+  <!-- Outer Ring Synapse Arc -->
+  <path d="M 120 256 A 136 136 0 0 1 392 256" fill="none" stroke="url(#primary-grad)" stroke-width="8" stroke-dasharray="12 12" opacity="0.4" />
+  <path d="M 120 256 A 136 136 0 0 0 392 256" fill="none" stroke="url(#pulse-grad)" stroke-width="8" stroke-dasharray="16 16" opacity="0.4" />
+
+  <!-- Abstract Credit Card & Synapse Node 1 (Top Left) -->
+  <g filter="url(#glow)">
+    <rect x="128" y="140" width="160" height="100" rx="16" fill="none" stroke="url(#primary-grad)" stroke-width="6" opacity="0.9" />
+    <line x1="128" y1="170" x2="288" y2="170" stroke="url(#primary-grad)" stroke-width="4" opacity="0.6" />
+    <circle cx="160" cy="205" r="8" fill="#2D88FF" />
+    <circle cx="184" cy="205" r="8" fill="#6366F1" />
+  </g>
+
+  <!-- Abstract Settlement Ledger & Synapse Node 2 (Bottom Right) -->
+  <g filter="url(#glow)">
+    <rect x="224" y="272" width="160" height="100" rx="16" fill="none" stroke="url(#pulse-grad)" stroke-width="6" opacity="0.9" />
+    <line x1="224" y1="302" x2="384" y2="302" stroke="url(#pulse-grad)" stroke-width="4" opacity="0.6" />
+    <rect x="248" y="324" width="60" height="8" rx="4" fill="#00F2FE" />
+    <rect x="248" y="340" width="40" height="8" rx="4" fill="#10B981" opacity="0.8" />
+  </g>
+
+  <!-- Central Synapse Pulse Connection (Dynamic S-Curve) -->
+  <path d="M 190 205 C 240 205, 270 307, 320 307" fill="none" stroke="url(#pulse-grad)" stroke-width="10" stroke-linecap="round" filter="url(#glow-intense)" />
+  <path d="M 190 205 C 240 205, 270 307, 320 307" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Pulse Activity / Activity Pulse Wave -->
+  <path d="M 215 256 L 235 256 L 245 230 L 260 285 L 275 240 L 285 256 L 305 256" fill="none" stroke="url(#pulse-grad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" />
+
+  <!-- Central Node Dots -->
+  <circle cx="190" cy="205" r="12" fill="#2D88FF" filter="url(#glow)" />
+  <circle cx="190" cy="205" r="6" fill="#FFFFFF" />
+
+  <circle cx="320" cy="307" r="12" fill="#10B981" filter="url(#glow)" />
+  <circle cx="320" cy="307" r="6" fill="#FFFFFF" />
+
+  <circle cx="256" cy="256" r="14" fill="url(#primary-grad)" filter="url(#glow-intense)" />
+  <circle cx="256" cy="256" r="6" fill="#FFFFFF" />
+</svg>
