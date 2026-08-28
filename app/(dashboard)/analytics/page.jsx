@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Activity, AlertTriangle, CheckCircle2, IndianRupee, BarChart3 } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle2, IndianRupee, BarChart3, ShieldCheck, Award } from 'lucide-react';
+import { ComplianceCertificateModal } from '@/components/ComplianceCertificateModal';
 
 export default function AnalyticsPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCertModal, setShowCertModal] = useState(false);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -76,11 +78,22 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
-      <div>
-        <h2 className="text-xl font-semibold text-[var(--foreground)]">Operations Analytics</h2>
-        <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-          Deep insights into reconciliation health and settlement efficiency.
-        </p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-[var(--foreground)]">Operations Analytics</h2>
+          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+            Deep insights into reconciliation health, settlement velocity, and regulatory audit compliance.
+          </p>
+        </div>
+
+        {/* Export RBI Certificate Button */}
+        <button
+          onClick={() => setShowCertModal(true)}
+          className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 shadow-sm transition-colors"
+        >
+          <Award className="w-4 h-4" /> Export RBI Compliance Certificate
+        </button>
       </div>
 
       {/* KPI Cards */}
@@ -153,6 +166,13 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
+
+      {/* Compliance Certificate Modal */}
+      <ComplianceCertificateModal
+        isOpen={showCertModal}
+        onClose={() => setShowCertModal(false)}
+        analyticsData={data}
+      />
     </div>
   );
 }
