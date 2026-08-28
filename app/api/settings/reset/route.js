@@ -67,7 +67,8 @@ export async function POST(req) {
       await purgeTransactionData();
       const { merchant } = await ensureUserAndMerchant();
 
-      const totalRecords = 60;
+      const requestedCount = parseInt(body.count, 10);
+      const totalRecords = isNaN(requestedCount) ? 100 : Math.max(10, Math.min(1000, requestedCount));
       const paymentMethods = ['UPI', 'CARD', 'NETBANKING'];
 
       for (let i = 0; i < totalRecords; i++) {

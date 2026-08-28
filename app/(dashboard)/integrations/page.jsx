@@ -31,6 +31,7 @@ export default function IntegrationsPage() {
   // Reset/Purge State
   const [resetting, setResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState('');
+  const [seedVolume, setSeedVolume] = useState(100);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -85,7 +86,7 @@ export default function IntegrationsPage() {
   const handleDataAction = async (action) => {
     const confirmMsg = action === 'clear_all'
       ? 'Are you sure you want to PURGE ALL transaction ledger data? The transaction count will reset to 0.'
-      : 'This will replace existing transactions with a fresh realistic 60-transaction demo dataset. Continue?';
+      : `This will replace existing transactions with ${seedVolume} fresh realistic payment records. Continue?`;
     
     if (!window.confirm(confirmMsg)) return;
 
@@ -95,7 +96,7 @@ export default function IntegrationsPage() {
       const res = await fetch('/api/settings/reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({ action, count: seedVolume })
       });
       const data = await res.json();
       if (res.ok) {
@@ -356,12 +357,26 @@ export default function IntegrationsPage() {
             {/* Regenerate Fresh Demo Data */}
             <div className="p-4 rounded-lg border border-[var(--border)] bg-[var(--muted)] flex flex-col justify-between space-y-3">
               <div>
-                <div className="flex items-center gap-2 text-[var(--foreground)] font-semibold text-sm">
-                  <RotateCcw className="w-4 h-4 text-[#528FF0]" />
-                  Re-Seed Demo Dataset
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[var(--foreground)] font-semibold text-sm">
+                    <RotateCcw className="w-4 h-4 text-[#528FF0]" />
+                    Re-Seed Demo Dataset
+                  </div>
+                  <select
+                    value={seedVolume}
+                    onChange={(e) => setSeedVolume(parseInt(e.target.value))}
+                    disabled={resetting !== false}
+                    className="bg-[var(--surface)] border border-[var(--border)] rounded-md px-2 py-1 text-xs font-medium text-[var(--foreground)] focus:outline-none focus:border-[#528FF0]"
+                  >
+                    <option value={50}>50 Transactions</option>
+                    <option value={100}>100 Transactions</option>
+                    <option value={250}>250 Transactions</option>
+                    <option value={500}>500 Transactions</option>
+                    <option value={1000}>1,000 Volume (Enterprise)</option>
+                  </select>
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
-                  Populates 60 fresh realistic transactions with fee breakdowns, matched bank settlements, and detected anomalies.
+                  Populates {seedVolume} fresh realistic transactions with fee breakdowns, matched bank settlements, and detected anomalies.
                 </p>
               </div>
               <button
@@ -369,7 +384,7 @@ export default function IntegrationsPage() {
                 disabled={resetting !== false}
                 className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold bg-[#528FF0] hover:bg-[#4080E0] text-white transition-colors disabled:opacity-50"
               >
-                {resetting === 'regenerate_demo' ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Seeding Dataset...</> : <><RotateCcw className="w-3.5 h-3.5" /> Re-Seed Demo Transactions</>}
+                {resetting === 'regenerate_demo' ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Seeding {seedVolume} Dataset...</> : <><RotateCcw className="w-3.5 h-3.5" /> Re-Seed {seedVolume} Transactions</>}
               </button>
             </div>
 
