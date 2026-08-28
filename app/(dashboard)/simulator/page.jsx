@@ -121,12 +121,12 @@ export default function SimulatorPage() {
           id: Date.now() + Math.random(),
           time: nowStr,
           type: 'ANOMALY',
-          msg: `🚨 EXCEPTION: pay_${Math.floor(Math.random() * 899999 + 100000)} variance detected (₹${randomAmount.toLocaleString('en-IN')}) — Flagged in ${+(Math.random() * 1.5 + 0.8).toFixed(1)}ms`
+          msg: `EXCEPTION: pay_${Math.floor(Math.random() * 899999 + 100000)} variance detected (₹${randomAmount.toLocaleString('en-IN')}) — Flagged in ${+(Math.random() * 1.5 + 0.8).toFixed(1)}ms`
         } : {
           id: Date.now() + Math.random(),
           time: nowStr,
           type: 'MATCH',
-          msg: `✓ pay_${Math.floor(Math.random() * 899999 + 100000)} ➔ ord_${Math.floor(Math.random() * 89999 + 10000)} reconciled perfectly (₹${randomAmount.toLocaleString('en-IN')})`
+          msg: `pay_${Math.floor(Math.random() * 899999 + 100000)} -> ord_${Math.floor(Math.random() * 89999 + 10000)} reconciled perfectly (₹${randomAmount.toLocaleString('en-IN')})`
         };
 
         setLogs(prev => [...prev.slice(-40), newLog]);
@@ -166,8 +166,8 @@ export default function SimulatorPage() {
     }));
     setLogs(prev => [
       ...prev,
-      { id: Date.now(), time: nowStr, type: 'BURST', msg: `⚡ BURST INJECTED: 100 concurrent webhook transactions delivered to engine.` },
-      { id: Date.now() + 1, time: nowStr, type: 'ANOMALY', msg: `🚨 BURST ENGINE CATCH: 8 orphaned settlement anomalies captured and contained.` }
+      { id: Date.now(), time: nowStr, type: 'BURST', msg: `BURST INJECTED: 100 concurrent webhook transactions delivered to engine.` },
+      { id: Date.now() + 1, time: nowStr, type: 'ANOMALY', msg: `BURST ENGINE CATCH: 8 orphaned settlement anomalies captured and contained.` }
     ]);
   };
 
@@ -308,7 +308,7 @@ export default function SimulatorPage() {
                   : 'border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--foreground)]'
               }`}
             >
-              <div className="font-bold">⚡ Flash Sale</div>
+              <div className="font-bold">Flash Sale</div>
               <div className="text-[11px] text-[var(--muted-foreground)] mt-0.5">120 TPS • 5% Drops</div>
             </button>
 
@@ -320,7 +320,7 @@ export default function SimulatorPage() {
                   : 'border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--foreground)]'
               }`}
             >
-              <div className="font-bold">🔥 Stress Peak</div>
+              <div className="font-bold">Stress Peak</div>
               <div className="text-[11px] text-[var(--muted-foreground)] mt-0.5">350 TPS • Overcharge</div>
             </button>
 
@@ -332,7 +332,7 @@ export default function SimulatorPage() {
                   : 'border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--foreground)]'
               }`}
             >
-              <div className="font-bold">🧪 Chaos Matrix</div>
+              <div className="font-bold">Chaos Matrix</div>
               <div className="text-[11px] text-[var(--muted-foreground)] mt-0.5">180 TPS • All Faults</div>
             </button>
           </div>

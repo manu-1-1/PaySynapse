@@ -220,14 +220,14 @@ export default function DigitalTwinPage() {
 
   // Simulation scenarios config
   const scenarios = [
-    { id: 'PERFECT_MATCH', label: '🟢 Normal Flow', desc: '100% Reconciled', color: 'emerald' },
-    { id: 'MISSING_SETTLEMENT', label: '🔴 Missing Settlement', desc: 'Unsettled Gateway batch', color: 'red' },
-    { id: 'FEE_MISMATCH', label: '🟡 Fee Discrepancy', desc: 'Gateway commission overcharge', color: 'amber' },
-    { id: 'AMOUNT_MISMATCH', label: '🟠 Short Settlement', desc: 'Net settlement difference', color: 'orange' },
-    { id: 'DELAYED_SETTLEMENT', label: '🔵 T+10 Settlement', desc: 'SLA breach delay', color: 'blue' },
-    { id: 'DUPLICATE_TRANSACTION', label: '🟣 Duplicate Entry', desc: 'Double ledger posting', color: 'purple' },
-    { id: 'STATUS_MISMATCH', label: '🌸 Status Mismatch', desc: 'Capture vs Authorize sync', color: 'pink' },
-    { id: 'MISSING_REFUND', label: '🔷 Missing Refund', desc: 'Unsettled reversal credit', color: 'cyan' },
+    { id: 'PERFECT_MATCH', label: 'Normal Flow', desc: '100% Reconciled', color: 'emerald' },
+    { id: 'MISSING_SETTLEMENT', label: 'Missing Settlement', desc: 'Unsettled Gateway batch', color: 'red' },
+    { id: 'FEE_MISMATCH', label: 'Fee Discrepancy', desc: 'Gateway commission overcharge', color: 'amber' },
+    { id: 'AMOUNT_MISMATCH', label: 'Short Settlement', desc: 'Net settlement difference', color: 'orange' },
+    { id: 'DELAYED_SETTLEMENT', label: 'T+10 Settlement', desc: 'SLA breach delay', color: 'blue' },
+    { id: 'DUPLICATE_TRANSACTION', label: 'Duplicate Entry', desc: 'Double ledger posting', color: 'purple' },
+    { id: 'STATUS_MISMATCH', label: 'Status Mismatch', desc: 'Capture vs Authorize sync', color: 'pink' },
+    { id: 'MISSING_REFUND', label: 'Missing Refund', desc: 'Unsettled reversal credit', color: 'cyan' },
   ];
 
   const scenarioColorMap = {
