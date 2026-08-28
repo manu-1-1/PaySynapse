@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { runFullReconciliation } from '@/lib/reconciliation/engine';
 
 const prisma = new PrismaClient();
 
@@ -58,7 +59,7 @@ export async function POST(req) {
       await purgeTransactionData();
       return NextResponse.json({
         success: true,
-        message: 'All transaction ledger data, settlements, and exceptions have been purged.'
+        message: 'All transaction ledger data, settlements, and exceptions have been purged. Total volume is now 0.'
       });
     }
 
@@ -67,119 +68,104 @@ export async function POST(req) {
       const { merchant } = await ensureUserAndMerchant();
 
       const totalRecords = 60;
-      const paymentMethods = ['UPI', 'card', 'netbanking', 'wallet'];
+      const paymentMethods = ['UPI', 'CARD', 'NETBANKING'];
 
       for (let i = 0; i < totalRecords; i++) {
-        const grossAmount = randomAmount(500, 15000);
+        const grossAmount = randomAmount(500, 20000);
         const feeAmount = parseFloat((grossAmount * 0.018).toFixed(2));
         const taxAmount = parseFloat((feeAmount * 0.18).toFixed(2));
         const expectedSettlement = parseFloat((grossAmount - feeAmount - taxAmount).toFixed(2));
-        const method = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
-        const isMatched = i % 6 !== 0;
+        const method = paymentMethods[i % paymentMethods.length];
+
+        const orderId = generateId('order', i);
+        const paymentId = generateId('pay', i);
+        const settlementId = generateId('setl', i);
+        const txnId = generateId('txn', i);
+
+        // Determine scenario
+        const rand = Math.random();
+        let scenario = 'MATCHED';
+        if (rand < 0.08) scenario = 'MISSING_SETTLEMENT';
+        else if (rand < 0.16) scenario = 'AMOUNT_MISMATCH';
+        else if (rand < 0.22) scenario = 'FEE_MISMATCH';
+        else if (rand < 0.28) scenario = 'DELAYED_SETTLEMENT';
 
         const order = await prisma.order.create({
           data: {
+            externalOrderId: orderId,
             merchantId: merchant.id,
-            externalOrderId: generateId('order', i),
             amount: grossAmount,
+            currency: 'INR',
             status: 'PAID',
-            currency: 'INR'
           }
         });
 
         const payment = await prisma.payment.create({
           data: {
-            merchantId: merchant.id,
+            externalPaymentId: paymentId,
             orderId: order.id,
-            externalPaymentId: generateId('pay', i),
             amount: grossAmount,
             currency: 'INR',
             status: 'CAPTURED',
             method,
-            capturedAt: new Date(Date.now() - (i * 3600000))
+            capturedAt: new Date(Date.now() - (i * 3600000)),
           }
         });
+
+        let actualFee = feeAmount;
+        if (scenario === 'FEE_MISMATCH') {
+          actualFee = parseFloat((feeAmount * 2).toFixed(2));
+        }
 
         await prisma.fee.create({
           data: {
             paymentId: payment.id,
-            type: 'MDR',
-            amount: feeAmount,
+            amount: actualFee,
             tax: taxAmount,
-            rate: 0.018
           }
         });
 
-        if (isMatched) {
+        if (scenario !== 'MISSING_SETTLEMENT') {
+          let actualSettlement = expectedSettlement;
+          if (scenario === 'AMOUNT_MISMATCH') {
+            actualSettlement = parseFloat((expectedSettlement - 50).toFixed(2));
+          }
+
+          let settledDate = new Date(Date.now() - (i * 3600000) + 1800000);
+          if (scenario === 'DELAYED_SETTLEMENT') {
+            settledDate = new Date(Date.now() + (10 * 86400000));
+          }
+
           const settlement = await prisma.settlement.create({
             data: {
-              merchantId: merchant.id,
-              externalSettlementId: generateId('setl', i),
-              amount: expectedSettlement,
-              currency: 'INR',
+              externalSettlementId: settlementId,
+              paymentId: payment.id,
+              amount: actualSettlement,
               status: 'PROCESSED',
-              settledAt: new Date(Date.now() - (i * 3600000) + 1800000)
+              settledAt: settledDate,
             }
           });
 
-          await prisma.payment.update({
-            where: { id: payment.id },
-            data: { settlementId: settlement.id }
-          });
-
-          const bankTx = await prisma.bankTransaction.create({
+          await prisma.bankTransaction.create({
             data: {
-              merchantId: merchant.id,
-              reference: `CMS${Math.floor(Math.random() * 899999999 + 100000000)}`,
-              amount: expectedSettlement,
-              type: 'CREDIT',
-              transactionDate: new Date(Date.now() - (i * 3600000) + 3600000)
-            }
-          });
-
-          await prisma.settlement.update({
-            where: { id: settlement.id },
-            data: { bankTransactionId: bankTx.id }
-          });
-
-          await prisma.reconciliation.create({
-            data: {
-              paymentId: payment.id,
-              status: 'MATCHED',
-              expectedAmount: expectedSettlement,
-              actualAmount: expectedSettlement,
-              difference: 0
-            }
-          });
-        } else {
-          // Exception case
-          const diff = parseFloat((expectedSettlement * 0.15).toFixed(2));
-          await prisma.reconciliation.create({
-            data: {
-              paymentId: payment.id,
-              status: 'MISMATCH',
-              expectedAmount: expectedSettlement,
-              actualAmount: expectedSettlement - diff,
-              difference: diff
-            }
-          });
-
-          await prisma.exception.create({
-            data: {
-              paymentId: payment.id,
-              type: i % 2 === 0 ? 'MISSING_SETTLEMENT' : 'FEE_MISMATCH',
-              severity: 'HIGH',
-              financialImpact: diff,
-              description: `Automated variance detected: Expected ₹${expectedSettlement} vs Actual ₹${expectedSettlement - diff}. Delta: ₹${diff}.`,
-              status: 'OPEN'
+              externalTransactionId: txnId,
+              settlementId: settlement.id,
+              amount: actualSettlement,
+              transactionType: 'CREDIT',
+              reference: 'UTR' + Math.floor(Math.random() * 89999999 + 10000000),
+              transactionDate: settledDate,
+              status: 'CLEARED'
             }
           });
         }
       }
 
+      // Run reconciliation engine on the newly generated dataset
+      await runFullReconciliation();
+
       return NextResponse.json({
         success: true,
-        message: 'Re-seeded 60 fresh realistic payment records with matched settlements and exceptions.'
+        message: 'Successfully generated 60 fresh realistic transactions and ran deterministic reconciliation.'
       });
     }
 
