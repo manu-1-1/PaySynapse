@@ -151,7 +151,10 @@ export default function SimulatorPage() {
   // Auto-scroll inside the terminal box container only (not the whole page)
   useEffect(() => {
     if (terminalContainerRef.current) {
-      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
+      terminalContainerRef.current.scrollTo({
+        top: terminalContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [logs]);
 
