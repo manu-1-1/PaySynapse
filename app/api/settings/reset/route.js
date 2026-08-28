@@ -166,7 +166,7 @@ export async function POST(req) {
 
       return NextResponse.json({
         success: true,
-        message: 'Successfully generated 60 fresh realistic transactions and ran deterministic reconciliation.'
+        message: `Successfully generated ${totalRecords} fresh realistic transactions and ran deterministic reconciliation.`
       });
     }
 
