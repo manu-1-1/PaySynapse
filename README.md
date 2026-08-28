@@ -12,76 +12,79 @@
   [![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-8E75FF?style=flat-square&logo=google)](https://ai.google.dev/)
   [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-  *Catch missing settlements, gateway fee overcharges, short-settlements, and orphaned transactions instantly with 100% deterministic ledger matching and AI root-cause analysis.*
+  *Catch missing settlements, gateway overcharges, short-settlements, and orphaned transactions instantly with 100% deterministic ledger matching and AI root-cause analysis.*
 
 </div>
 
 ---
 
-## 📌 Executive Summary
+## Overview
 
-**PaySynapse** is an enterprise-grade financial operations and reconciliation platform engineered for high-volume merchants, payment aggregators, and fintechs. 
+**PaySynapse** is an enterprise-grade financial operations and reconciliation platform designed for high-volume payment processing. It bridges the gap between payment gateways (Razorpay, Stripe, Cashfree), internal merchant order ledgers, and bank clearing statements.
 
-Traditional payment reconciliation relies on fragmented, retroactive batch spreadsheets that leave businesses blind to silent revenue leaks. PaySynapse solves this by providing **real-time deterministic transaction matching**, **interactive financial topology reconstruction**, **high-throughput chaos testing**, and **AI-driven dispute resolution**.
-
----
-
-## ✨ Key Enterprise Capabilities
-
-### 1. 🔍 5-Point Deterministic Reconciliation Engine
-* **Complete Financial Lineage**: Verifies every transaction through a 5-step pipeline:
-  $$\text{01 Order} \longrightarrow \text{02 Payment} \longrightarrow \text{03 Charges \& GST} \longrightarrow \text{04 Gateway Batch} \longrightarrow \text{05 Bank Clearance}$$
-* **Mathematical Ledger Integrity**: Automatically validates:
-  $$\text{Gross Payment} - (\text{MDR Fee} + \text{18\% GST}) = \text{Net Bank Credit}$$
-* **Instant Discrepancy Detection**: Immediately isolates missing settlements, double ledger postings, MDR overcharges, short settlements, and SLA breaches.
-
-### 2. 🌐 Transaction Digital Twin & Topology Visualizer
-* **Interactive Node Pipeline**: Visualizes the physical fund flow across internal systems, payment gateways, and banking rails.
-* **Step-Through Playback**: Step through each phase of fund movement to identify the precise moment of failure.
-* **Scenario Sandbox**: Test system responses against 8 real-world payment failure profiles (*Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Delay, Duplicate Entry, Status Mismatch, Missing Refund*).
-
-### 3. ⚡ Traffic & Stress Test Studio (`/simulator`)
-* **High-Throughput Ingestion Engine**: Simulate flash sales, festive peaks, and sustained traffic from 10 to 500 TPS.
-* **Chaos Fault Injection**: Toggle live failure modes (Drop Gateway Settlement Batches, Inject 2x MDR Overcharges, Add Webhook Latency Delays, Duplicate Payloads).
-* **Real-Time Log Stream**: Monitored sub-2ms deterministic reconciliation stream with live throughput and latency analytics.
-
-### 4. ⚖️ Autonomous Dispute Packet Generator
-* **1-Click Legal Notice Creation**: Generate pre-drafted formal dispute letters to banks and payment aggregators.
-* **Statutory Compliance**: Cites official **RBI Master Directions** on Payment Aggregator Settlement SLAs and Nodal Escrow guidelines.
-* **Cryptographic Evidence Table**: Generates SHA-256 Merkle root hashes and complete transaction audit histories.
-
-### 5. 📜 Cryptographic RBI Nodal Compliance Certificate Export
-* **Audit-Ready Certification**: One-click generation of watermarked, printable compliance certificates for internal audits and statutory regulators.
-* **Verifiable Hashes**: Features SHA-256 cryptographic verification and match rate attestation.
-
-### 6. 🤖 Gemini AI Investigation Copilot
-* **Root-Cause Analysis**: Autonomous anomaly diagnosis powered by Google Gemini AI.
-* **Natural Language Queries**: Ask questions like *"What is our total unrecovered variance across HDFC batches?"* or *"Diagnose payment pay_928172"*.
-* **Action Recommendations**: Step-by-step remediation advice for operations and finance teams.
-
-### 7. 🗄️ In-App Sandbox & Ledger Reset (`/integrations`)
-* **0-Volume Purge**: One-click action to clear all test data for clean live webhook testing.
-* **Dynamic Re-Seeding**: Generate 50, 100, 250, 500, or 1,000 realistic transactions with automated reconciliation.
-
-### 8. 🎨 Clean Enterprise Fintech Design
-* Designed with **Razorpay-inspired aesthetics**, crisp typography (**Inter**), balanced neutral surfaces, and an **interactive drag-to-resize sidebar**.
+By replacing manual spreadsheet matching with a **deterministic 5-point reconciliation engine**, **visual digital-twin topology**, **traffic stress testing studio**, and **AI-powered dispute packet generation**, PaySynapse eliminates revenue leakage and provides complete transparency into financial operations.
 
 ---
 
-## 🏗️ Architecture & Technology Stack
+## Key Features
+
+### 1. 100% Deterministic Reconciliation Engine
+* **5-Point Lifecycle Matching**: Verifies arithmetic integrity from `01 Order` $\rightarrow$ `02 Payment` $\rightarrow$ `03 Charges & GST` $\rightarrow$ `04 Net Settlement` $\rightarrow$ `05 Bank Clearance (UTR)`.
+* **Instant Discrepancy Detection**: Flags missing settlements, MDR fee overcharges, short settlements, duplicate entries, SLA delays, and status mismatches.
+* **Audit Compliant**: Strict double-entry ledger mathematics without speculative numbers.
+
+### 2. Interactive Digital Twin Topology Visualizer
+* **5-Stage Pipeline Graph**: Interactive step-by-step financial topology visualization with directional connectors and status pills.
+* **Step-Through Playback Controller**: `▶ Step-Through` controller to walk through each node's funds flow step-by-step.
+* **Arithmetic Balance Reconciliation Bar**: Live verification of Gross Amount $-$ Gateway Fee (1.8%) $-$ GST (18%) $=$ Net Settlement.
+* **Tabbed Node Inspector**: Inspect Overview, Validation Checks, and Raw JSON payload for any node in the transaction chain.
+* **Preset Scenario Testing**: 1-click simulations for Normal Flow, Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Settlement, and Duplicate Entries.
+
+### 3. Traffic & Stress Test Studio (`/simulator`)
+* **Real-Time Load Generator**: Dynamic slider to test throughput from 10 to 500 TPS with live latency and match rate metrics.
+* **Active Chaos Fault Injection**: Toggle failure modes on the fly (Drop Settlements, Double MDR Fees, Webhook Delays, Duplicate Pay IDs).
+* **Burst Load Testing**: One-click `Burst 100` concurrent transactions delivery.
+* **Isolated Log Stream Terminal**: Live streaming webhook reconciliation terminal with smooth internal auto-scrolling and quick Pause/Resume controls.
+
+### 4. Autonomous Dispute Packet Generator
+* **One-Click Legal Notices**: Generates formal dispute notices citing official **RBI Master Directions** and **Section 10A of the IT Act 2000**.
+* **Cryptographic Evidence Table**: Itemizes Gross Amount, Charged Fee, Net Variance, Gateway Payment ID, Order ID, and Bank UTR.
+* **Export Options**: 1-click **Copy Email Notice** or **Print / Save as PDF** to send to payment aggregator legal/operations desks.
+
+### 5. Cryptographic RBI Nodal Compliance Certificate Export
+* **Verifiable Audit Proof**: Generates official RBI Escrow & Nodal Compliance Certificates directly from `/analytics`.
+* **Cryptographic Merkle Root**: Includes verifiable SHA-256 Merkle root, official seal, and exact match rate statistics for regulators and auditors.
+
+### 6. AI Copilot & Root Cause Analysis
+* **Google Gemini AI Integration**: Autonomous investigation engine to diagnose anomalies and calculate net financial exposure.
+* **Natural Language Copilot**: Ask natural language questions like *"What is our total risk exposure?"* or *"Analyze anomaly on payment pay_123"*.
+* **Action Center Remediation**: Automated recommendations to resolve discrepancies directly from the UI.
+
+### 7. Ledger Data Management & Sandbox Reset
+* **Purge All Test Transactions**: One-click action on `/integrations` to clear all transactions and reset volume to `0` for live webhook testing.
+* **Dynamic Re-Seed Volume Selector**: Choose between 50, 100, 250, 500, or 1,000 transaction datasets to re-populate and reconcile on demand.
+
+### 8. Enterprise Razorpay-Inspired UI & Resizable Sidebar
+* **Fintech Design System**: Clean typography with Inter font, `--rp-blue: #528FF0` primary branding, and crisp light/dark mode surfaces.
+* **Resizable & Collapsible Sidebar**: Interactive drag-to-resize handle (68px to 380px) and one-click collapse toggle with localStorage persistence.
+* **Real-Time Notification Bell**: Unread anomaly counter badge with interactive dropdown linking directly to exception triage.
+
+---
+
+## Architecture & Tech Stack
 
 ```
 PaySynapse Platform
 ├── Frontend: Next.js 16 (App Router), React 19, Tailwind CSS v4, Lucide Icons, Recharts
-├── Backend: Next.js API Routes, Jose JWT Middleware, Razorpay Webhook Ingestion
+├── Backend: Next.js API Routes, Next Middleware, Webhook Handlers
 ├── Database & ORM: SQLite / PostgreSQL via Prisma ORM 5.22
-├── AI Engine: Google Gemini AI SDK (@google/genai)
-└── Security: JWT Authentication, bcryptjs password hashing, HTTP-Only Cookies
+├── AI Engine: Google Gemini AI SDK (@google/genai 2.19)
+└── Auth & Security: JWT (jose), bcryptjs password hashing, HTTP-Only Cookies
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 * **Node.js**: v18.0.0 or higher
@@ -100,8 +103,8 @@ PaySynapse Platform
    npm install
    ```
 
-3. **Configure Environment Variables**:
-   Create a `.env` file in the project root:
+3. **Set up Environment Variables**:
+   Create a `.env` file in the root directory:
    ```env
    DATABASE_URL="file:./dev.db"
    JWT_SECRET="your_jwt_secret_key_here"
@@ -115,7 +118,7 @@ PaySynapse Platform
    # Push Prisma schema to SQLite database
    npx prisma db push
 
-   # Generate realistic demo records (Orders, Payments, Settlements, Exceptions)
+   # Generate realistic demo dataset (Orders, Payments, Settlements, Exceptions)
    npm run generate-demo-data
    ```
 
@@ -123,13 +126,13 @@ PaySynapse Platform
    ```bash
    npm run dev
    ```
-   Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🔐 Demo Credentials
+## Demo Account Credentials
 
-Use the following credentials for instant access:
+Default login credentials pre-configured for instant access:
 
 | Email | Password | Role |
 | :--- | :--- | :--- |
@@ -137,63 +140,61 @@ Use the following credentials for instant access:
 
 ---
 
-## 🧪 Testing & Verification
+## Testing & Webhook Simulation
 
-### 1. Test Gateway Webhooks with Razorpay Test Mode
-Expose your local server and configure your Razorpay webhook endpoint:
-```bash
-npx ngrok http 3000
-```
-Set webhook URL in Razorpay Dashboard to: `https://<your-ngrok-url>/api/webhooks/razorpay`
+Simulate live Razorpay gateway webhooks to watch real-time exception detection in action:
 
-### 2. Run Deterministic Reconciliation Engine
 ```bash
-npm run test-reconciliation
-```
-
-### 3. Generate Simulated Webhooks
-```bash
+# Send a simulated Razorpay payment webhook
 node scripts/simulate-webhook.js
+
+# Execute full reconciliation engine test
+npm run test-reconciliation
 ```
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 PaySynapse/
 ├── app/
 │   ├── (dashboard)/             # Authenticated Dashboard Routes
-│   │   ├── analytics/           # Operations, Settlement Velocity & RBI Certificate
-│   │   ├── copilot/             # AI Copilot Natural Language Investigation
-│   │   ├── dashboard/           # Reconciliation Overview & Financial Health KPIs
-│   │   ├── digital-twin/        # 5-Stage Transaction Topology Visualizer
-│   │   ├── exceptions/          # Exception Triage & Dispute Packet Generator
-│   │   ├── integrations/        # API Credentials & Sandbox Ledger Reset
-│   │   ├── simulator/           # Traffic & Stress Test Studio (10-500 TPS)
+│   │   ├── analytics/           # Operations & Settlement Analytics (+ RBI Certificate)
+│   │   ├── copilot/             # AI Copilot Natural Language Interface
+│   │   ├── dashboard/           # Reconciliation Overview & KPIs
+│   │   ├── digital-twin/        # 5-Stage Step-Through Lifecycle Visualizer
+│   │   ├── exceptions/          # Exception Center & Dispute Packet Generator
+│   │   ├── integrations/        # API Keys & Ledger Sandbox Data Reset
+│   │   ├── simulator/           # Traffic & Stress Test Load Generator Studio
 │   │   └── transactions/        # Transaction Ledger & Lineage Details
 │   ├── api/                     # REST API Endpoints & Webhooks
 │   │   ├── ai/                  # Gemini AI Investigation Routes
-│   │   ├── analytics/           # Reconciliation Metrics Aggregation
-│   │   ├── auth/                # Authentication & Session Handlers
-│   │   ├── exceptions/          # Exception Queries & Resolution
-│   │   ├── settings/reset/      # Ledger Purge & Custom Dataset Seeding
+│   │   ├── analytics/           # Analytics Data Aggregation
+│   │   ├── auth/                # Login, Logout & Session Management
+│   │   ├── exceptions/          # Exception Filtering, Recent Polling & Resolution
+│   │   ├── settings/            # API Keys & Reset/Re-Seed Data Endpoints
+│   │   ├── simulate/            # Anomaly Injection Sandbox
+│   │   ├── transactions/        # Ledger Queries & Details
 │   │   └── webhooks/razorpay/   # Live Gateway Webhook Handler
 │   ├── globals.css              # Razorpay Fintech Design Tokens & Styles
-│   ├── layout.js                # Inter Font & Theme Provider
-│   └── page.js                  # Authentication & Login Page
-├── components/                  # UI Components (Header, Resizable Sidebar, Dispute Modal, Certificate Modal)
-├── lib/                         # Business Logic (Reconciliation Engine, Gemini AI Client)
+│   ├── icon.svg                 # SVG App Icon & Favicon
+│   ├── layout.js                # Root Layout with Inter Font & Theme Provider
+│   └── page.js                  # Landing & Auth Page
+├── components/                  # UI Components (Header, Sidebar, DisputePacketModal, ComplianceCertificateModal)
+├── lib/                         # Core Logic (Reconciliation Engine, Gemini AI Client)
 ├── prisma/                      # Database Schema & Migrations
-└── scripts/                     # Seed Utilities & Verification Scripts
+└── scripts/                     # Webhook Simulation & Test Utilities
 ```
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+---
+
 <div align="center">
-  <sub>Built with PaySynapse Financial Intelligence Engine</sub>
+  <sub>PaySynapse Platform — Autonomous Financial Operations</sub>
 </div>
