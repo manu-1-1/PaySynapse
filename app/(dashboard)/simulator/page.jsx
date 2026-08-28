@@ -69,7 +69,7 @@ export default function SimulatorPage() {
     { time: '60s', tps: 60, latency: 1.9 },
   ]);
 
-  const terminalEndRef = useRef(null);
+  const terminalContainerRef = useRef(null);
 
   // Apply preset configurations
   const applyPreset = (key) => {
@@ -148,9 +148,11 @@ export default function SimulatorPage() {
     return () => clearInterval(interval);
   }, [isRunning, tpsTarget, injectMissingSettlement, injectFeeMismatch, injectWebhookDelay, injectDuplicate]);
 
-  // Auto-scroll terminal
+  // Auto-scroll inside the terminal box container only (not the whole page)
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
+    }
   }, [logs]);
 
   const injectBurst = () => {
@@ -450,7 +452,7 @@ export default function SimulatorPage() {
           </span>
         </div>
 
-        <div className="p-4 h-[240px] overflow-y-auto space-y-1.5 select-text">
+        <div ref={terminalContainerRef} className="p-4 h-[240px] overflow-y-auto space-y-1.5 select-text">
           {logs.map((log) => (
             <div key={log.id} className="flex items-start gap-2.5 leading-relaxed">
               <span className="text-slate-500 shrink-0 text-[11px]">{log.time}</span>
@@ -470,7 +472,6 @@ export default function SimulatorPage() {
               </span>
             </div>
           ))}
-          <div ref={terminalEndRef} />
         </div>
       </div>
 
