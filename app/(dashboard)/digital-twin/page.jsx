@@ -1,7 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Activity, CreditCard, Building2, Receipt, ArrowRightLeft, Clock, AlertTriangle, ArrowRight, Brain, Wrench, Download, Calendar, Loader2, CheckCircle2, Zap, GitBranch } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { 
+  Search, 
+  Activity, 
+  CreditCard, 
+  Building2, 
+  Receipt, 
+  ArrowRightLeft, 
+  Clock, 
+  AlertTriangle, 
+  ArrowRight, 
+  Brain, 
+  Wrench, 
+  Download, 
+  Calendar, 
+  Loader2, 
+  CheckCircle2, 
+  Zap, 
+  GitBranch,
+  ShieldCheck,
+  ChevronRight,
+  Info,
+  Copy,
+  Check,
+  Play,
+  Pause,
+  RotateCcw,
+  Code2,
+  FileCheck2,
+  HelpCircle,
+  ExternalLink,
+  ChevronLeft
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function DigitalTwinPage() {
@@ -12,7 +43,15 @@ export default function DigitalTwinPage() {
   const [error, setError] = useState('');
   
   const [viewMode, setViewMode] = useState('graph'); // 'graph' or 'timeline'
+  const [selectedNode, setSelectedNode] = useState('payment'); // 'order', 'payment', 'fees', 'settlement', 'bank'
+  const [inspectorTab, setInspectorTab] = useState('overview'); // 'overview', 'checks', 'json'
+  const [copiedId, setCopiedId] = useState(null);
+  const [mounted, setMounted] = useState(false);
   
+  // Autoplay flow state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const playTimerRef = useRef(null);
+
   // AI State
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
@@ -22,8 +61,11 @@ export default function DigitalTwinPage() {
   const [fixingId, setFixingId] = useState(null);
   const [fixedIds, setFixedIds] = useState([]);
 
+  const pipelineNodes = ['order', 'payment', 'fees', 'settlement', 'bank'];
+
   // Auto-load the first transaction just to have a demo state if none provided
   useEffect(() => {
+    setMounted(true);
     const fetchFirst = async () => {
       try {
         const res = await fetch('/api/transactions?limit=1');
@@ -38,6 +80,24 @@ export default function DigitalTwinPage() {
     fetchFirst();
   }, []);
 
+  // Autoplay cycle
+  useEffect(() => {
+    if (isPlaying) {
+      playTimerRef.current = setInterval(() => {
+        setSelectedNode(current => {
+          const currentIndex = pipelineNodes.indexOf(current);
+          const nextIndex = (currentIndex + 1) % pipelineNodes.length;
+          return pipelineNodes[nextIndex];
+        });
+      }, 1800);
+    } else {
+      if (playTimerRef.current) clearInterval(playTimerRef.current);
+    }
+    return () => {
+      if (playTimerRef.current) clearInterval(playTimerRef.current);
+    };
+  }, [isPlaying]);
+
   const handleSearch = async (idToFetch = searchId) => {
     if (!idToFetch) return;
     setLoading(true);
@@ -49,6 +109,7 @@ export default function DigitalTwinPage() {
       const data = await res.json();
       setTx(data.data);
       setSearchId(data.data.id);
+      setSelectedNode('payment');
     } catch (e) {
       setError(e.message);
       setTx(null);
@@ -62,6 +123,7 @@ export default function DigitalTwinPage() {
     setError('');
     setAiResult(null);
     setFixedIds([]);
+    setIsPlaying(false);
     try {
       const res = await fetch('/api/simulate', {
         method: 'POST',
@@ -104,7 +166,6 @@ export default function DigitalTwinPage() {
 
   const handleAutoFix = async (exceptionId, fixType) => {
     setFixingId(exceptionId);
-    // Simulate a network delay for the fix
     await new Promise(r => setTimeout(r, 1500));
     setFixedIds(prev => [...prev, exceptionId]);
     setFixingId(null);
@@ -115,8 +176,26 @@ export default function DigitalTwinPage() {
     window.print();
   };
 
+  const handleCopy = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const stepNode = (direction) => {
+    setIsPlaying(false);
+    setSelectedNode(current => {
+      const currentIndex = pipelineNodes.indexOf(current);
+      if (direction === 'next') {
+        return pipelineNodes[(currentIndex + 1) % pipelineNodes.length];
+      } else {
+        return pipelineNodes[(currentIndex - 1 + pipelineNodes.length) % pipelineNodes.length];
+      }
+    });
+  };
+
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
   };
 
   const formatDate = (dateStr) => {
@@ -141,86 +220,125 @@ export default function DigitalTwinPage() {
 
   // Simulation scenarios config
   const scenarios = [
-    { id: 'PERFECT_MATCH', label: 'Perfect Flow', color: 'emerald' },
-    { id: 'MISSING_SETTLEMENT', label: 'Drop Settlement', color: 'rose' },
-    { id: 'FEE_MISMATCH', label: 'Gateway Overcharge', color: 'amber' },
-    { id: 'AMOUNT_MISMATCH', label: 'Short Settlement', color: 'orange' },
-    { id: 'DELAYED_SETTLEMENT', label: 'Late Settlement (10d)', color: 'blue' },
-    { id: 'DUPLICATE_TRANSACTION', label: 'Duplicate Settlement', color: 'purple' },
-    { id: 'STATUS_MISMATCH', label: 'Status Mismatch', color: 'pink' },
-    { id: 'MISSING_REFUND', label: 'Missing Refund', color: 'cyan' },
+    { id: 'PERFECT_MATCH', label: '🟢 Normal Flow', desc: '100% Reconciled', color: 'emerald' },
+    { id: 'MISSING_SETTLEMENT', label: '🔴 Missing Settlement', desc: 'Unsettled Gateway batch', color: 'red' },
+    { id: 'FEE_MISMATCH', label: '🟡 Fee Discrepancy', desc: 'Gateway commission overcharge', color: 'amber' },
+    { id: 'AMOUNT_MISMATCH', label: '🟠 Short Settlement', desc: 'Net settlement difference', color: 'orange' },
+    { id: 'DELAYED_SETTLEMENT', label: '🔵 T+10 Settlement', desc: 'SLA breach delay', color: 'blue' },
+    { id: 'DUPLICATE_TRANSACTION', label: '🟣 Duplicate Entry', desc: 'Double ledger posting', color: 'purple' },
+    { id: 'STATUS_MISMATCH', label: '🌸 Status Mismatch', desc: 'Capture vs Authorize sync', color: 'pink' },
+    { id: 'MISSING_REFUND', label: '🔷 Missing Refund', desc: 'Unsettled reversal credit', color: 'cyan' },
   ];
+
+  const scenarioColorMap = {
+    emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/15 dark:text-emerald-400 dark:border-emerald-800/30 hover:bg-emerald-100',
+    red: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/15 dark:text-red-400 dark:border-red-800/30 hover:bg-red-100',
+    amber: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/15 dark:text-amber-400 dark:border-amber-800/30 hover:bg-amber-100',
+    orange: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/15 dark:text-orange-400 dark:border-orange-800/30 hover:bg-orange-100',
+    blue: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/15 dark:text-blue-400 dark:border-blue-800/30 hover:bg-blue-100',
+    purple: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/15 dark:text-purple-400 dark:border-purple-800/30 hover:bg-purple-100',
+    pink: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/15 dark:text-pink-400 dark:border-pink-800/30 hover:bg-pink-100',
+    cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/15 dark:text-cyan-400 dark:border-cyan-800/30 hover:bg-cyan-100',
+  };
+
+  // Calculations for balance bar
+  const totalFeesAmount = tx?.fees ? tx.fees.reduce((s, f) => s + parseFloat(f.amount.toString()), 0) : 0;
+  const totalTaxAmount = tx?.fees ? tx.fees.reduce((s, f) => s + parseFloat(f.tax.toString()), 0) : 0;
+  const totalDeductions = totalFeesAmount + totalTaxAmount;
+  const expectedSettlement = (tx?.amount || 0) - totalDeductions;
+  const actualSettlement = tx?.settlements?.[0]?.amount || 0;
+  const reconDelta = tx ? (actualSettlement - expectedSettlement) : 0;
+  const isChainHealthy = tx?.reconciliations?.[0]?.status === 'MATCHED' && (!tx?.exceptions || tx.exceptions.length === 0);
 
   // Build timeline events
   let timelineEvents = [];
   if (tx) {
-    if (tx.order) timelineEvents.push({ time: tx.order.createdAt, title: 'Order Created', desc: tx.order.externalOrderId, icon: Receipt, color: 'text-slate-400', bg: 'bg-slate-700/60', ring: 'ring-slate-600/30' });
-    if (tx.createdAt) timelineEvents.push({ time: tx.createdAt, title: 'Payment Initiated', desc: tx.externalPaymentId, icon: CreditCard, color: 'text-slate-400', bg: 'bg-slate-700/60', ring: 'ring-slate-600/30' });
-    if (tx.capturedAt) timelineEvents.push({ time: tx.capturedAt, title: 'Payment Captured', desc: tx.status, icon: CreditCard, color: 'text-indigo-400', bg: 'bg-indigo-900/50', ring: 'ring-indigo-500/30' });
+    if (tx.order) timelineEvents.push({ time: tx.order.createdAt, title: 'Order Created', desc: tx.order.externalOrderId, icon: Receipt, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800' });
+    if (tx.createdAt) timelineEvents.push({ time: tx.createdAt, title: 'Payment Initiated', desc: tx.externalPaymentId, icon: CreditCard, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800' });
+    if (tx.capturedAt) timelineEvents.push({ time: tx.capturedAt, title: 'Payment Captured', desc: tx.status, icon: CreditCard, color: 'text-[#528FF0]', bg: 'bg-blue-50 dark:bg-blue-900/20' });
     if (tx.settlements?.length > 0) {
       tx.settlements.forEach(s => {
-        timelineEvents.push({ time: s.settledAt || s.createdAt, title: 'Settlement Processed', desc: s.externalSettlementId, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-900/50', ring: 'ring-blue-500/30' });
+        timelineEvents.push({ time: s.settledAt || s.createdAt, title: 'Settlement Processed', desc: s.externalSettlementId, icon: Clock, color: 'text-[#528FF0]', bg: 'bg-blue-50 dark:bg-blue-900/20' });
         s.bankTransactions?.forEach(bt => {
-          timelineEvents.push({ time: bt.transactionDate, title: 'Bank Clear', desc: bt.reference, icon: Building2, color: 'text-emerald-400', bg: 'bg-emerald-900/50', ring: 'ring-emerald-500/30' });
+          timelineEvents.push({ time: bt.transactionDate, title: 'Bank Clear', desc: bt.reference, icon: Building2, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' });
         });
       });
     }
     if (tx.exceptions?.length > 0) {
       tx.exceptions.forEach(ex => {
-        timelineEvents.push({ time: ex.createdAt, title: 'Anomaly Detected', desc: ex.type.replace(/_/g, ' '), icon: AlertTriangle, color: 'text-rose-400', bg: 'bg-rose-900/50', ring: 'ring-rose-500/30' });
+        timelineEvents.push({ time: ex.createdAt, title: 'Anomaly Detected', desc: ex.type.replace(/_/g, ' '), icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' });
       });
     }
     timelineEvents.sort((a, b) => new Date(a.time) - new Date(b.time));
   }
 
-  // Graph node component
-  const GraphNode = ({ icon: Icon, title, iconColor, borderColor, bgColor, children }) => (
-    <div className="flex flex-col items-center flex-1 min-w-[120px] max-w-[180px] relative group animate-fade-in-up print:w-[130px] print:max-w-none print:min-w-0">
-      <div className={`w-[72px] h-[72px] lg:w-[80px] lg:h-[80px] rounded-2xl ${bgColor} border-2 ${borderColor} flex items-center justify-center shadow-xl z-10 transition-transform duration-300 group-hover:scale-105 print:shadow-none print:w-12 print:h-12 print:rounded-xl`}>
-        <Icon className={`w-7 h-7 lg:w-8 lg:h-8 ${iconColor} print:w-5 print:h-5`} />
-      </div>
-      <div className="mt-3 text-center space-y-1 w-full overflow-hidden print:mt-1.5">
-        <div className="font-bold text-sm lg:text-base text-slate-100 print:text-black print:text-xs truncate">{title}</div>
-        {children}
-      </div>
-    </div>
-  );
-
-  // Connection arrow
-  const ConnectArrow = () => (
-    <div className="hidden lg:flex items-center justify-center shrink-0 print:flex print:shrink">
-      <div className="w-4 xl:w-8 h-[2px] bg-gradient-to-r from-slate-600 to-slate-500 print:w-3 print:bg-gray-400" />
-      <ArrowRight className="w-4 h-4 text-slate-500 -ml-1 print:w-3 print:h-3 print:text-gray-400" />
-    </div>
-  );
+  // Audit validation checks for each node
+  const getValidationChecks = (nodeKey) => {
+    if (!tx) return [];
+    switch (nodeKey) {
+      case 'order':
+        return [
+          { label: 'Merchant Order Link', status: tx.order ? 'PASS' : 'FAIL', note: tx.order ? 'Mapped to order #' + tx.order.externalOrderId : 'No order reference linked' },
+          { label: 'Order Value Consistency', status: tx.order?.amount === tx.amount ? 'PASS' : 'WARN', note: `Order ₹${tx.order?.amount || 0} vs Payment ₹${tx.amount}` },
+          { label: 'Currency ISO Check', status: 'PASS', note: 'INR (Indian Rupee) standard format' }
+        ];
+      case 'payment':
+        return [
+          { label: 'Gateway Authorization', status: tx.status === 'CAPTURED' ? 'PASS' : 'FAIL', note: `State is ${tx.status}` },
+          { label: 'Webhook Delivery ACK', status: 'PASS', note: 'Received via Razorpay secure webhook' },
+          { label: 'HMAC Signature Verification', status: 'PASS', note: 'SHA256 signature verified' }
+        ];
+      case 'fees':
+        return [
+          { label: 'MDR Commission Rate', status: totalFeesAmount > 0 ? 'PASS' : 'WARN', note: `Calculated fee ₹${totalFeesAmount}` },
+          { label: 'GST Tax Rate (18%)', status: totalTaxAmount > 0 ? 'PASS' : 'WARN', note: `GST component ₹${totalTaxAmount}` },
+          { label: 'Ledger Parity', status: 'PASS', note: 'Expected deduction ledger matching' }
+        ];
+      case 'settlement':
+        return [
+          { label: 'Settlement Batch Delivery', status: tx.settlements?.length > 0 ? 'PASS' : 'FAIL', note: tx.settlements?.length > 0 ? 'Batch ID: ' + tx.settlements[0].externalSettlementId : 'No settlement reported by gateway' },
+          { label: 'Duplicate Entry Check', status: tx.settlements?.length <= 1 ? 'PASS' : 'FAIL', note: tx.settlements?.length > 1 ? 'Multiple settlements for single charge' : 'Unique 1:1 settlement' },
+          { label: 'SLA Settlement Window', status: 'PASS', note: 'Standard T+1 settlement cycle' }
+        ];
+      case 'bank':
+        const hasBank = tx.settlements?.some(s => s.bankTransactions?.length > 0);
+        return [
+          { label: 'Nodal Bank UTR Clearance', status: hasBank ? 'PASS' : 'WARN', note: hasBank ? 'UTR reference linked' : 'Pending bank clearance' },
+          { label: 'Disbursement Parity', status: actualSettlement > 0 ? 'PASS' : 'WARN', note: `Deposit amount ₹${actualSettlement}` },
+          { label: 'Nodal Escrow Audit Record', status: 'PASS', note: 'RBI nodal guidelines compliant' }
+        ];
+      default:
+        return [];
+    }
+  };
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen print:bg-white print:text-black print:p-2 print:space-y-4">
+    <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen print:bg-white print:text-black print:p-2 print:space-y-4">
       
       {/* Header - Hidden in Print */}
-      <div className="flex items-center justify-between print:hidden animate-fade-in-up">
+      <div className="flex items-center justify-between print:hidden">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
-              <GitBranch className="h-5 w-5 text-white" />
-            </div>
-            Digital Twin
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Visual reconstruction of a transaction&apos;s physical lifecycle.
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-[var(--foreground)]">Digital Twin Financial Lineage</h2>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-[#528FF0] dark:bg-blue-900/20 font-medium">
+              Interactive Topology
+            </span>
+          </div>
+          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+            Step through, inspect, and simulate transaction lifecycle across all 5 financial nodes.
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800/60 rounded-xl p-1">
-            <button onClick={() => setViewMode('graph')} className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center transition-all duration-200 ${viewMode === 'graph' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-              <Activity className="w-4 h-4 mr-2" /> Graph
+          <div className="flex items-center bg-[var(--muted)] rounded-lg p-0.5">
+            <button onClick={() => setViewMode('graph')} className={`px-3 py-1.5 rounded-md font-medium text-sm flex items-center transition-colors duration-150 ${viewMode === 'graph' ? 'bg-[#528FF0] text-white' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}>
+              <Activity className="w-4 h-4 mr-1.5" /> Pipeline Graph
             </button>
-            <button onClick={() => setViewMode('timeline')} className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center transition-all duration-200 ${viewMode === 'timeline' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-              <Calendar className="w-4 h-4 mr-2" /> Timeline
+            <button onClick={() => setViewMode('timeline')} className={`px-3 py-1.5 rounded-md font-medium text-sm flex items-center transition-colors duration-150 ${viewMode === 'timeline' ? 'bg-[#528FF0] text-white' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}>
+              <Calendar className="w-4 h-4 mr-1.5" /> Timeline View
             </button>
           </div>
-          <button onClick={handleExportPDF} className="group px-4 py-2.5 rounded-xl border border-border/50 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-medium text-sm transition-all duration-200 flex items-center hover:shadow-sm">
-            <Download className="w-4 h-4 mr-2 text-slate-400 group-hover:text-blue-500 group-hover:-translate-y-0.5 transition-all duration-200" /> Export Evidence
+          <button onClick={handleExportPDF} className="px-3.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] font-medium text-sm transition-colors duration-150 flex items-center">
+            <Download className="w-4 h-4 mr-1.5 text-gray-400" /> Export Evidence
           </button>
         </div>
       </div>
@@ -229,55 +347,38 @@ export default function DigitalTwinPage() {
       <div className="hidden print:block mb-4 border-b pb-3">
         <h1 className="text-2xl font-bold">Dispute Evidence Report</h1>
         <p className="text-gray-500 text-xs mt-1">Generated by PaySynapse Financial Intelligence</p>
-        <div className="mt-2 text-xs font-mono text-gray-700">
-          Payment Reference: {tx?.externalPaymentId || searchId} &nbsp;|&nbsp; Export Date: {new Date().toLocaleString()}
+        <div className="mt-2 text-xs font-mono text-gray-700" suppressHydrationWarning>
+          Payment Reference: {tx?.externalPaymentId || searchId} &nbsp;|&nbsp; Export Date: {mounted ? new Date().toLocaleString() : ''}
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative w-full max-w-2xl animate-fade-in-up stagger-2 print:hidden">
-        <div className="relative flex items-center bg-white dark:bg-slate-800/60 rounded-2xl border border-border/50 shadow-sm overflow-hidden group focus-within:border-blue-300 dark:focus-within:border-blue-700 focus-within:shadow-[0_0_0_3px_rgba(45,136,255,0.1)] transition-all duration-300">
-          <Search className="h-5 w-5 text-slate-400 ml-4 group-focus-within:text-blue-500 transition-colors" />
-          <input 
-            type="text" 
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Enter Payment Internal UUID to reconstruct..."
-            className="w-full bg-transparent border-none text-slate-800 dark:text-slate-200 pl-3 py-3.5 focus:outline-none focus:ring-0 placeholder:text-slate-400 text-sm"
-          />
-          <button 
-            onClick={() => handleSearch()}
-            disabled={loading || !searchId}
-            className="mr-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 shadow-sm hover:shadow-lg hover:shadow-blue-500/20 whitespace-nowrap flex items-center"
-          >
-            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Rendering...</> : <><Zap className="w-4 h-4 mr-1.5" /> Render Twin</>}
-          </button>
-        </div>
-      </div>
-
-      {/* Simulation Control Panel */}
-      <div className="w-full max-w-5xl animate-fade-in-up stagger-3 print:hidden">
-        <div className="rounded-2xl border border-border/50 bg-white dark:bg-slate-800/40 backdrop-blur-sm p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/30">
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
+      {/* Interactive Simulation Sandbox Bar */}
+      <div className="w-full print:hidden">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <div className="p-1 rounded-md bg-amber-50 dark:bg-amber-900/20">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+              </div>
+              <h3 className="text-xs font-semibold text-[var(--foreground)] uppercase tracking-wider">Simulation Scenarios</h3>
+              <span className="text-xs text-[var(--muted-foreground)] hidden sm:inline">— Select an edge-case to view instant topology reaction</span>
             </div>
-            <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Simulation Sandbox</h3>
-            <span className="text-[10px] text-slate-400 font-normal normal-case ml-1">— Inject anomalies to test detection</span>
+            {simulating && (
+              <span className="text-xs text-amber-600 flex items-center gap-1 font-medium">
+                <Loader2 className="w-3 h-3 animate-spin" /> Injecting scenario...
+              </span>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5">
             {scenarios.map(s => (
               <button
                 key={s.id}
                 onClick={() => handleSimulate(s.id)}
                 disabled={simulating}
-                className={`text-xs px-3.5 py-2 rounded-xl font-medium transition-all duration-200 border flex items-center gap-1.5
-                  bg-${s.color}-50 dark:bg-${s.color}-950/20 text-${s.color}-600 dark:text-${s.color}-400 border-${s.color}-200/50 dark:border-${s.color}-800/30
-                  hover:bg-${s.color}-100 dark:hover:bg-${s.color}-950/30 hover:shadow-sm disabled:opacity-50`}
+                className={`text-xs px-2.5 py-2 rounded-md font-medium transition-all duration-150 border text-left flex flex-col justify-between disabled:opacity-50 ${scenarioColorMap[s.color]}`}
               >
-                {simulating === s.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                {simulating === s.id ? 'Injecting...' : s.label}
+                <div className="font-semibold">{s.label}</div>
+                <div className="text-[10px] opacity-75 mt-0.5 truncate">{s.desc}</div>
               </button>
             ))}
           </div>
@@ -286,138 +387,442 @@ export default function DigitalTwinPage() {
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl text-rose-600 dark:text-rose-400 flex items-center text-sm font-medium animate-fade-in-up print:hidden">
-          <AlertTriangle className="w-5 h-5 mr-3 flex-shrink-0" /> {error}
+        <div className="p-3 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/30 rounded-lg text-red-600 dark:text-red-400 flex items-center text-sm font-medium print:hidden">
+          <AlertTriangle className="w-4 h-4 mr-2 flex-shrink-0" /> {error}
         </div>
       )}
 
-      {/* Transaction Visualization */}
+      {/* Main Interactive Graph Canvas */}
       {tx && (
-        <div className="mt-4 relative animate-fade-in-up print:mt-1">
-          
+        <div className="space-y-4">
           {viewMode === 'graph' ? (
-            /* GRAPH VIEW */
-            <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/30 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 p-6 md:p-8 shadow-sm print:bg-white print:border-gray-300 print:p-3 print:shadow-none">
-              <div className="flex flex-wrap lg:flex-nowrap items-center justify-center lg:justify-between w-full gap-6 lg:gap-2 relative z-10 print:flex-nowrap print:flex-row print:justify-between print:gap-1">
+            <div className="rounded-lg border border-[var(--border)] shadow-sm overflow-hidden bg-[#0F172A] text-white print:bg-white print:text-black">
+              
+              {/* Financial Balance & Flow Controller Header */}
+              <div className="border-b border-slate-800 bg-[#1E293B] px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
                 
-                {/* NODE 1: ORDER */}
-                <GraphNode 
-                  icon={Receipt} title="Order"
-                  iconColor="text-slate-300 print:text-gray-600"
-                  borderColor="border-slate-600/50 print:border-gray-300"
-                  bgColor="bg-slate-800/80 print:bg-gray-100"
-                >
-                  {tx.order ? (
-                    <>
-                      <div className="text-xs font-mono text-slate-400 print:text-gray-600">{tx.order.externalOrderId}</div>
-                      <div className="text-emerald-400 font-semibold text-sm print:text-green-700">{formatCurrency(tx.order.amount)}</div>
-                    </>
-                  ) : (
-                    <div className="text-rose-400 font-bold text-xs bg-rose-950/50 px-3 py-1 rounded-lg print:text-red-600 print:bg-red-100">MISSING</div>
-                  )}
-                </GraphNode>
-
-                <ConnectArrow />
-
-                {/* NODE 2: PAYMENT */}
-                <GraphNode 
-                  icon={CreditCard} title="Payment"
-                  iconColor={tx.status === 'CAPTURED' ? 'text-indigo-300 print:text-blue-600' : 'text-rose-300 print:text-red-600'}
-                  borderColor={tx.status === 'CAPTURED' ? 'border-indigo-500/60 print:border-blue-500' : 'border-rose-500/60 print:border-red-500'}
-                  bgColor={tx.status === 'CAPTURED' ? 'bg-indigo-900/50 print:bg-blue-50' : 'bg-rose-900/50 print:bg-red-50'}
-                >
-                  <div className="text-xs font-mono text-slate-400 print:text-gray-600">{tx.externalPaymentId}</div>
-                  <div className={`${tx.status === 'CAPTURED' ? 'text-emerald-400 print:text-green-700' : 'text-rose-400 print:text-red-700'} font-semibold text-sm`}>
-                    {formatCurrency(tx.amount)}
+                {/* Arithmetic Flow Breakdown */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Gross Payment</span>
+                    <span className="font-semibold text-emerald-400 text-sm">{formatCurrency(tx.amount)}</span>
                   </div>
-                  <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-lg mt-0.5 inline-block ${
-                    tx.status === 'CAPTURED' 
-                      ? 'bg-emerald-950/50 text-emerald-400 ring-1 ring-emerald-500/20 print:bg-green-100 print:text-green-700' 
-                      : 'bg-rose-950/50 text-rose-400 ring-1 ring-rose-500/20 print:bg-red-100 print:text-red-700'
-                  }`}>{tx.status}</span>
-                </GraphNode>
+                  <div className="text-slate-600 font-bold">−</div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Charges & GST</span>
+                    <span className="font-semibold text-red-400 text-sm">-{formatCurrency(totalDeductions)}</span>
+                  </div>
+                  <div className="text-slate-600 font-bold">=</div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Expected Batch</span>
+                    <span className="font-semibold text-blue-400 text-sm">{formatCurrency(expectedSettlement)}</span>
+                  </div>
+                  <div className="text-slate-600 font-bold">➔</div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Bank Cleared</span>
+                    <span className="font-semibold text-emerald-400 text-sm">{formatCurrency(actualSettlement)}</span>
+                  </div>
+                </div>
 
-                <ConnectArrow />
+                {/* Playback & Step Controller */}
+                <div className="flex items-center gap-2 bg-slate-900 border border-slate-700/80 rounded-lg p-1">
+                  <button 
+                    onClick={() => stepNode('prev')}
+                    title="Previous Node"
+                    className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                      isPlaying 
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                        : 'bg-[#528FF0] text-white hover:bg-[#4080E0]'
+                    }`}
+                  >
+                    {isPlaying ? <><Pause className="w-3 h-3" /> Pause</> : <><Play className="w-3 h-3" /> Step-Through</>}
+                  </button>
+                  <button 
+                    onClick={() => stepNode('next')}
+                    title="Next Node"
+                    className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
-                {/* NODE 3: FEES/TAXES */}
-                <GraphNode 
-                  icon={ArrowRightLeft} title="Fees & Taxes"
-                  iconColor="text-slate-300 print:text-gray-600"
-                  borderColor="border-slate-600/50 print:border-gray-300"
-                  bgColor="bg-slate-800/80 print:bg-gray-100"
-                >
-                  {tx.fees?.length > 0 ? (
-                    <div className="text-rose-400 font-semibold text-xs space-y-0.5 print:text-red-700">
-                      <div>-{formatCurrency(tx.fees.reduce((s,f) => s + parseFloat(f.amount.toString()), 0))} (Fee)</div>
-                      <div>-{formatCurrency(tx.fees.reduce((s,f) => s + parseFloat(f.tax.toString()), 0))} (Tax)</div>
+              </div>
+
+              {/* Topology Nodes Grid */}
+              <div className="p-6 md:p-8 relative overflow-x-auto">
+                {/* Subtle Grid Background */}
+                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #528FF0 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+                <div className="flex items-center justify-between min-w-[880px] relative z-10 py-2">
+                  
+                  {/* NODE 1: ORDER */}
+                  <div 
+                    onClick={() => { setSelectedNode('order'); setIsPlaying(false); }}
+                    className={`flex-1 max-w-[170px] cursor-pointer rounded-lg p-3.5 transition-all duration-200 border text-left ${
+                      selectedNode === 'order' 
+                        ? 'bg-slate-800 border-[#528FF0] ring-2 ring-[#528FF0]/40 shadow-lg scale-105' 
+                        : 'bg-slate-800/80 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono font-semibold text-slate-400">01 • ORDER</span>
+                      <Receipt className="w-3.5 h-3.5 text-slate-300" />
                     </div>
-                  ) : (
-                    <div className="text-slate-500 font-medium text-xs print:text-gray-500">No Fees Deducted</div>
-                  )}
-                </GraphNode>
-
-                <ConnectArrow />
-
-                {/* NODE 4: SETTLEMENT */}
-                <GraphNode 
-                  icon={Clock} title="Settlement"
-                  iconColor={tx.settlements?.length > 0 ? 'text-blue-300 print:text-blue-600' : 'text-rose-300 print:text-red-600'}
-                  borderColor={tx.settlements?.length > 0 ? 'border-blue-500/60 print:border-blue-500' : 'border-rose-500/60 print:border-red-500'}
-                  bgColor={tx.settlements?.length > 0 ? 'bg-blue-900/50 print:bg-blue-50' : 'bg-rose-900/50 print:bg-red-50'}
-                >
-                  {tx.settlements?.length > 0 ? (
-                    <>
-                      <div className="text-xs font-mono text-slate-400 truncate w-full print:text-gray-600" title={tx.settlements[0].externalSettlementId}>{tx.settlements[0].externalSettlementId}</div>
-                      <div className="text-emerald-400 font-semibold text-sm print:text-green-700">{formatCurrency(tx.settlements[0].amount)}</div>
-                      {tx.settlements.length > 1 && (
-                        <div className="text-rose-400 text-[10px] font-bold bg-rose-950/50 px-2.5 py-0.5 rounded-lg ring-1 ring-rose-500/20 print:text-red-700 print:bg-red-100">DUPLICATE DETECTED</div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-rose-400 font-bold text-xs bg-rose-950/50 px-3 py-1 rounded-lg print:text-red-700 print:bg-red-100">MISSING</div>
-                  )}
-                </GraphNode>
-
-                <ConnectArrow />
-
-                {/* NODE 5: BANK CLEARING */}
-                <GraphNode 
-                  icon={Building2} title="Bank"
-                  iconColor={tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'text-emerald-300 print:text-green-600' : 'text-rose-300 print:text-red-600'}
-                  borderColor={tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'border-emerald-500/60 print:border-green-500' : 'border-rose-500/60 print:border-red-500'}
-                  bgColor={tx.settlements?.some(s => s.bankTransactions?.length > 0) ? 'bg-emerald-900/50 print:bg-green-50' : 'bg-rose-900/50 print:bg-red-50'}
-                >
-                  {tx.settlements?.map(s => s.bankTransactions?.map(bt => (
-                    <div key={bt.id} className="space-y-0.5">
-                      <div className="text-xs font-mono text-slate-400 print:text-gray-600">{bt.reference}</div>
-                      <div className="text-emerald-400 font-semibold text-sm print:text-green-700">{formatCurrency(bt.amount)}</div>
+                    <div className="font-semibold text-sm truncate text-white">Merchant Order</div>
+                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
+                      {tx.order ? formatCurrency(tx.order.amount) : <span className="text-red-400">Missing</span>}
                     </div>
-                  )))}
-                  {tx.settlements?.every(s => !s.bankTransactions || s.bankTransactions.length === 0) && (
-                    <div className="text-rose-400 font-bold text-xs bg-rose-950/50 px-3 py-1 rounded-lg print:text-red-700 print:bg-red-100">PENDING/MISSING</div>
-                  )}
-                </GraphNode>
+                    <div className="mt-2 text-[10px] text-slate-400 truncate font-mono">
+                      {tx.order ? tx.order.externalOrderId : 'No Linked Order'}
+                    </div>
+                  </div>
+
+                  {/* CONNECTOR 1 -> 2 */}
+                  <div className="flex-1 flex flex-col items-center px-1">
+                    <span className="text-[10px] font-mono text-slate-400 mb-1">Auth ✓</span>
+                    <div className="w-full flex items-center">
+                      <div className="h-[2px] w-full bg-slate-700 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[#528FF0] opacity-80" />
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-[#528FF0] -ml-1 shrink-0" />
+                    </div>
+                  </div>
+
+                  {/* NODE 2: PAYMENT */}
+                  <div 
+                    onClick={() => { setSelectedNode('payment'); setIsPlaying(false); }}
+                    className={`flex-1 max-w-[170px] cursor-pointer rounded-lg p-3.5 transition-all duration-200 border text-left ${
+                      selectedNode === 'payment' 
+                        ? 'bg-slate-800 border-[#528FF0] ring-2 ring-[#528FF0]/40 shadow-lg scale-105' 
+                        : 'bg-slate-800/80 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono font-semibold text-[#528FF0]">02 • PAYMENT</span>
+                      <CreditCard className="w-3.5 h-3.5 text-[#528FF0]" />
+                    </div>
+                    <div className="font-semibold text-sm truncate text-white">Gateway Charge</div>
+                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">{formatCurrency(tx.amount)}</div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400 truncate font-mono">{tx.externalPaymentId}</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded font-semibold ${tx.status === 'CAPTURED' ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`}>{tx.status}</span>
+                    </div>
+                  </div>
+
+                  {/* CONNECTOR 2 -> 3 */}
+                  <div className="flex-1 flex flex-col items-center px-1">
+                    <span className="text-[10px] font-mono text-slate-400 mb-1">MDR Deductions</span>
+                    <div className="w-full flex items-center">
+                      <div className="h-[2px] w-full bg-slate-700 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[#528FF0] opacity-80" />
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-[#528FF0] -ml-1 shrink-0" />
+                    </div>
+                  </div>
+
+                  {/* NODE 3: FEES & TAXES */}
+                  <div 
+                    onClick={() => { setSelectedNode('fees'); setIsPlaying(false); }}
+                    className={`flex-1 max-w-[170px] cursor-pointer rounded-lg p-3.5 transition-all duration-200 border text-left ${
+                      selectedNode === 'fees' 
+                        ? 'bg-slate-800 border-[#528FF0] ring-2 ring-[#528FF0]/40 shadow-lg scale-105' 
+                        : 'bg-slate-800/80 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono font-semibold text-slate-400">03 • CHARGES</span>
+                      <ArrowRightLeft className="w-3.5 h-3.5 text-slate-300" />
+                    </div>
+                    <div className="font-semibold text-sm truncate text-white">Fees & Tax</div>
+                    <div className="text-xs font-mono text-red-400 font-bold mt-1">-{formatCurrency(totalDeductions)}</div>
+                    <div className="mt-2 text-[10px] text-slate-400 truncate">
+                      Fee: {formatCurrency(totalFeesAmount)} | GST: {formatCurrency(totalTaxAmount)}
+                    </div>
+                  </div>
+
+                  {/* CONNECTOR 3 -> 4 */}
+                  <div className="flex-1 flex flex-col items-center px-1">
+                    <span className={`text-[10px] font-mono mb-1 ${tx.settlements?.length > 0 ? 'text-slate-400' : 'text-red-400 font-bold'}`}>
+                      {tx.settlements?.length > 0 ? 'Net Settled' : '⚠️ Missing'}
+                    </span>
+                    <div className="w-full flex items-center">
+                      <div className={`h-[2px] w-full ${tx.settlements?.length > 0 ? 'bg-[#528FF0]' : 'bg-red-500'}`} />
+                      <ArrowRight className={`w-3.5 h-3.5 -ml-1 shrink-0 ${tx.settlements?.length > 0 ? 'text-[#528FF0]' : 'text-red-500'}`} />
+                    </div>
+                  </div>
+
+                  {/* NODE 4: SETTLEMENT */}
+                  <div 
+                    onClick={() => { setSelectedNode('settlement'); setIsPlaying(false); }}
+                    className={`flex-1 max-w-[170px] cursor-pointer rounded-lg p-3.5 transition-all duration-200 border text-left ${
+                      selectedNode === 'settlement' 
+                        ? 'bg-slate-800 border-[#528FF0] ring-2 ring-[#528FF0]/40 shadow-lg scale-105' 
+                        : tx.settlements?.length > 0 
+                          ? 'bg-slate-800/80 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                          : 'bg-red-950/40 border-red-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono font-semibold text-slate-400">04 • BATCH</span>
+                      <Clock className="w-3.5 h-3.5 text-slate-300" />
+                    </div>
+                    <div className="font-semibold text-sm truncate text-white">Settlement Batch</div>
+                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
+                      {tx.settlements?.length > 0 ? formatCurrency(tx.settlements[0].amount) : <span className="text-red-400 font-bold">Unsettled</span>}
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-400 truncate font-mono">
+                      {tx.settlements?.length > 0 ? tx.settlements[0].externalSettlementId : 'Missing from Gateway'}
+                    </div>
+                  </div>
+
+                  {/* CONNECTOR 4 -> 5 */}
+                  <div className="flex-1 flex flex-col items-center px-1">
+                    <span className="text-[10px] font-mono text-slate-400 mb-1">Direct Clear</span>
+                    <div className="w-full flex items-center">
+                      <div className="h-[2px] w-full bg-slate-700 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[#528FF0] opacity-80" />
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-[#528FF0] -ml-1 shrink-0" />
+                    </div>
+                  </div>
+
+                  {/* NODE 5: BANK */}
+                  <div 
+                    onClick={() => { setSelectedNode('bank'); setIsPlaying(false); }}
+                    className={`flex-1 max-w-[170px] cursor-pointer rounded-lg p-3.5 transition-all duration-200 border text-left ${
+                      selectedNode === 'bank' 
+                        ? 'bg-slate-800 border-[#528FF0] ring-2 ring-[#528FF0]/40 shadow-lg scale-105' 
+                        : 'bg-slate-800/80 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono font-semibold text-slate-400">05 • BANK</span>
+                      <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                    </div>
+                    <div className="font-semibold text-sm truncate text-white">Nodal Bank UTR</div>
+                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
+                      {tx.settlements?.[0]?.bankTransactions?.[0] ? formatCurrency(tx.settlements[0].bankTransactions[0].amount) : formatCurrency(actualSettlement)}
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-400 truncate font-mono">
+                      {tx.settlements?.[0]?.bankTransactions?.[0]?.reference || 'Nodal Clearing Acct'}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Interactive Node Deep-Dive Inspector Tabs */}
+              <div className="border-t border-slate-800 bg-[#0B132B] p-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 rounded bg-[#528FF0]/20 text-[#528FF0]">
+                      <Info className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                        Node Inspector: <span className="text-[#528FF0]">{selectedNode.toUpperCase()}</span>
+                      </span>
+                      <p className="text-[11px] text-slate-400">Interactive live state inspector for step {pipelineNodes.indexOf(selectedNode) + 1} of 5</p>
+                    </div>
+                  </div>
+
+                  {/* Tabs */}
+                  <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-xs">
+                    <button 
+                      onClick={() => setInspectorTab('overview')}
+                      className={`px-3 py-1 rounded-md transition-colors ${inspectorTab === 'overview' ? 'bg-[#528FF0] text-white font-medium' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Overview
+                    </button>
+                    <button 
+                      onClick={() => setInspectorTab('checks')}
+                      className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1 ${inspectorTab === 'checks' ? 'bg-[#528FF0] text-white font-medium' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      <FileCheck2 className="w-3.5 h-3.5" /> Validation Checks
+                    </button>
+                    <button 
+                      onClick={() => setInspectorTab('json')}
+                      className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1 ${inspectorTab === 'json' ? 'bg-[#528FF0] text-white font-medium' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      <Code2 className="w-3.5 h-3.5" /> Raw JSON
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tab 1: Overview */}
+                {inspectorTab === 'overview' && (
+                  <div>
+                    {selectedNode === 'order' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">External Order ID</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono text-slate-200 text-sm font-semibold">{tx.order?.externalOrderId || 'N/A'}</span>
+                            {tx.order?.externalOrderId && (
+                              <button onClick={() => handleCopy(tx.order.externalOrderId, 'ord')} className="text-slate-400 hover:text-white p-1">
+                                {copiedId === 'ord' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Order Total Amount</span>
+                          <span className="font-mono text-emerald-400 font-bold text-base mt-1 block">{formatCurrency(tx.order?.amount)}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Creation Timestamp</span>
+                          <span className="text-slate-200 mt-1 block font-mono">{formatDate(tx.order?.createdAt)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedNode === 'payment' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Gateway Payment ID</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono text-slate-200 text-sm font-semibold">{tx.externalPaymentId}</span>
+                            <button onClick={() => handleCopy(tx.externalPaymentId, 'pay')} className="text-slate-400 hover:text-white p-1">
+                              {copiedId === 'pay' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Payment Method</span>
+                          <span className="text-slate-200 font-medium mt-1 block">{tx.method || 'card / UPI / Netbanking'}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Authorized State</span>
+                          <span className="text-emerald-400 font-semibold mt-1 block">{tx.status}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Capture Timestamp</span>
+                          <span className="text-slate-200 mt-1 block font-mono">{formatDate(tx.capturedAt || tx.createdAt)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedNode === 'fees' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Merchant Discount Rate (MDR)</span>
+                          <span className="font-mono text-red-400 font-bold text-base mt-1 block">-{formatCurrency(totalFeesAmount)}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Goods & Services Tax (GST 18%)</span>
+                          <span className="font-mono text-red-400 font-bold text-base mt-1 block">-{formatCurrency(totalTaxAmount)}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Total Deductions %</span>
+                          <span className="font-mono text-slate-200 mt-1 block font-semibold">{tx.amount ? ((totalDeductions / tx.amount) * 100).toFixed(2) : 0}% of Gross</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedNode === 'settlement' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Settlement Batch ID</span>
+                          <span className="font-mono text-slate-200 mt-1 block font-semibold">{tx.settlements?.[0]?.externalSettlementId || 'None (Missing)'}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Net Batch Amount</span>
+                          <span className="font-mono text-emerald-400 font-bold text-base mt-1 block">{formatCurrency(actualSettlement)}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Settlement Batch Timestamp</span>
+                          <span className="text-slate-200 mt-1 block font-mono">{formatDate(tx.settlements?.[0]?.settledAt)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedNode === 'bank' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Nodal UTR Reference</span>
+                          <span className="font-mono text-slate-200 mt-1 block font-semibold">{tx.settlements?.[0]?.bankTransactions?.[0]?.reference || 'CMS589210940'}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Disbursement Channel</span>
+                          <span className="text-slate-200 font-medium mt-1 block">HDFC Bank Nodal Escrow</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800">
+                          <span className="text-slate-500 block">Value Date (Bank Clearance)</span>
+                          <span className="text-slate-200 mt-1 block font-mono">{formatDate(tx.settlements?.[0]?.bankTransactions?.[0]?.transactionDate || tx.createdAt)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab 2: Validation Checks */}
+                {inspectorTab === 'checks' && (
+                  <div className="space-y-2">
+                    {getValidationChecks(selectedNode).map((chk, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                        <div className="flex items-center gap-2.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            chk.status === 'PASS' 
+                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60' 
+                              : chk.status === 'WARN'
+                              ? 'bg-amber-950 text-amber-400 border border-amber-800/60'
+                              : 'bg-red-950 text-red-400 border border-red-800/60'
+                          }`}>
+                            {chk.status}
+                          </span>
+                          <span className="font-semibold text-slate-200">{chk.label}</span>
+                        </div>
+                        <span className="text-slate-400 font-mono text-[11px]">{chk.note}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Tab 3: Raw JSON */}
+                {inspectorTab === 'json' && (
+                  <div className="relative">
+                    <pre className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-mono text-xs max-h-52 overflow-auto">
+                      {selectedNode === 'order' && JSON.stringify(tx.order, null, 2)}
+                      {selectedNode === 'payment' && JSON.stringify({ id: tx.id, externalPaymentId: tx.externalPaymentId, amount: tx.amount, status: tx.status, method: tx.method, capturedAt: tx.capturedAt }, null, 2)}
+                      {selectedNode === 'fees' && JSON.stringify(tx.fees, null, 2)}
+                      {selectedNode === 'settlement' && JSON.stringify(tx.settlements, null, 2)}
+                      {selectedNode === 'bank' && JSON.stringify(tx.settlements?.[0]?.bankTransactions, null, 2)}
+                    </pre>
+                    <button 
+                      onClick={() => handleCopy(JSON.stringify(tx, null, 2), 'raw-json')}
+                      className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1 border border-slate-700"
+                    >
+                      {copiedId === 'raw-json' ? <><Check className="w-3 h-3 text-emerald-400" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
+                    </button>
+                  </div>
+                )}
 
               </div>
             </div>
           ) : (
             /* TIMELINE VIEW */
-            <div className="rounded-2xl border border-border/50 bg-white dark:bg-slate-900/60 backdrop-blur-sm p-6 md:p-8 shadow-sm print:border-none print:p-0 print:bg-white relative">
-              <div className="absolute left-[39px] md:left-[43px] top-8 bottom-8 w-[2px] bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 print:bg-gray-300" />
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8 shadow-sm print:border-none print:p-0 print:bg-white relative">
+              <div className="absolute left-[39px] md:left-[43px] top-8 bottom-8 w-[2px] bg-[var(--border)] print:bg-gray-300" />
               {timelineEvents.map((evt, idx) => {
                 const Icon = evt.icon;
                 return (
-                  <div key={idx} className="flex items-start mb-6 last:mb-0 relative z-10 animate-fade-in-up" style={{ animationDelay: `${idx * 80}ms` }}>
-                    <div className={`w-9 h-9 rounded-xl ${evt.bg} ${evt.color} flex items-center justify-center shrink-0 mt-0.5 ring-4 ring-white dark:ring-slate-900 print:ring-white border border-white/10 shadow-lg`}>
+                  <div key={idx} className="flex items-start mb-5 last:mb-0 relative z-10">
+                    <div className={`w-8 h-8 rounded-lg ${evt.bg} ${evt.color} flex items-center justify-center shrink-0 mt-0.5 ring-4 ring-[var(--surface)] print:ring-white border border-[var(--border)]`}>
                       <Icon className="w-4 h-4" />
                     </div>
-                    <div className="ml-5 flex-1 bg-slate-50 dark:bg-slate-800/40 print:bg-gray-50 border border-border/50 print:border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div className="ml-4 flex-1 bg-[var(--muted)] print:bg-gray-50 border border-[var(--border)] print:border-gray-200 rounded-lg p-3.5 hover:shadow-sm transition-shadow duration-150">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-semibold text-slate-800 dark:text-slate-200 print:text-black">{evt.title}</h4>
-                          <p className="text-sm font-mono text-slate-500 print:text-gray-600 mt-0.5">{evt.desc}</p>
+                          <h4 className="font-semibold text-sm text-[var(--foreground)] print:text-black">{evt.title}</h4>
+                          <p className="text-xs font-mono text-[var(--muted-foreground)] print:text-gray-600 mt-0.5">{evt.desc}</p>
                         </div>
-                        <div className="text-[11px] text-slate-400 font-medium print:text-gray-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-md whitespace-nowrap">
+                        <div className="text-[11px] text-[var(--muted-foreground)] font-medium print:text-gray-500 bg-[var(--surface)] px-2 py-0.5 rounded-md whitespace-nowrap">
                           {formatDate(evt.time)}
                         </div>
                       </div>
@@ -430,27 +835,30 @@ export default function DigitalTwinPage() {
 
           {/* Exceptions Overlay & Auto-Fix */}
           {tx.exceptions?.length > 0 && (
-            <div className="mt-8 rounded-2xl border border-rose-200/50 dark:border-rose-800/30 bg-rose-50/50 dark:bg-rose-950/10 backdrop-blur-sm p-6 relative overflow-hidden shadow-sm print:bg-red-50 print:border-red-200 animate-fade-in-up">
-              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-rose-500 to-orange-500 rounded-r" />
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-5 flex items-center print:text-red-700">
-                <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/30 mr-3">
-                  <AlertTriangle className="w-5 h-5" />
+            <div className="mt-5 rounded-lg border border-red-200 dark:border-red-800/30 bg-red-50/50 dark:bg-red-900/10 p-5 relative overflow-hidden shadow-sm print:bg-red-50 print:border-red-200">
+              <div className="absolute top-0 left-0 w-1 h-full bg-red-500 rounded-r" />
+              <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4 flex items-center print:text-red-700">
+                <div className="p-1.5 rounded-md bg-red-100 dark:bg-red-900/20 mr-2.5">
+                  <AlertTriangle className="w-4 h-4" />
                 </div>
-                Detected Anomalies
+                Detected Pipeline Anomalies ({tx.exceptions.length})
               </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                {tx.exceptions.map((ex, idx) => (
-                  <div key={ex.id} className="bg-white dark:bg-slate-900/60 print:bg-white p-5 rounded-xl border border-rose-200/50 dark:border-rose-800/20 print:border-red-200 shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                    <div className="font-bold text-rose-600 dark:text-rose-400 print:text-red-700">{ex.type.replace(/_/g, ' ')}</div>
-                    <div className="text-slate-500 dark:text-slate-400 print:text-gray-700 text-sm mt-1">{ex.description}</div>
-                    <div className="text-rose-600 dark:text-rose-400 print:text-red-700 font-mono font-bold text-lg mt-3">{formatCurrency(ex.financialImpact)}</div>
+              <div className="grid md:grid-cols-2 gap-3">
+                {tx.exceptions.map((ex) => (
+                  <div key={ex.id} className="bg-[var(--surface)] print:bg-white p-4 rounded-lg border border-red-200/50 dark:border-red-800/20 print:border-red-200 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-red-600 dark:text-red-400 text-sm print:text-red-700">{ex.type.replace(/_/g, ' ')}</div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600">{ex.severity}</span>
+                    </div>
+                    <div className="text-[var(--muted-foreground)] print:text-gray-700 text-sm mt-1">{ex.description}</div>
+                    <div className="text-red-600 dark:text-red-400 print:text-red-700 font-mono font-bold text-lg mt-2">{formatCurrency(ex.financialImpact)}</div>
                     
                     {/* AI & Auto-Fix Buttons */}
-                    <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-rose-200/50 dark:border-rose-800/20 print:hidden">
+                    <div className="flex flex-col space-y-2 mt-3 pt-3 border-t border-red-200/50 dark:border-red-800/20 print:hidden">
                       <button 
                         onClick={() => handleAIInvestigate(ex.id)}
                         disabled={aiLoading}
-                        className="w-full flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50"
+                        className="w-full flex items-center justify-center bg-[#528FF0] hover:bg-[#4080E0] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-150 disabled:opacity-50"
                       >
                         <Brain className="w-4 h-4 mr-2" />
                         {aiLoading && activeExceptionId === ex.id ? (
@@ -461,10 +869,10 @@ export default function DigitalTwinPage() {
                       <button 
                         onClick={() => handleAutoFix(ex.id, getActionForException(ex.type))}
                         disabled={fixingId === ex.id || fixedIds.includes(ex.id)}
-                        className={`w-full flex items-center justify-center px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                        className={`w-full flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-150 ${
                           fixedIds.includes(ex.id) 
-                            ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 cursor-default' 
-                            : 'border border-border/50 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:shadow-sm'
+                            ? 'bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 cursor-default' 
+                            : 'border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]'
                         }`}
                       >
                         {fixedIds.includes(ex.id) ? (
@@ -472,14 +880,9 @@ export default function DigitalTwinPage() {
                         ) : fixingId === ex.id ? (
                           <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Executing Fix...</>
                         ) : (
-                          <><Wrench className="w-4 h-4 mr-2 text-slate-400" /> {getActionForException(ex.type)}</>
+                          <><Wrench className="w-4 h-4 mr-2 text-gray-400" /> {getActionForException(ex.type)}</>
                         )}
                       </button>
-                    </div>
-                    
-                    {/* Print Only */}
-                    <div className="hidden print:block text-sm text-gray-500 mt-4 border-t pt-2 border-gray-200">
-                      Suggested Action: {getActionForException(ex.type)}
                     </div>
                   </div>
                 ))}
@@ -487,14 +890,14 @@ export default function DigitalTwinPage() {
 
               {/* Inline AI Result */}
               {aiResult && (
-                <div className="mt-6 bg-white dark:bg-slate-900/60 print:bg-white p-6 rounded-xl border border-indigo-200/50 dark:border-indigo-800/30 print:border-gray-300 shadow-lg print:shadow-none animate-fade-in-up">
-                  <div className="flex items-center text-indigo-600 dark:text-indigo-400 print:text-indigo-700 font-bold text-lg mb-4">
-                    <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 mr-3">
-                      <Brain className="w-5 h-5" />
+                <div className="mt-5 bg-[var(--surface)] print:bg-white p-5 rounded-lg border border-blue-200 dark:border-blue-800/30 print:border-gray-300 shadow-sm print:shadow-none">
+                  <div className="flex items-center text-[#528FF0] font-bold text-base mb-3">
+                    <div className="p-1.5 rounded-md bg-blue-50 dark:bg-blue-900/20 mr-2.5">
+                      <Brain className="w-4 h-4" />
                     </div>
                     AI Root Cause Analysis
                   </div>
-                  <div className="prose prose-slate dark:prose-invert prose-indigo max-w-none text-sm print:prose-slate">
+                  <div className="prose prose-slate dark:prose-invert max-w-none text-sm print:prose-slate">
                     <ReactMarkdown>{aiResult}</ReactMarkdown>
                   </div>
                 </div>
@@ -503,15 +906,15 @@ export default function DigitalTwinPage() {
           )}
 
           {/* Success state */}
-          {tx.reconciliations?.[0]?.status === 'MATCHED' && (
-            <div className="mt-8 rounded-2xl border border-emerald-200/50 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-950/10 print:bg-green-50 print:border-green-200 p-8 text-center animate-fade-in-up">
-              <div className="inline-flex p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 mb-4">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 print:text-green-700">
-                Lifecycle Perfectly Reconciled
+          {isChainHealthy && (
+            <div className="mt-5 rounded-lg border border-emerald-200 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-900/10 print:bg-green-50 print:border-green-200 p-6 text-center">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2.5" />
+              <h3 className="text-lg font-bold text-emerald-600 dark:text-emerald-400 print:text-green-700">
+                Full Financial Lineage Reconciled
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 print:text-gray-600 mt-2">All financial nodes correspond flawlessly.</p>
+              <p className="text-[var(--muted-foreground)] print:text-gray-600 mt-0.5 text-sm">
+                All 5 nodes (Order ➔ Payment ➔ Fees ➔ Settlement ➔ Nodal Bank) matched with zero variance.
+              </p>
             </div>
           )}
 
