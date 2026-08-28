@@ -30,12 +30,17 @@ export function Header() {
     // Polling logic
     const fetchNotifications = async () => {
       try {
-        const lastChecked = localStorage.getItem('lastCheckedNotifs') || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const res = await fetch(`/api/exceptions/recent?since=${lastChecked}`);
+        const lastChecked = localStorage.getItem('lastCheckedNotifs');
+        const url = lastChecked ? `/api/exceptions/recent?since=${lastChecked}` : `/api/exceptions/recent`;
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           setNotifications(data.data || []);
-          setUnreadCount(data.data?.length || 0);
+          if (!lastChecked) {
+            setUnreadCount(data.data?.length || 0);
+          } else {
+            setUnreadCount(typeof data.unreadCount === 'number' ? data.unreadCount : (data.data?.length || 0));
+          }
         }
       } catch (err) {}
     };
@@ -202,7 +207,9 @@ export function Header() {
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-[var(--foreground)]">{notif.type.replace(/_/g, ' ')}</div>
                           <div className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-2">{notif.description}</div>
-                          <div className="text-xs font-semibold mt-1 text-[#528FF0]">{notif.financialImpact} INR Impact</div>
+                          <div className="text-xs font-semibold mt-1 text-[#528FF0]">
+                            ₹{Number(notif.financialImpact || 0).toLocaleString('en-IN')} Variance
+                          </div>
                         </div>
                       </div>
                     </Link>

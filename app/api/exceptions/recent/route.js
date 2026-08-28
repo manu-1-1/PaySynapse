@@ -15,7 +15,7 @@ export async function GET(request) {
     }
 
     const exceptions = await prisma.exception.findMany({
-      where: whereClause,
+      where: { status: 'OPEN' },
       orderBy: { createdAt: 'desc' },
       take: 10,
       include: {
@@ -25,7 +25,18 @@ export async function GET(request) {
       }
     });
 
-    return NextResponse.json({ data: exceptions });
+    let unreadCount = exceptions.length;
+    if (since) {
+      const sinceDate = new Date(since);
+      if (!isNaN(sinceDate.getTime())) {
+        unreadCount = exceptions.filter(e => new Date(e.createdAt) > sinceDate).length;
+      }
+    }
+
+    return NextResponse.json({ 
+      data: exceptions,
+      unreadCount 
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
