@@ -20,7 +20,7 @@ export function ComplianceCertificateModal({ isOpen, onClose, analyticsData }) {
   const certificateNo = `RBI-PA-${Date.now().toString().slice(-6)}-${new Date().getFullYear()}`;
   const merkleRoot = `0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069`;
   const matchRate = analyticsData?.matchRate || 100;
-  const totalVolume = analyticsData?.totalTransactions || 151;
+  const totalVolume = analyticsData?.totalTransactions || 0;
   const financialImpact = analyticsData?.financialImpact || 0;
 
   const handlePrint = () => {
