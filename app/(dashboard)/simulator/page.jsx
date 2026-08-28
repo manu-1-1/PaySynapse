@@ -199,13 +199,18 @@ export default function SimulatorPage() {
   return (
     <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Sticky Header with Action Controls */}
+      <div className="sticky top-14 z-20 bg-[var(--background)]/95 backdrop-blur-md pb-3 pt-1 border-b border-[var(--border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-[var(--foreground)]">Traffic & Stress Test Studio</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/20 font-medium flex items-center gap-1">
-              <Flame className="w-3 h-3 text-amber-500" /> High-Throughput Engine
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1 ${
+              isRunning 
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20' 
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+              {isRunning ? `${stats.currentTps} TPS Active` : 'Engine Idle'}
             </span>
           </div>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
@@ -213,12 +218,12 @@ export default function SimulatorPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setIsRunning(!isRunning)}
             className={`px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all shadow-sm ${
               isRunning 
-                ? 'bg-amber-500 hover:bg-amber-600 text-white' 
+                ? 'bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/30' 
                 : 'bg-[#528FF0] hover:bg-[#4080E0] text-white'
             }`}
           >
@@ -450,9 +455,17 @@ export default function SimulatorPage() {
             <Terminal className="w-4 h-4 text-[#528FF0]" />
             <span className="font-semibold text-xs text-slate-200">Real-Time Webhook Reconciliation Log Stream</span>
           </div>
-          <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
-            {logs.length} events logged
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsRunning(!isRunning)}
+              className="text-[10px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1 font-semibold transition-colors"
+            >
+              {isRunning ? <><Pause className="w-3 h-3 text-amber-400" /> Pause Stream</> : <><Play className="w-3 h-3 text-emerald-400" /> Resume Stream</>}
+            </button>
+            <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">
+              {logs.length} events
+            </span>
+          </div>
         </div>
 
         <div ref={terminalContainerRef} className="p-4 h-[240px] overflow-y-auto space-y-1.5 select-text">
