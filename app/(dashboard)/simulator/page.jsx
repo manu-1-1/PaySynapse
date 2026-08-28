@@ -199,14 +199,14 @@ export default function SimulatorPage() {
   return (
     <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
       
-      {/* Sticky Header with Action Controls */}
-      <div className="sticky top-14 z-20 bg-[var(--background)]/95 backdrop-blur-md pb-3 pt-1 border-b border-[var(--border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-[var(--foreground)]">Traffic & Stress Test Studio</h2>
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1 ${
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1.5 ${
               isRunning 
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20' 
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' 
                 : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
             }`}>
               <span className={`h-1.5 w-1.5 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
@@ -221,9 +221,9 @@ export default function SimulatorPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setIsRunning(!isRunning)}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all shadow-sm ${
+            className={`px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors shadow-sm ${
               isRunning 
-                ? 'bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-500/30' 
+                ? 'bg-amber-500 hover:bg-amber-600 text-white' 
                 : 'bg-[#528FF0] hover:bg-[#4080E0] text-white'
             }`}
           >
@@ -238,7 +238,7 @@ export default function SimulatorPage() {
           <button
             onClick={resetStats}
             title="Reset Simulation Counters"
-            className="p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-gray-400 hover:text-gray-600"
+            className="p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-gray-400 hover:text-gray-600 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -249,15 +249,15 @@ export default function SimulatorPage() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <span className="text-xs text-[var(--muted-foreground)] block">Live Throughput</span>
-          <div className="text-2xl font-bold text-[#528FF0] mt-1 flex items-baseline gap-1">
-            {stats.currentTps} <span className="text-xs font-normal text-[var(--muted-foreground)]">tx/sec</span>
+          <div className="text-2xl font-bold text-[#528FF0] mt-1 flex items-baseline gap-1 font-mono tabular-nums">
+            {stats.currentTps} <span className="text-xs font-normal font-sans text-[var(--muted-foreground)]">tx/sec</span>
           </div>
           <span className="text-[11px] text-emerald-600 font-medium mt-1 block">Engine: Active</span>
         </div>
 
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <span className="text-xs text-[var(--muted-foreground)] block">Processed Volume</span>
-          <div className="text-2xl font-bold text-[var(--foreground)] mt-1">
+          <div className="text-2xl font-bold text-[var(--foreground)] mt-1 font-mono tabular-nums">
             {stats.processed.toLocaleString()}
           </div>
           <span className="text-[11px] text-[var(--muted-foreground)] mt-1 block">{formatCurrency(stats.valueProcessed)} GMV</span>
@@ -265,7 +265,7 @@ export default function SimulatorPage() {
 
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <span className="text-xs text-[var(--muted-foreground)] block">Reconciled Match Rate</span>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">
+          <div className="text-2xl font-bold text-emerald-600 mt-1 font-mono tabular-nums">
             {stats.processed ? ((stats.matched / stats.processed) * 100).toFixed(1) : 100}%
           </div>
           <span className="text-[11px] text-emerald-600 font-medium mt-1 block">{stats.matched} matched</span>
@@ -273,7 +273,7 @@ export default function SimulatorPage() {
 
         <div className="rounded-lg border border-red-200 dark:border-red-900/40 bg-[var(--surface)] p-4 shadow-sm">
           <span className="text-xs text-red-600 dark:text-red-400 block font-medium">Anomalies Contained</span>
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1 font-mono tabular-nums">
             {stats.exceptions}
           </div>
           <span className="text-[11px] text-red-500 font-medium mt-1 block">{formatCurrency(stats.valueSafeguarded)} recovered</span>
@@ -281,8 +281,8 @@ export default function SimulatorPage() {
 
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <span className="text-xs text-[var(--muted-foreground)] block">P99 Engine Latency</span>
-          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-1 flex items-baseline gap-1">
-            {stats.latencyMs} <span className="text-xs font-normal text-[var(--muted-foreground)]">ms</span>
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-1 flex items-baseline gap-1 font-mono tabular-nums">
+            {stats.latencyMs} <span className="text-xs font-normal font-sans text-[var(--muted-foreground)]">ms</span>
           </div>
           <span className="text-[11px] text-emerald-600 font-medium mt-1 block">Sub-2ms Determinism</span>
         </div>
