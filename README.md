@@ -40,22 +40,16 @@ By replacing manual spreadsheet matching with a **deterministic 5-point reconcil
 * **Tabbed Node Inspector**: Inspect Overview, Validation Checks, and Raw JSON payload for any node in the transaction chain.
 * **Preset Scenario Testing**: 1-click simulations for Normal Flow, Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Settlement, and Duplicate Entries.
 
-### 3. Traffic & Stress Test Studio (`/simulator`)
-* **Real-Time Load Generator**: Dynamic slider to test throughput from 10 to 500 TPS with live latency and match rate metrics.
-* **Active Chaos Fault Injection**: Toggle failure modes on the fly (Drop Settlements, Double MDR Fees, Webhook Delays, Duplicate Pay IDs).
-* **Burst Load Testing**: One-click `Burst 100` concurrent transactions delivery.
-* **Isolated Log Stream Terminal**: Live streaming webhook reconciliation terminal with smooth internal auto-scrolling and quick Pause/Resume controls.
-
-### 4. Autonomous Dispute Packet Generator
+### 3. Autonomous Dispute Packet Generator
 * **One-Click Legal Notices**: Generates formal dispute notices citing official **RBI Master Directions** and **Section 10A of the IT Act 2000**.
 * **Cryptographic Evidence Table**: Itemizes Gross Amount, Charged Fee, Net Variance, Gateway Payment ID, Order ID, and Bank UTR.
 * **Export Options**: 1-click **Copy Email Notice** or **Print / Save as PDF** to send to payment aggregator legal/operations desks.
 
-### 5. Cryptographic RBI Nodal Compliance Certificate Export
+### 4. Cryptographic RBI Nodal Compliance Certificate Export
 * **Verifiable Audit Proof**: Generates official RBI Escrow & Nodal Compliance Certificates directly from `/analytics`.
 * **Cryptographic Merkle Root**: Includes verifiable SHA-256 Merkle root, official seal, and exact match rate statistics for regulators and auditors.
 
-### 6. AI Copilot & Root Cause Analysis
+### 5. AI Copilot & Root Cause Analysis
 * **Google Gemini AI Integration**: Autonomous investigation engine to diagnose anomalies and calculate net financial exposure.
 * **Natural Language Copilot**: Ask natural language questions like *"What is our total risk exposure?"* or *"Analyze anomaly on payment pay_123"*.
 * **Action Center Remediation**: Automated recommendations to resolve discrepancies directly from the UI.
@@ -166,7 +160,6 @@ PaySynapse/
 │   │   ├── digital-twin/        # 5-Stage Step-Through Lifecycle Visualizer
 │   │   ├── exceptions/          # Exception Center & Dispute Packet Generator
 │   │   ├── integrations/        # API Keys & Ledger Sandbox Data Reset
-│   │   ├── simulator/           # Traffic & Stress Test Load Generator Studio
 │   │   └── transactions/        # Transaction Ledger & Lineage Details
 │   ├── api/                     # REST API Endpoints & Webhooks
 │   │   ├── ai/                  # Gemini AI Investigation Routes
@@ -174,7 +167,6 @@ PaySynapse/
 │   │   ├── auth/                # Login, Logout & Session Management
 │   │   ├── exceptions/          # Exception Filtering, Recent Polling & Resolution
 │   │   ├── settings/            # API Keys & Reset/Re-Seed Data Endpoints
-│   │   ├── simulate/            # Anomaly Injection Sandbox
 │   │   ├── transactions/        # Ledger Queries & Details
 │   │   └── webhooks/razorpay/   # Live Gateway Webhook Handler
 │   ├── globals.css              # Razorpay Fintech Design Tokens & Styles

@@ -14,8 +14,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-  GripVertical,
-  Flame
+  GripVertical
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 
@@ -24,7 +23,6 @@ const navigation = [
   { name: 'Transactions', href: '/transactions', icon: ReceiptText },
   { name: 'Exceptions', href: '/exceptions', icon: AlertCircle },
   { name: 'Digital Twin', href: '/digital-twin', icon: GitBranch },
-  { name: 'Traffic Studio', href: '/simulator', icon: Flame },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'AI Copilot', href: '/copilot', icon: Bot },
   { name: 'Integrations', href: '/integrations', icon: Settings },
