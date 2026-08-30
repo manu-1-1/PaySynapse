@@ -69,7 +69,7 @@ Provide a highly professional, concise, and helpful response. If you are asked f
 `;
 
     const result = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-flash-latest',
       contents: prompt,
     });
 
