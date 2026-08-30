@@ -5,6 +5,17 @@ import { reconcilePayment } from '@/lib/reconciliation/engine';
 
 const prisma = new PrismaClient();
 
+// GET Health Check (when opened in browser)
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    status: 'ACTIVE',
+    service: 'PaySynapse Razorpay Webhook Ingestion Engine',
+    supportedEvents: ['payment.captured', 'payment.failed', 'order.paid', 'settlement.processed'],
+    timestamp: new Date().toISOString()
+  });
+}
+
 // In Next.js App Router, to read raw body for webhook verification, we need to read it as text.
 export async function POST(request) {
   try {
@@ -101,8 +112,11 @@ export async function POST(request) {
         }
       });
 
-      // Optionally, record fees if provided
+      // Record/Update fees idempotently
       if (paymentEntity.fee) {
+        await prisma.fee.deleteMany({
+          where: { paymentId: paymentRecord.id }
+        });
         await prisma.fee.create({
           data: {
             paymentId: paymentRecord.id,
