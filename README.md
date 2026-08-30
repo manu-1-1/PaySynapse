@@ -12,7 +12,7 @@
   [![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-8E75FF?style=flat-square&logo=google)](https://ai.google.dev/)
   [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-  *Catch missing settlements, gateway overcharges, short-settlements, and orphaned transactions instantly with 100% deterministic ledger matching and AI root-cause analysis.*
+  *Catch missing settlements, gateway fee overcharges, short-settlements, and orphaned transactions instantly with 100% deterministic ledger matching and AI root-cause analysis.*
 
 </div>
 
@@ -28,33 +28,41 @@ By replacing manual spreadsheet matching with a **deterministic 5-point reconcil
 
 ## Key Features
 
-### 1. 100% Deterministic Reconciliation Engine
+### 1. 100% Deterministic 5-Point Reconciliation Engine
 * **5-Point Lifecycle Matching**: Verifies arithmetic integrity from `01 Order` $\rightarrow$ `02 Payment` $\rightarrow$ `03 Charges & GST` $\rightarrow$ `04 Net Settlement` $\rightarrow$ `05 Bank Clearance (UTR)`.
+* **Method-Aware MDR Pricing Matrix**: Dynamically resolves contractual fees by payment method (UPI: 0%, Debit Card: 0.9%, Credit Card: 1.8%, Netbanking: Flat ₹15, Wallets: 1.9%).
 * **Instant Discrepancy Detection**: Flags missing settlements, MDR fee overcharges, short settlements, duplicate entries, SLA delays, and status mismatches.
 * **Audit Compliant**: Strict double-entry ledger mathematics without speculative numbers.
 
 ### 2. Interactive Digital Twin Topology Visualizer
+![PaySynapse Live Digital Twin Financial Lineage](docs/images/digital-twin-live-demo.png)
 * **5-Stage Pipeline Graph**: Interactive step-by-step financial topology visualization with directional connectors and status pills.
 * **Step-Through Playback Controller**: `▶ Step-Through` controller to walk through each node's funds flow step-by-step.
-* **Arithmetic Balance Reconciliation Bar**: Live verification of Gross Amount $-$ Gateway Fee (1.8%) $-$ GST (18%) $=$ Net Settlement.
+* **Arithmetic Balance Reconciliation Bar**: Live verification of Gross Amount $-$ Deductions (Fee + GST) $=$ Expected Batch.
+* **1-Click Simulation Sandbox & History Reel**: Inject edge-cases (*Normal Flow, Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Delay, Duplicate Entry, Status Mismatch, Missing Refund*) with an interactive history reel and 1-click **"↩ Back to Original Transaction"** navigation.
 * **Tabbed Node Inspector**: Inspect Overview, Validation Checks, and Raw JSON payload for any node in the transaction chain.
-* **Preset Scenario Testing**: 1-click simulations for Normal Flow, Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Settlement, and Duplicate Entries.
 
-### 3. Autonomous Dispute Packet Generator
+### 3. Live Razorpay Test API & Cloudflare Tunneling Integration
+* **Real-Time Webhook Ingestion**: Supports real live payments via Razorpay Test Mode with zero-delay webhook ingestion (`payment.captured`, `payment.failed`, `order.paid`).
+* **Instant Public Tunneling**: Seamless local testing via Cloudflare Quick Tunnel (`npx cloudflared tunnel --url http://localhost:3000`).
+* **Automated Exception Auditing**: Instantly detects Day $T+0$ in-flight funds (`MISSING_SETTLEMENT`) and gateway rate overcharges (`FEE_MISMATCH`).
+
+### 4. Autonomous Dispute Packet Generator
 * **One-Click Legal Notices**: Generates formal dispute notices citing official **RBI Master Directions** and **Section 10A of the IT Act 2000**.
 * **Cryptographic Evidence Table**: Itemizes Gross Amount, Charged Fee, Net Variance, Gateway Payment ID, Order ID, and Bank UTR.
 * **Export Options**: 1-click **Copy Email Notice** or **Print / Save as PDF** to send to payment aggregator legal/operations desks.
 
-### 4. Cryptographic RBI Nodal Compliance Certificate Export
+### 5. Cryptographic RBI Nodal Compliance Certificate Export
 * **Verifiable Audit Proof**: Generates official RBI Escrow & Nodal Compliance Certificates directly from `/analytics`.
 * **Cryptographic Merkle Root**: Includes verifiable SHA-256 Merkle root, official seal, and exact match rate statistics for regulators and auditors.
 
-### 5. AI Copilot & Root Cause Analysis
+### 6. AI Copilot & Root Cause Analysis
 * **Google Gemini AI Integration**: Autonomous investigation engine to diagnose anomalies and calculate net financial exposure.
 * **Natural Language Copilot**: Ask natural language questions like *"What is our total risk exposure?"* or *"Analyze anomaly on payment pay_123"*.
 * **Action Center Remediation**: Automated recommendations to resolve discrepancies directly from the UI.
 
-### 7. Ledger Data Management & Sandbox Reset
+### 7. Dynamic Pricing Matrix & Ledger Data Management
+* **Configurable Fee Rules**: Manage contract rates on `/integrations` with an interactive settlement fee calculator.
 * **Purge All Test Transactions**: One-click action on `/integrations` to clear all transactions and reset volume to `0` for live webhook testing.
 * **Dynamic Re-Seed Volume Selector**: Choose between 50, 100, 250, 500, or 1,000 transaction datasets to re-populate and reconcile on demand.
 
@@ -65,6 +73,24 @@ By replacing manual spreadsheet matching with a **deterministic 5-point reconcil
 
 ---
 
+## Documentation Suite
+
+PaySynapse includes a comprehensive 9-module documentation index in [`docs/`](docs/00-documentation-index.md):
+
+* **[00. Documentation Master Index](docs/00-documentation-index.md)**
+* **[01. System Architecture & High-Level Design](docs/01-system-architecture.md)**
+* **[02. Data Modeling & Database Schema (Prisma)](docs/02-data-modeling-and-database-schema.md)**
+* **[03. Synthetic Data Generator & Edge-Case Architecture](docs/03-synthetic-data-generator.md)**
+* **[04. Deterministic Reconciliation Engine & Dynamic Pricing](docs/04-reconciliation-engine.md)**
+* **[05. Interactive Digital Twin & Topology Visualizer](docs/05-digital-twin-topology.md)**
+* **[06. Exception Management, RBI Compliance & Dispute Notice](docs/06-exception-management-and-resolution.md)**
+* **[07. AI Copilot, Root Cause Engine & Action Center](docs/07-ai-copilot-and-root-cause-analysis.md)**
+* **[08. API Reference, Webhooks & CLI Tools](docs/08-api-reference-and-integration-guide.md)**
+* **[09. Razorpay Test API Demo Guide (Live Tunnel Setup)](docs/09-razorpay-test-api-demo-guide.md)**
+* **[Financial Terms, Reconciliation Logic & 3-Feed Ingestion Guide](docs/PaySynapse_Finance_Terms_and_Reconciliation.md)**
+
+---
+
 ## Architecture & Tech Stack
 
 ```
@@ -72,7 +98,7 @@ PaySynapse Platform
 ├── Frontend: Next.js 16 (App Router), React 19, Tailwind CSS v4, Lucide Icons, Recharts
 ├── Backend: Next.js API Routes, Next Middleware, Webhook Handlers
 ├── Database & ORM: SQLite / PostgreSQL via Prisma ORM 5.22
-├── AI Engine: Google Gemini AI SDK (@google/genai 2.19)
+├── AI Engine: Google Gemini AI SDK (@google/genai)
 └── Auth & Security: JWT (jose), bcryptjs password hashing, HTTP-Only Cookies
 ```
 
@@ -134,50 +160,19 @@ Default login credentials pre-configured for instant access:
 
 ---
 
-## Testing & Webhook Simulation
+## Live Razorpay Demo & Webhooks
 
-Simulate live Razorpay gateway webhooks to watch real-time exception detection in action:
+To test with real Razorpay Test Mode checkout:
 
-```bash
-# Send a simulated Razorpay payment webhook
-node scripts/simulate-webhook.js
+```powershell
+# 1. Start Cloudflare Tunnel in a separate terminal
+npx cloudflared tunnel --url http://localhost:3000
 
-# Execute full reconciliation engine test
-npm run test-reconciliation
+# 2. Add your webhook in Razorpay Dashboard:
+# URL: https://your-subdomain.trycloudflare.com/api/webhooks/razorpay
+# Events: payment.captured, payment.failed, order.paid
 ```
-
----
-
-## Project Structure
-
-```
-PaySynapse/
-├── app/
-│   ├── (dashboard)/             # Authenticated Dashboard Routes
-│   │   ├── analytics/           # Operations & Settlement Analytics (+ RBI Certificate)
-│   │   ├── copilot/             # AI Copilot Natural Language Interface
-│   │   ├── dashboard/           # Reconciliation Overview & KPIs
-│   │   ├── digital-twin/        # 5-Stage Step-Through Lifecycle Visualizer
-│   │   ├── exceptions/          # Exception Center & Dispute Packet Generator
-│   │   ├── integrations/        # API Keys & Ledger Sandbox Data Reset
-│   │   └── transactions/        # Transaction Ledger & Lineage Details
-│   ├── api/                     # REST API Endpoints & Webhooks
-│   │   ├── ai/                  # Gemini AI Investigation Routes
-│   │   ├── analytics/           # Analytics Data Aggregation
-│   │   ├── auth/                # Login, Logout & Session Management
-│   │   ├── exceptions/          # Exception Filtering, Recent Polling & Resolution
-│   │   ├── settings/            # API Keys & Reset/Re-Seed Data Endpoints
-│   │   ├── transactions/        # Ledger Queries & Details
-│   │   └── webhooks/razorpay/   # Live Gateway Webhook Handler
-│   ├── globals.css              # Razorpay Fintech Design Tokens & Styles
-│   ├── icon.svg                 # SVG App Icon & Favicon
-│   ├── layout.js                # Root Layout with Inter Font & Theme Provider
-│   └── page.js                  # Landing & Auth Page
-├── components/                  # UI Components (Header, Sidebar, DisputePacketModal, ComplianceCertificateModal)
-├── lib/                         # Core Logic (Reconciliation Engine, Gemini AI Client)
-├── prisma/                      # Database Schema & Migrations
-└── scripts/                     # Webhook Simulation & Test Utilities
-```
+For the full guide, read [**docs/09-razorpay-test-api-demo-guide.md**](docs/09-razorpay-test-api-demo-guide.md).
 
 ---
 
