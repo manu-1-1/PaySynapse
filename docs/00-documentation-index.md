@@ -55,4 +55,11 @@ This documentation suite is organized sequentially into numbered modules for max
    * Webhook Simulation & End-to-End Testing
    * Operations Workflows (Investigating, Resolving, and Dispute Filing)
 
+9. [09 — Razorpay Test API Demo Guide](file:///d:/Projects/PaySynapse/docs/09-razorpay-test-api-demo-guide.md)
+   * Live End-to-End Payment Flow (Checkout to Ingestion)
+   * ngrok Public Webhook Tunnel Setup
+   * Test Cards & Test UPI Simulation (`success@razorpay`)
+   * Real-time Ingestion, Digital Twin Walkthrough & Gemini AI Investigation
+   * Failure & Fee Overcharge Anomaly Testing
+
 ---
