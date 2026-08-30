@@ -21,6 +21,50 @@ The system should **not use AI to decide whether a transaction mathematically re
 
 ---
 
+## 1.1 Enterprise Data Ingestion Architecture: The 3 Independent Data Feeds
+
+In real-world financial operations, money and data originate from three completely separate systems:
+
+```text
+┌─────────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────────┐
+│   FEED A: Merchant DB   │     │  FEED B: Gateway / PG   │     │   FEED C: Bank Network  │
+│    (Core Order Ledger)  │     │ (Razorpay/Stripe/etc.)  │     │ (HDFC/ICICI Statement) │
+├─────────────────────────┤     ├─────────────────────────┤     ├─────────────────────────┤
+│ • order_id              │     │ • payment_id            │     │ • Bank Credit Timestamp │
+│ • Customer Details      │     │ • order_id (Reference)  │     │ • Net Amount Credited   │
+│ • Checkout Gross Amount │     │ • Method (UPI/Card/NB)  │     │ • UTR Reference Number  │
+│ • Order Status (PAID)   │     │ • Billed Fee & GST      │     │ • Settlement Payout ID  │
+│                         │     │ • Settlement Batch ID   │     │                         │
+└────────────┬────────────┘     └────────────┬────────────┘     └────────────┬────────────┘
+             │                               │                               │
+             ▼                               ▼                               ▼
+       [API / DB Sync]             [Webhooks & MIS Reports]            [SFTP / Bank Feed]
+             │                               │                               │
+             └───────────────────────┬───────┴───────────────────────────────┘
+                                     │
+                                     ▼
+                   ┌───────────────────────────────────┐
+                   │     PaySynapse Ingestion Engine   │
+                   └───────────────────────────────────┘
+```
+
+### How the Feeds are Ingested:
+
+1. **Feed A (Merchant Order DB)**:
+   * Captured when customer completes checkout. Transmitted via Merchant Backend API or checkout webhooks.
+2. **Feed B (Payment Gateway / PG)**:
+   * **Real-time**: Webhook events (`payment.captured`, `settlement.processed`).
+   * **Batch**: Daily Gateway Settlement MIS CSV reports downloaded via automated API.
+3. **Feed C (Bank Network / Statements)**:
+   * **The Bank Side**: Every midnight at 02:00 AM, corporate banks (e.g. HDFC, ICICI, Citibank, Chase) place an automated statement file on a secure **SFTP server** in standard banking formats:
+     * **MT940** (SWIFT Customer Statement Message)
+     * **CAMT.053** (ISO 20022 XML Bank Statement)
+     * **Bank MIS Excel/CSV**
+   * **The Ingestion**: A cron job in PaySynapse reads the SFTP server, extracts the lines with NEFT/RTGS/IMPS credits, parses the transaction narrative (which contains the **UTR Number**), and inserts them into the `BankTransaction` table.
+   * **The Final Match**: PaySynapse matches the Bank UTR and net credit amount against the Gateway Settlement payout ID.
+
+---
+
 # 2. Basic Financial Terms
 
 ## 2.1 Merchant
@@ -314,6 +358,8 @@ Bank credit        = ₹48,938
 
 Result: MATCH
 ```
+
+In production architectures, bank credits are acquired via automated midnight SFTP pulls of corporate bank statements (**MT940**, **CAMT.053**, or **Bank MIS CSV**), parsed for NEFT/RTGS transaction narratives, and mapped to the gateway payout batch.
 
 ---
 

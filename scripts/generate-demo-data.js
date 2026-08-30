@@ -47,6 +47,21 @@ async function main() {
     data: { name: 'Acme Corp (Demo)' }
   });
 
+  console.log('Seeding dynamic MDR fee pricing rules...');
+  await prisma.feeRule.deleteMany();
+  const defaultFeeRules = [
+    { paymentMethod: 'UPI', percentageRate: 0.000, flatFee: 0.00, taxRate: 0.18, description: 'UPI / RuPay standard zero-MDR mandate (Interchange-free)' },
+    { paymentMethod: 'CARD', percentageRate: 0.018, flatFee: 0.00, taxRate: 0.18, description: 'Domestic Consumer Cards (1.8% standard MDR)' },
+    { paymentMethod: 'CREDIT_CARD', percentageRate: 0.018, flatFee: 0.00, taxRate: 0.18, description: 'Domestic Consumer Credit Cards (1.8% standard MDR)' },
+    { paymentMethod: 'DEBIT_CARD', percentageRate: 0.009, flatFee: 0.00, taxRate: 0.18, description: 'Domestic Debit Cards (0.9% RBI capped rate)' },
+    { paymentMethod: 'NETBANKING', percentageRate: 0.000, flatFee: 15.00, taxRate: 0.18, description: 'Netbanking Direct Debit (Flat fee model)' },
+    { paymentMethod: 'WALLET', percentageRate: 0.019, flatFee: 0.00, taxRate: 0.18, description: 'Prepaid Digital Wallets' },
+    { paymentMethod: 'DEFAULT', percentageRate: 0.018, flatFee: 0.00, taxRate: 0.18, description: 'Standard fallback rate' }
+  ];
+  for (const rule of defaultFeeRules) {
+    await prisma.feeRule.create({ data: rule });
+  }
+
   const totalRecords = 120;
   console.log(`Generating ${totalRecords} realistic transaction records...`);
 
@@ -54,9 +69,19 @@ async function main() {
 
   for (let i = 0; i < totalRecords; i++) {
     const grossAmount = randomAmount(500, 25000);
-    const feeAmount = parseFloat((grossAmount * 0.018).toFixed(2));
-    const taxAmount = parseFloat((feeAmount * 0.18).toFixed(2));
-    const expectedSettlement = parseFloat((grossAmount - feeAmount - taxAmount).toFixed(2));
+    const paymentMethods = ['UPI', 'CARD', 'NETBANKING', 'DEBIT_CARD'];
+    const method = paymentMethods[i % paymentMethods.length];
+
+    // Method-aware fee calculation
+    let standardFee = 0;
+    if (method === 'UPI') standardFee = 0.00;
+    else if (method === 'CARD' || method === 'CREDIT_CARD') standardFee = parseFloat((grossAmount * 0.018).toFixed(2));
+    else if (method === 'DEBIT_CARD') standardFee = parseFloat((grossAmount * 0.009).toFixed(2));
+    else if (method === 'NETBANKING') standardFee = 15.00;
+    else standardFee = parseFloat((grossAmount * 0.018).toFixed(2));
+
+    const standardTax = parseFloat((standardFee * 0.18).toFixed(2));
+    const expectedSettlement = parseFloat((grossAmount - standardFee - standardTax).toFixed(2));
 
     const orderId = generateId('order', i);
     const paymentId = generateId('pay', i);
@@ -96,22 +121,30 @@ async function main() {
         amount: grossAmount,
         currency: 'INR',
         status: scenario === 'STATUS_MISMATCH' ? 'FAILED' : 'CAPTURED',
-        method: ['UPI', 'CARD', 'NETBANKING'][i % 3],
+        method: method,
         capturedAt: new Date(),
       }
     });
 
-    // Fee (altered for FEE_MISMATCH)
-    let actualFee = feeAmount;
+    // Fee (altered for FEE_MISMATCH to simulate real-world gateway overcharge)
+    let actualFee = standardFee;
+    let actualTax = standardTax;
     if (scenario === 'FEE_MISMATCH') {
-      actualFee = parseFloat((feeAmount * 2).toFixed(2)); // charged double fee by mistake
+      if (method === 'UPI') {
+        actualFee = parseFloat((grossAmount * 0.015).toFixed(2)); // Erroneous 1.5% charge on zero-MDR UPI
+      } else if (method === 'NETBANKING') {
+        actualFee = 45.00; // Erroneous ₹45 charge instead of contracted ₹15
+      } else {
+        actualFee = parseFloat((standardFee * 1.5).toFixed(2)); // 50% MDR overcharge
+      }
+      actualTax = parseFloat((actualFee * 0.18).toFixed(2));
     }
 
     await prisma.fee.create({
       data: {
         paymentId: payment.id,
         amount: actualFee,
-        tax: taxAmount,
+        tax: actualTax,
       }
     });
 

@@ -158,3 +158,14 @@ model AuditLog {
   userId    String?
   createdAt DateTime @default(now())
 }
+
+model FeeRule {
+  id             String   @id @default(uuid())
+  paymentMethod  String   @unique
+  percentageRate Decimal
+  flatFee        Decimal  @default(0)
+  taxRate        Decimal  @default(0.18)
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

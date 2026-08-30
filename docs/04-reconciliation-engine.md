@@ -11,10 +11,18 @@ $$\text{Discrepancy Variance} = \text{Expected Net Settlement} - \text{Actual Ba
 
 ---
 
-## 4.2 Standard Financial Constants
-* **Standard Gateway MDR (Fee Rate)**: $1.8\%$ (`0.018`) of Gross Payment Amount.
-* **Standard GST Tax Rate**: $18\%$ (`0.18`) of Gateway MDR Fee Amount.
+## 4.2 Dynamic Method-Aware MDR Fee Matrix
+Rather than using an inflexible hardcoded percentage across all transactions, PaySynapse implements a dynamic **Fee Pricing Matrix** (`FeeRule` model & `/api/fee-rules`) configurable per payment method:
+
+* **UPI & RuPay**: `0.00%` MDR (Zero-MDR regulatory mandate) + `0%` flat fee.
+* **Domestic Debit Cards**: `0.90%` MDR (RBI-capped rate) + `18%` GST.
+* **Domestic Credit Cards**: `1.80%` MDR (Interchange + scheme fee) + `18%` GST.
+* **Netbanking (Direct Debit)**: `0.00%` MDR + `₹15.00` flat fee + `18%` GST.
+* **Wallets / PPI**: `1.90%` MDR + `18%` GST.
 * **Settlement SLA Threshold**: $3 \text{ days}$ (T+3 max before flagging `DELAYED_SETTLEMENT`).
+
+$$\text{Expected Fee} = (\text{Gross Payment} \times \text{Rule Percentage}) + \text{Rule Flat Fee}$$
+$$\text{Expected Tax} = \text{Expected Fee} \times \text{Tax Rate (18\% GST)}$$
 
 ---
 
@@ -31,7 +39,7 @@ The engine evaluates each transaction against 9 predefined anomaly rules:
 
 ### Rule 2: `FEE_MISMATCH`
 * **Trigger Condition**:
-  $$\text{Actual Total Fees} \neq \text{Gross Payment} \times 0.018$$
+  $$|\text{Actual Gateway Billed Fee} - \text{Expected Method Fee}| > \text{Tolerance Threshold (₹0.05)}$$
 * **Severity**: `MEDIUM`
 * **Financial Impact**: $|\text{Expected Fee} - \text{Actual Fee}|$.
 

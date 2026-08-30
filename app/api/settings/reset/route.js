@@ -67,16 +67,40 @@ export async function POST(req) {
       await purgeTransactionData();
       const { merchant } = await ensureUserAndMerchant();
 
+      // Ensure default fee rules exist
+      const existingRules = await prisma.feeRule.findMany();
+      if (existingRules.length === 0) {
+        const defaultRules = [
+          { paymentMethod: 'UPI', percentageRate: 0.000, flatFee: 0.00, taxRate: 0.18, description: 'UPI / RuPay zero-MDR' },
+          { paymentMethod: 'CARD', percentageRate: 0.018, flatFee: 0.00, taxRate: 0.18, description: 'Credit Card (1.8%)' },
+          { paymentMethod: 'CREDIT_CARD', percentageRate: 0.018, flatFee: 0.00, taxRate: 0.18, description: 'Credit Card (1.8%)' },
+          { paymentMethod: 'DEBIT_CARD', percentageRate: 0.009, flatFee: 0.00, taxRate: 0.18, description: 'Debit Card (0.9%)' },
+          { paymentMethod: 'NETBANKING', percentageRate: 0.000, flatFee: 15.00, taxRate: 0.18, description: 'Netbanking (₹15 flat)' },
+          { paymentMethod: 'WALLET', percentageRate: 0.019, flatFee: 0.00, taxRate: 0.18, description: 'Wallets (1.9%)' },
+          { paymentMethod: 'DEFAULT', percentageRate: 0.018, flatFee: 0.00, taxRate: 0.18, description: 'Default fallback' }
+        ];
+        for (const r of defaultRules) {
+          await prisma.feeRule.create({ data: r });
+        }
+      }
+
       const requestedCount = parseInt(body.count, 10);
       const totalRecords = isNaN(requestedCount) ? 100 : Math.max(10, Math.min(1000, requestedCount));
-      const paymentMethods = ['UPI', 'CARD', 'NETBANKING'];
+      const paymentMethods = ['UPI', 'CARD', 'NETBANKING', 'DEBIT_CARD'];
 
       for (let i = 0; i < totalRecords; i++) {
         const grossAmount = randomAmount(500, 20000);
-        const feeAmount = parseFloat((grossAmount * 0.018).toFixed(2));
-        const taxAmount = parseFloat((feeAmount * 0.18).toFixed(2));
-        const expectedSettlement = parseFloat((grossAmount - feeAmount - taxAmount).toFixed(2));
         const method = paymentMethods[i % paymentMethods.length];
+
+        let standardFee = 0;
+        if (method === 'UPI') standardFee = 0.00;
+        else if (method === 'CARD' || method === 'CREDIT_CARD') standardFee = parseFloat((grossAmount * 0.018).toFixed(2));
+        else if (method === 'DEBIT_CARD') standardFee = parseFloat((grossAmount * 0.009).toFixed(2));
+        else if (method === 'NETBANKING') standardFee = 15.00;
+        else standardFee = parseFloat((grossAmount * 0.018).toFixed(2));
+
+        const standardTax = parseFloat((standardFee * 0.18).toFixed(2));
+        const expectedSettlement = parseFloat((grossAmount - standardFee - standardTax).toFixed(2));
 
         const orderId = generateId('order', i);
         const paymentId = generateId('pay', i);
@@ -113,16 +137,20 @@ export async function POST(req) {
           }
         });
 
-        let actualFee = feeAmount;
+        let actualFee = standardFee;
+        let actualTax = standardTax;
         if (scenario === 'FEE_MISMATCH') {
-          actualFee = parseFloat((feeAmount * 2).toFixed(2));
+          if (method === 'UPI') actualFee = parseFloat((grossAmount * 0.015).toFixed(2));
+          else if (method === 'NETBANKING') actualFee = 45.00;
+          else actualFee = parseFloat((standardFee * 1.5).toFixed(2));
+          actualTax = parseFloat((actualFee * 0.18).toFixed(2));
         }
 
         await prisma.fee.create({
           data: {
             paymentId: payment.id,
             amount: actualFee,
-            tax: taxAmount,
+            tax: actualTax,
           }
         });
 
