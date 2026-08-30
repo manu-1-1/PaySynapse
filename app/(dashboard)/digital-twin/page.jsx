@@ -37,7 +37,10 @@ import ReactMarkdown from 'react-markdown';
 
 export default function DigitalTwinPage() {
   const [searchId, setSearchId] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [tx, setTx] = useState(null);
+  const [originalTx, setOriginalTx] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [error, setError] = useState('');
@@ -63,7 +66,7 @@ export default function DigitalTwinPage() {
 
   const pipelineNodes = ['order', 'payment', 'fees', 'settlement', 'bank'];
 
-  // Auto-load the first transaction just to have a demo state if none provided
+  // Auto-load the first transaction or latest live transaction
   useEffect(() => {
     setMounted(true);
     const fetchFirst = async () => {
@@ -71,7 +74,7 @@ export default function DigitalTwinPage() {
         const res = await fetch('/api/transactions?limit=1');
         const data = await res.json();
         if (data.data?.length > 0) {
-          handleSearch(data.data[0].id);
+          handleSearch(data.data[0].id, 'Initial Live');
         }
       } catch (e) {
         console.error(e);
@@ -98,28 +101,53 @@ export default function DigitalTwinPage() {
     };
   }, [isPlaying]);
 
-  const handleSearch = async (idToFetch = searchId) => {
+  const handleSearch = async (idToFetch = searchId, scenarioLabel = null) => {
     if (!idToFetch) return;
     setLoading(true);
     setError('');
     setAiResult(null);
     try {
       const res = await fetch(`/api/transactions/${idToFetch}`);
-      if (!res.ok) throw new Error('Transaction not found');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: 'Transaction not found' }));
+        throw new Error(errData.error || 'Transaction not found');
+      }
       const data = await res.json();
-      setTx(data.data);
-      setSearchId(data.data.id);
+      const loadedTx = data.data;
+      setTx(loadedTx);
+      setSearchId(loadedTx.id);
+      setSearchInput(loadedTx.externalPaymentId || loadedTx.id);
       setSelectedNode('payment');
+
+      // Keep original transaction reference
+      if (!originalTx && !scenarioLabel?.startsWith('Sim:')) {
+        setOriginalTx(loadedTx);
+      }
+
+      // Add to session history reel
+      setHistory(prev => {
+        const exists = prev.find(h => h.id === loadedTx.id);
+        if (exists) return prev;
+        const entry = {
+          id: loadedTx.id,
+          externalPaymentId: loadedTx.externalPaymentId || loadedTx.id,
+          amount: loadedTx.amount,
+          scenario: scenarioLabel || (prev.length === 0 ? 'Original' : 'Inspected'),
+          isSim: Boolean(scenarioLabel?.startsWith('Sim:')),
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        return [entry, ...prev.slice(0, 9)];
+      });
     } catch (e) {
-      setError(e.message);
+      setError(e.message || 'Failed to load transaction');
       setTx(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSimulate = async (scenario) => {
-    setSimulating(scenario);
+  const handleSimulate = async (scenarioId, scenarioLabel) => {
+    setSimulating(scenarioId);
     setError('');
     setAiResult(null);
     setFixedIds([]);
@@ -128,14 +156,16 @@ export default function DigitalTwinPage() {
       const res = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenario })
+        body: JSON.stringify({ scenario: scenarioId })
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: 'Simulation failed' }));
+        throw new Error(errData.error || 'Simulation execution failed');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Simulation failed');
-      
-      handleSearch(data.paymentId);
+      await handleSearch(data.paymentId, `Sim: ${scenarioLabel || scenarioId}`);
     } catch (e) {
-      setError(e.message);
+      setError(e.message || 'Simulation error');
     } finally {
       setSimulating(false);
     }
@@ -353,7 +383,43 @@ export default function DigitalTwinPage() {
       </div>
 
       {/* Interactive Simulation Sandbox Bar */}
-      <div className="w-full print:hidden">
+      <div className="w-full print:hidden space-y-3">
+        
+        {/* Top Control: Search Bar & Back to Original Button */}
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-sm flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchInput)}
+                placeholder="Search by Payment ID (pay_...), Order ID, or UTR..."
+                className="w-full h-9 pl-9 pr-3 text-xs rounded-md border border-[var(--border)] bg-[var(--muted)] text-[var(--foreground)] focus:outline-none focus:border-[#528FF0]"
+              />
+            </div>
+            <button
+              onClick={() => handleSearch(searchInput)}
+              disabled={loading}
+              className="h-9 px-3 rounded-md text-xs font-semibold bg-[#528FF0] hover:bg-[#4080E0] text-white transition-colors flex items-center gap-1"
+            >
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Search'}
+            </button>
+          </div>
+
+          {originalTx && tx?.id !== originalTx?.id && (
+            <button
+              onClick={() => handleSearch(originalTx.id, 'Original')}
+              className="h-9 px-3.5 rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-150 flex items-center gap-1.5 shadow-sm animate-pulse"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Back to Original ({originalTx.externalPaymentId?.slice(0, 16) || 'Live Transaction'})</span>
+            </button>
+          )}
+        </div>
+
+        {/* Simulation Scenarios Grid */}
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
@@ -373,7 +439,7 @@ export default function DigitalTwinPage() {
             {scenarios.map(s => (
               <button
                 key={s.id}
-                onClick={() => handleSimulate(s.id)}
+                onClick={() => handleSimulate(s.id, s.label)}
                 disabled={simulating}
                 className={`text-xs px-2.5 py-2 rounded-md font-medium transition-all duration-150 border text-left flex flex-col justify-between disabled:opacity-50 ${scenarioColorMap[s.color]}`}
               >
@@ -382,6 +448,32 @@ export default function DigitalTwinPage() {
               </button>
             ))}
           </div>
+
+          {/* Simulation History Reel */}
+          {history.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-[var(--border)] flex items-center gap-2 overflow-x-auto text-xs pb-1">
+              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] flex items-center gap-1 flex-shrink-0">
+                <Clock className="w-3 h-3" /> History:
+              </span>
+              <div className="flex items-center gap-1.5 flex-nowrap">
+                {history.map((h, i) => (
+                  <button
+                    key={`${h.id}_${i}`}
+                    onClick={() => handleSearch(h.id, h.scenario)}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium flex items-center gap-1.5 transition-all flex-shrink-0 border ${
+                      h.id === tx?.id
+                        ? 'bg-[#528FF0] text-white border-[#528FF0] shadow-sm font-semibold'
+                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border-[var(--border)]'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${h.isSim ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                    <span className="truncate max-w-[120px]">{h.scenario}</span>
+                    <span className="opacity-75 font-mono text-[10px]">({formatCurrency(h.amount)})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

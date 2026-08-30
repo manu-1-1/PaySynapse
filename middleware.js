@@ -7,7 +7,9 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
   // Paths that do not require authentication
-  const isPublicPath = pathname === '/' || pathname.startsWith('/api/auth') || pathname.startsWith('/api/webhooks') || pathname.startsWith('/_next');
+  const isPublicPath = pathname === '/' || 
+                       pathname.startsWith('/api/') ||
+                       pathname.startsWith('/_next');
 
   if (isPublicPath) {
     return NextResponse.next();
@@ -16,6 +18,9 @@ export async function middleware(request) {
   const token = request.cookies.get('auth_token')?.value;
 
   if (!token) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     // Redirect to login page if token is missing
     const loginUrl = new URL('/', request.url);
     return NextResponse.redirect(loginUrl);
@@ -27,9 +32,12 @@ export async function middleware(request) {
     return NextResponse.next();
   } catch (error) {
     console.error('JWT Verification failed:', error);
-    // Redirect to login on token error (expired, invalid, etc.)
+    if (pathname.startsWith('/api/')) {
+      const response = NextResponse.json({ error: 'Session expired' }, { status: 401 });
+      response.cookies.delete('auth_token');
+      return response;
+    }
     const loginUrl = new URL('/', request.url);
-    // Optional: Clear the invalid cookie
     const response = NextResponse.redirect(loginUrl);
     response.cookies.delete('auth_token');
     return response;
@@ -39,12 +47,8 @@ export async function middleware(request) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (auth endpoints)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * Match all dashboard page routes, excluding static assets and API routes:
      */
-    '/((?!api/auth|api/webhooks|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 };
