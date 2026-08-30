@@ -176,19 +176,17 @@ export default function DigitalTwinPage() {
     setActiveExceptionId(exceptionId);
     setAiResult(null);
     try {
-      const res = await fetch('/api/ai/copilot', {
+      const res = await fetch('/api/ai/investigate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'investigate',
-          exceptionId
-        })
+        body: JSON.stringify({ exceptionId })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'AI failed');
-      setAiResult(data.data.analysis);
+      if (!res.ok) throw new Error(data.error || 'AI investigation failed');
+      const r = data.data;
+      setAiResult(`### 🧠 Autonomous AI Root Cause Analysis\n\n**Root Cause Diagnosis:** ${r.explanation}\n\n**AI Confidence Score:** ${(r.confidence * 100).toFixed(0)}%\n\n**Recommended Remediation:** ${r.recommendedAction}`);
     } catch (e) {
-      alert("AI Error: " + e.message);
+      alert("AI Error: " + (e.message || 'Investigation failed'));
     } finally {
       setAiLoading(false);
     }

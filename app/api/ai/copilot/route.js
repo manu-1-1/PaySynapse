@@ -1,12 +1,29 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { GoogleGenAI } from '@google/genai';
+import { investigateException } from '@/lib/ai/investigate';
 
 const prisma = new PrismaClient();
 
 export async function POST(request) {
   try {
-    const { message } = await request.json();
+    const body = await request.json().catch(() => ({}));
+
+    // If request is for an exception investigation, delegate to investigateException
+    if (body.action === 'investigate' || body.exceptionId) {
+      if (!body.exceptionId) {
+        return NextResponse.json({ error: 'exceptionId is required' }, { status: 400 });
+      }
+      const result = await investigateException(body.exceptionId);
+      return NextResponse.json({
+        success: true,
+        data: {
+          analysis: `**Root Cause Diagnosis:** ${result.explanation}\n\n**AI Confidence:** ${(result.confidence * 100).toFixed(0)}%\n\n**Recommended Remediation:** ${result.recommendedAction}`
+        }
+      });
+    }
+
+    const { message } = body;
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
