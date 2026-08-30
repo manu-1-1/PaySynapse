@@ -126,11 +126,19 @@ You will see the payment ingested live (e.g. `pay_TW6eSQNYy8KQF2`). Here is why 
 
 ## 6. How to Showcase This in a Demo / Presentation
 
+### **Live Visual Topology Inspection**
+
+![PaySynapse Live Digital Twin Financial Lineage](images/digital-twin-live-demo.png)
+
 1. **Step-Through on Digital Twin ([`/digital-twin`](http://localhost:3000/digital-twin))**:
-   * Search the live payment ID (e.g., `pay_...`).
+   * Search the live payment ID (e.g., `pay_TW6eSQNYy8KQF2`).
    * Click `▶ Step-Through` to visually watch the money flow across the 5 nodes:
-     $$\text{Order (₹800)} \longrightarrow \text{Payment (Captured)} \longrightarrow \text{Charges (Overcharge Flag)} \longrightarrow \text{Settlement (Pending)}$$
-   * Open the **Validation Checks** tab in the Inspector to show the exact math.
+     * **01. Merchant Order**: `order_TW6eItTm1fkiWl` (₹800.00) $\to$ `PAID`
+     * **02. Gateway Payment**: `pay_TW6eSQNYy8KQF2` (₹800.00 via Netbanking) $\to$ `CAPTURED`
+     * **03. Charges & GST**: Deductions: -₹23.92 (Fee: ₹20.76 | GST: ₹3.16)
+     * **04. Settlement Batch**: Flagged with red alert connector: `⚠️ Missing / Unsettled` (Gateway payout pending)
+     * **05. Nodal Bank UTR**: ₹0.00 (Pending bank clearance)
+   * Open the **Validation Checks** tab in the Inspector to show the exact arithmetic and SLA status.
 
 2. **Generate Official RBI Legal Dispute Notice ([`/exceptions`](http://localhost:3000/exceptions))**:
    * Open the **Exception Center**.
