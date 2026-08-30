@@ -9,8 +9,7 @@
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
     "generate-demo-data": "node scripts/generate-demo-data.js",
-    "test-reconciliation": "node scripts/test-reconciliation.js",
-    "tunnel": "node scripts/tunnel.js"
+    "test-reconciliation": "node scripts/test-reconciliation.js"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
@@ -28,7 +27,6 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
-    "@ngrok/ngrok": "^1.7.0",
     "@prisma/client": "5.22.0",
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
