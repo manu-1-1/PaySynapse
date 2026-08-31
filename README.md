@@ -167,16 +167,6 @@ docker compose down
 
 ---
 
-## Account Login Credentials
-
-Use the following credentials to sign in:
-
-| Email | Password | Role |
-| :--- | :--- | :--- |
-| `ops@demo.paysynapse.com` | `password123` | Financial Operations Admin |
-
----
-
 ## Live Razorpay Demo & Webhooks
 
 To test with real Razorpay Test Mode checkout:
