@@ -242,3 +242,10 @@ body {
 .stagger-6 { animation-delay: 250ms; }
 .stagger-7 { animation-delay: 300ms; }
 .stagger-8 { animation-delay: 350ms; }
+
+/* Hide Next.js Dev Badge Indicator */
+nextjs-portal,
+div[data-nextjs-toast],
+div[data-nextjs-dialog-overlay] {
+  display: none !important;
+}
