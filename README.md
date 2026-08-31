@@ -167,9 +167,9 @@ docker compose down
 
 ---
 
-## Demo Account Credentials
+## Account Login Credentials
 
-Default login credentials pre-configured for instant access:
+Use the following credentials to sign in:
 
 | Email | Password | Role |
 | :--- | :--- | :--- |
