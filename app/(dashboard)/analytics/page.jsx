@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Activity, AlertTriangle, CheckCircle2, IndianRupee, BarChart3, ShieldCheck, Award } from 'lucide-react';
-import { ComplianceCertificateModal } from '@/components/ComplianceCertificateModal';
+import { Activity, AlertTriangle, CheckCircle2, IndianRupee, BarChart3, Download } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showCertModal, setShowCertModal] = useState(false);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -83,41 +81,34 @@ export default function AnalyticsPage() {
         <div>
           <h2 className="text-xl font-semibold text-[var(--foreground)]">Operations Analytics</h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-            Deep insights into reconciliation health, settlement velocity, and regulatory audit compliance.
+            Deep insights into reconciliation health, settlement velocity, and exception distribution.
           </p>
         </div>
-
-        {/* Export RBI Certificate Button */}
-        <button
-          onClick={() => setShowCertModal(true)}
-          className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 shadow-sm transition-colors"
-        >
-          <Award className="w-4 h-4" /> Export RBI Compliance Certificate
-        </button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {kpiCards.map((card) => {
-          const Icon = card.icon;
+        {kpiCards.map((kpi, idx) => {
+          const Icon = kpi.icon;
           return (
-            <div 
-              key={card.label}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="flex items-center mb-3">
-                <div className={`p-1.5 rounded-md ${card.bgClass} mr-3`}>
-                  <Icon className="w-4 h-4" style={{ color: card.color }} />
+            <div key={idx} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">{kpi.label}</span>
+                <div className={`p-2 rounded-md ${kpi.bgClass}`}>
+                  <Icon className="w-4 h-4" style={{ color: kpi.color }} />
                 </div>
-                <span className="text-sm font-medium text-[var(--muted-foreground)]">{card.label}</span>
               </div>
-              <div className={`text-2xl font-bold tracking-tight ${card.valueClass || ''}`}>{card.value}</div>
+              <div className="mt-3">
+                <div className={`text-2xl font-bold ${kpi.valueClass || 'text-[var(--foreground)]'}`}>
+                  {kpi.value ?? 0}
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Charts */}
+      {/* Charts Grid */}
       <div className="grid gap-5 md:grid-cols-2">
         {/* Exception Distribution */}
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-sm p-5">
@@ -129,11 +120,10 @@ export default function AnalyticsPage() {
                   data={exceptionData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={3}
+                  innerRadius={65}
+                  outerRadius={90}
+                  paddingAngle={5}
                   dataKey="value"
-                  strokeWidth={0}
                 >
                   {exceptionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -166,13 +156,6 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
-
-      {/* Compliance Certificate Modal */}
-      <ComplianceCertificateModal
-        isOpen={showCertModal}
-        onClose={() => setShowCertModal(false)}
-        analyticsData={data}
-      />
     </div>
   );
 }
