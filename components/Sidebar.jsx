@@ -87,7 +87,7 @@ export function Sidebar() {
       }}
     >
       {/* Brand Header */}
-      <div className={`flex h-14 items-center border-b border-white/[0.06] ${isCollapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
+      <div className={`flex h-14 items-center border-b border-white/[0.06] ${isCollapsed ? 'justify-between px-2.5' : 'justify-between px-4'}`}>
         <Link href="/" className="flex items-center gap-2.5 overflow-hidden group">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,16 +100,14 @@ export function Sidebar() {
           )}
         </Link>
 
-        {/* Collapse Button */}
-        {!isCollapsed && (
-          <button
-            onClick={toggleCollapse}
-            title="Collapse Sidebar (mini mode)"
-            className="p-1 rounded-md text-[var(--sidebar-text)] hover:text-white hover:bg-[var(--sidebar-hover)] transition-colors"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-          </button>
-        )}
+        {/* Collapse / Expand Toggle Button in Top Header */}
+        <button
+          onClick={toggleCollapse}
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          className="p-1 rounded-md text-[var(--sidebar-text)] hover:text-white hover:bg-[var(--sidebar-hover)] transition-colors"
+        >
+          {isCollapsed ? <PanelLeftOpen className="h-4 w-4 text-[#528FF0]" /> : <PanelLeftClose className="h-4 w-4" />}
+        </button>
       </div>
 
       {/* Navigation Links */}

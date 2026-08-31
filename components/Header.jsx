@@ -1,14 +1,16 @@
 'use client';
 
-import { Search, Bell, User, RefreshCw, Sun, Moon, AlertTriangle, LogOut } from "lucide-react"
+import { Search, Bell, User, RefreshCw, Sun, Moon, AlertTriangle, LogOut, PanelLeftOpen, PanelLeftClose } from "lucide-react"
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSidebar } from "./SidebarContext";
 
 export function Header() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { isCollapsed, toggleCollapse } = useSidebar();
   const [mounted, setMounted] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   
@@ -129,6 +131,14 @@ export function Header() {
     <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-6 sticky top-0 z-40 print:hidden">
       {/* Merchant / Context Header */}
       <div className="flex items-center gap-3">
+        <button
+          onClick={toggleCollapse}
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          className="p-1.5 -ml-2 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-[var(--muted)] transition-colors"
+        >
+          {isCollapsed ? <PanelLeftOpen className="h-4 w-4 text-[#528FF0]" /> : <PanelLeftClose className="h-4 w-4" />}
+        </button>
+
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[var(--foreground)] tracking-tight">PaySynapse Ops</span>
           <span className="text-gray-400 text-xs">/</span>
