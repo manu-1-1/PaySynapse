@@ -82,7 +82,7 @@ export default function AuthPage() {
                   suppressHydrationWarning
                   type="email"
                   name="email"
-                  defaultValue="ops@demo.paysynapse.com"
+                  placeholder="name@company.com"
                   className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] focus:outline-none focus:border-[#528FF0] text-[var(--foreground)] transition-colors duration-150 text-sm"
                   required
                 />
@@ -100,7 +100,7 @@ export default function AuthPage() {
                   suppressHydrationWarning
                   type="password"
                   name="password"
-                  defaultValue="password123"
+                  placeholder="••••••••"
                   className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] focus:outline-none focus:border-[#528FF0] text-[var(--foreground)] transition-colors duration-150 text-sm"
                   required
                 />
@@ -134,7 +134,7 @@ export default function AuthPage() {
 
           <button
             suppressHydrationWarning
-            onClick={handleSignIn}
+            onClick={() => setError('Google Workspace SSO is not configured for this environment. Please enter your credentials above.')}
             type="button"
             className="w-full flex items-center justify-center py-2.5 px-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--foreground)] font-medium transition-colors duration-150 focus:outline-none text-sm"
           >
