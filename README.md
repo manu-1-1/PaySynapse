@@ -106,11 +106,32 @@ PaySynapse Platform
 
 ## Getting Started
 
-### Prerequisites
+### Option A: 🐳 Docker Container Quickstart (Recommended)
+
+Run the entire PaySynapse stack (Next.js 16 Web App + PostgreSQL 16 Database) in one command:
+
+```bash
+docker compose up --build
+```
+
+* PaySynapse Web Application will be available at [http://localhost:3000](http://localhost:3000).
+* PostgreSQL will automatically initialize with persistent storage and seed demo datasets.
+
+To stop the containers:
+```bash
+docker compose down
+```
+
+---
+
+### Option B: Local Node.js Development
+
+#### Prerequisites
 * **Node.js**: v18.0.0 or higher
 * **npm**: v9.0.0 or higher
+* **PostgreSQL** or **SQLite**
 
-### Installation
+#### Installation Steps
 
 1. **Clone the repository**:
    ```bash
@@ -124,18 +145,14 @@ PaySynapse Platform
    ```
 
 3. **Set up Environment Variables**:
-   Create a `.env` file in the root directory:
-   ```env
-   DATABASE_URL="file:./dev.db"
-   JWT_SECRET="your_jwt_secret_key_here"
-   GEMINI_API_KEY="your_google_gemini_api_key"
-   RAZORPAY_KEY_ID="rzp_test_your_key_id"
-   RAZORPAY_KEY_SECRET="your_razorpay_key_secret"
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
    ```
 
 4. **Initialize Database & Seed Data**:
    ```bash
-   # Push Prisma schema to SQLite database
+   # Push Prisma schema
    npx prisma db push
 
    # Generate realistic demo dataset (Orders, Payments, Settlements, Exceptions)

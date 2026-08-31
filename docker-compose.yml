@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: paysynapse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: paysynapse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d paysynapse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paysynapse-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgrespassword@postgres:5432/paysynapse?schema=public"
+      JWT_SECRET: "${JWT_SECRET:-paysynapse_secure_jwt_secret_2026}"
+      RAZORPAY_KEY_ID: "${RAZORPAY_KEY_ID:-rzp_test_placeholder}"
+      RAZORPAY_KEY_SECRET: "${RAZORPAY_KEY_SECRET:-test_secret}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+    driver: local
