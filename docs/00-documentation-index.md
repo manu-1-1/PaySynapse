@@ -62,4 +62,11 @@ This documentation suite is organized sequentially into numbered modules for max
    * Real-time Ingestion, Digital Twin Walkthrough & Gemini AI Investigation
    * Failure & Fee Overcharge Anomaly Testing
 
+10. [10 — Digital Twin & Simulation Guide](file:///d:/Projects/PaySynapse/docs/10-digital-twin-and-simulation-guide.md)
+    * The 5-Stage Financial Lifecycle Architecture (Order ➔ Payment ➔ Charges ➔ Settlement ➔ Bank)
+    * Nodal Escrow & Bank UTR Concepts
+    * Plain-English Breakdown of All 8 Simulation Edge Cases
+    * Smooth Multi-Stage Simulation Engine & Playback Controls
+    * Autonomous Auto-Fix & Real-Time Database Healing Mechanics
+
 ---
