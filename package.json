@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:merchant": "cd merchant-store && npm run dev",
+    "dev:bank": "cd bank-portal && npm run dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
