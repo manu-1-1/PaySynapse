@@ -94,21 +94,84 @@ PaySynapse includes a comprehensive 9-module documentation index in [`docs/`](do
 ## Architecture & Tech Stack
 
 ```
-PaySynapse Platform
-├── Frontend: Next.js 16 (App Router), React 19, Tailwind CSS v4, Lucide Icons, Recharts
-├── Backend: Next.js API Routes, Next Middleware, Webhook Handlers
-├── Database & ORM: SQLite / PostgreSQL via Prisma ORM 5.22
-├── AI Engine: Google Gemini AI SDK (@google/genai)
-└── Auth & Security: JWT (jose), bcryptjs password hashing, HTTP-Only Cookies
+PaySynapse 3-Feed Financial Tripartite Ecosystem
+├── ⚡ PaySynapse Core Reconciler (Port 3000)
+│   ├── Frontend: Next.js 16 (App Router), React 19, Tailwind CSS v4, Lucide Icons, Recharts
+│   ├── Backend: 5-Point Deterministic Reconciler, Dynamic MDR Matrix, Webhook Handlers
+│   ├── Database & ORM: PostgreSQL via Prisma ORM 5.22
+│   └── AI Engine: Google Gemini AI SDK (@google/genai)
+├── 🛒 CyberDeck Merchant Store (Port 3001)
+│   └── Next.js 16 E-Commerce Checkout with Live Razorpay Sandbox Integration
+└── 🏦 Apex Nodal Bank Simulator (Port 3002)
+    └── RBI Nodal Escrow Vault, Real-Time UTR Clearance, ISO MT940 Feeds & Chaos Studio
 ```
 
 ---
 
-## Getting Started
+## Running Modes
 
-### Option A: 🐳 Docker Container Quickstart (Recommended)
+PaySynapse can be run in two flexible modes:
 
-Run the entire PaySynapse stack (Next.js 16 Web App + PostgreSQL 16 Database) in one command:
+### Mode 1: 🌐 Complete 3-App Tripartite Ecosystem (Recommended for Full Demo)
+
+Run all 3 interconnected services side-by-side for an end-to-end interactive financial simulation:
+* 🛒 **CyberDeck Store** (`http://localhost:3001`): Customer adds products to cart & checks out via Razorpay.
+* ⚡ **PaySynapse Reconciler** (`http://localhost:3000`): Real-time 5-point matching graph, digital twin visualizer & AI copilot.
+* 🏦 **Apex Nodal Bank** (`http://localhost:3002`): Live Nodal Escrow queue, 1-click UTR clearance & Chaos Studio.
+
+#### 1-Click Launch (Windows)
+```powershell
+.\scripts\start-ecosystem.bat
+```
+
+#### Or Launch via Separate Terminals
+```bash
+# Terminal 1: Core Reconciliation Platform (Port 3000)
+npm run dev
+
+# Terminal 2: Merchant Store (Port 3001)
+npm run dev:merchant
+
+# Terminal 3: Apex Nodal Bank (Port 3002)
+npm run dev:bank
+```
+
+---
+
+### Mode 2: ⚡ Standalone Mode (Run Single App Alone)
+
+If you only need a specific component, each application runs completely independently:
+
+#### 1. PaySynapse Engine Only (Port 3000)
+Run the reconciliation core with built-in synthetic datasets and simulation tools:
+```bash
+npm run dev
+```
+*Access at [http://localhost:3000](http://localhost:3000)*. Includes full simulation history reel, Dynamic MDR Pricing matrix, RBI dispute packet generator, and AI Copilot.
+
+#### 2. CyberDeck Merchant Store Only (Port 3001)
+Run only the consumer storefront:
+```bash
+cd merchant-store
+npm run dev
+```
+*Access at [http://localhost:3001](http://localhost:3001)*.
+
+#### 3. Apex Nodal Bank Simulator Only (Port 3002)
+Run only the RBI Nodal bank clearing portal:
+```bash
+cd bank-portal
+npm run dev
+```
+*Access at [http://localhost:3002](http://localhost:3002)*.
+
+---
+
+## Getting Started & Setup
+
+### Option A: 🐳 Docker Container Quickstart (PaySynapse + PostgreSQL)
+
+Run the containerized stack in one command:
 
 ```bash
 docker compose up --build
@@ -124,12 +187,12 @@ docker compose down
 
 ---
 
-### Option B: Local Node.js Development
+### Option B: Local Node.js Development Setup
 
 #### Prerequisites
 * **Node.js**: v18.0.0 or higher
 * **npm**: v9.0.0 or higher
-* **PostgreSQL** or **SQLite**
+* **PostgreSQL** (or SQLite)
 
 #### Installation Steps
 
@@ -159,11 +222,10 @@ docker compose down
    npm run generate-demo-data
    ```
 
-5. **Start the Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Start Application**:
+   - For all 3 apps: `.\scripts\start-ecosystem.bat`
+   - For PaySynapse alone: `npm run dev`
+
 
 ---
 
