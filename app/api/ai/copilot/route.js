@@ -6,9 +6,10 @@ import { investigateException } from '@/lib/ai/investigate';
 const prisma = new PrismaClient();
 
 const CANDIDATE_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
   'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-1.5-flash',
   'gemini-flash-latest',
   'gemini-1.5-pro'
 ];
