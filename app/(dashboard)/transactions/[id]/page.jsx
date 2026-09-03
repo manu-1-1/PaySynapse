@@ -2,14 +2,42 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, AlertCircle, Clock, Building2, Receipt, ArrowRightLeft, CreditCard, Loader2 } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  AlertCircle, 
+  Clock, 
+  Building2, 
+  Receipt, 
+  ArrowRightLeft, 
+  CreditCard, 
+  Loader2,
+  Sparkles,
+  Bot,
+  FileText,
+  MessageSquare,
+  TrendingDown,
+  ShieldAlert,
+  ShieldCheck,
+  HelpCircle,
+  ExternalLink,
+  Lightbulb
+} from 'lucide-react';
 import Link from 'next/link';
+import { DisputePacketModal } from '@/components/DisputePacketModal';
+import { PreventionPlaybookModal } from '@/components/PreventionPlaybookModal';
 
 export default function TransactionDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [tx, setTx] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [selectedExceptionForDispute, setSelectedExceptionForDispute] = useState(null);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showPreventionModal, setShowPreventionModal] = useState(false);
+  const [preventionType, setPreventionType] = useState('FEE_MISMATCH');
 
   useEffect(() => {
     const fetchTx = async () => {
@@ -18,6 +46,19 @@ export default function TransactionDetailPage() {
         if (!res.ok) throw new Error('Not found');
         const data = await res.json();
         setTx(data.data);
+
+        // Preload any existing AI investigation from active exception
+        const activeEx = data.data?.exceptions?.find(e => e.status === 'OPEN') || data.data?.exceptions?.[0];
+        if (activeEx) {
+          setPreventionType(activeEx.type);
+        }
+        if (activeEx?.aiExplanation) {
+          setAiResult({
+            explanation: activeEx.aiExplanation,
+            recommendedAction: activeEx.recommendedAction,
+            confidence: activeEx.aiConfidence || 0.95
+          });
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -28,12 +69,36 @@ export default function TransactionDetailPage() {
   }, [params.id]);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('en-IN');
+  };
+
+  const handleRunAiInvestigation = async () => {
+    const targetEx = tx.exceptions?.find(e => e.status === 'OPEN') || tx.exceptions?.[0];
+    if (!targetEx) return;
+
+    setAiLoading(true);
+    try {
+      const res = await fetch('/api/ai/investigate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exceptionId: targetEx.id })
+      });
+      const data = await res.json();
+      if (res.ok && data.data) {
+        setAiResult(data.data);
+      } else {
+        alert(data.error || 'Failed to generate AI investigation');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (loading) {
@@ -57,27 +122,84 @@ export default function TransactionDetailPage() {
 
   const recon = tx.reconciliations?.[0];
   const isMatched = recon?.status === 'MATCHED';
+  const openExceptions = tx.exceptions?.filter(e => e.status === 'OPEN') || [];
   const hasExceptions = tx.exceptions?.length > 0;
+  const primaryException = openExceptions[0] || tx.exceptions?.[0];
+
+  // Derive dynamic natural language synthesis
+  const feeTotal = tx.fees?.reduce((acc, f) => acc + (f.amount || 0), 0) || 0;
+  const taxTotal = tx.fees?.reduce((acc, f) => acc + (f.tax || 0), 0) || 0;
+  const hasSettlement = tx.settlements && tx.settlements.length > 0;
+  const bankTx = tx.settlements?.[0]?.bankTransactions?.[0];
+
+  const getNaturalSummary = () => {
+    if (isMatched && !openExceptions.length) {
+      return `Payment of ${formatCurrency(tx.amount)} via ${tx.method} matched perfectly. Net payout of ${formatCurrency(recon?.actualAmount || tx.amount - feeTotal - taxTotal)} was credited to bank ledger under UTR ${bankTx?.reference || 'CLEARED'}. Zero variance detected.`;
+    }
+
+    if (openExceptions.some(e => e.type === 'FEE_MISMATCH')) {
+      const ex = openExceptions.find(e => e.type === 'FEE_MISMATCH') || tx.exceptions.find(e => e.type === 'FEE_MISMATCH');
+      return `Contract overcharge detected: Gateway billed ${formatCurrency(feeTotal)} in processing fees (${((feeTotal / tx.amount) * 100).toFixed(2)}%), exceeding your agreed tier. This results in a direct merchant margin loss of ${formatCurrency(ex?.financialImpact || 0.60)}. Bank settlement ${hasSettlement ? `arrived at ${formatCurrency(tx.settlements[0].amount)}` : 'is pending'}.`;
+    }
+
+    if (openExceptions.some(e => e.type === 'MISSING_SETTLEMENT')) {
+      return `Payment was successfully captured by gateway for ${formatCurrency(tx.amount)}, but no matching settlement batch or bank credit has arrived yet. In-flight funds are under T+1 SLA monitoring.`;
+    }
+
+    if (openExceptions.length > 0) {
+      return `Transaction flagged with ${openExceptions.length} active discrepancy: ${primaryException.description}. Total financial variance: ${formatCurrency(primaryException.financialImpact)}.`;
+    }
+
+    return `Payment ${tx.externalPaymentId} for ${formatCurrency(tx.amount)} is currently in ${tx.status} state.`;
+  };
 
   return (
     <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
-      <div className="flex items-center space-x-3">
-        <button 
-          onClick={() => router.back()} 
-          className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150"
-        >
-          <ArrowLeft className="w-4 h-4 text-[var(--muted-foreground)]" />
-        </button>
-        <div>
-          <div className="flex items-center space-x-2.5">
-            <h2 className="text-lg font-semibold">Payment: {tx.externalPaymentId}</h2>
-            <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
-              tx.status === 'CAPTURED' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            }`}>
-              {tx.status}
-            </span>
+      {/* Top Bar Navigation */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => router.back()} 
+            className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150"
+          >
+            <ArrowLeft className="w-4 h-4 text-[var(--muted-foreground)]" />
+          </button>
+          <div>
+            <div className="flex items-center space-x-2.5">
+              <h2 className="text-lg font-semibold">Payment: {tx.externalPaymentId}</h2>
+              <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
+                tx.status === 'CAPTURED' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+              }`}>
+                {tx.status}
+              </span>
+            </div>
+            <p className="text-[var(--muted-foreground)] mt-0.5 text-sm">Created at {formatDate(tx.createdAt)}</p>
           </div>
-          <p className="text-[var(--muted-foreground)] mt-0.5 text-sm">Created at {formatDate(tx.createdAt)}</p>
+        </div>
+
+        {/* Action Link to Copilot & Playbook */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setPreventionType(primaryException?.type || 'FEE_MISMATCH');
+              setShowPreventionModal(true);
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Prevention Playbook
+          </button>
+          <Link
+            href={`/digital-twin`}
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-[#528FF0]" /> Digital Twin
+          </Link>
+          <Link
+            href={`/copilot`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#528FF0] hover:bg-[#4080E0] text-white transition-colors shadow-sm"
+          >
+            <Bot className="w-3.5 h-3.5" /> AI Copilot
+          </Link>
         </div>
       </div>
 
@@ -121,30 +243,183 @@ export default function TransactionDetailPage() {
         </div>
       </div>
 
+      {/* ✨ AI Natural Language Copilot & Executive Audit Review Box */}
+      <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/40 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-[var(--surface)] dark:from-blue-950/20 dark:via-indigo-950/10 dark:to-[var(--surface)] p-5 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-100 dark:border-blue-900/40 pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="p-2 rounded-lg bg-blue-500/10 text-[#528FF0] border border-blue-500/20">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
+                AI Copilot Natural Language Review
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                  {aiResult ? `${(aiResult.confidence * 100).toFixed(0)}% Confidence` : 'Deterministic NLP'}
+                </span>
+              </h3>
+              <p className="text-xs text-[var(--muted-foreground)]">Plain-English executive explanation of financial lifecycle & contract adherence</p>
+            </div>
+          </div>
+
+          <div className="flex items-center flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setPreventionType(primaryException?.type || 'FEE_MISMATCH');
+                setShowPreventionModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" /> How to Avoid This
+            </button>
+
+            {primaryException && (
+              <button
+                onClick={handleRunAiInvestigation}
+                disabled={aiLoading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-300 dark:border-blue-800 bg-[var(--surface)] hover:bg-blue-50 dark:hover:bg-blue-950/30 text-[#528FF0] transition-colors disabled:opacity-50"
+              >
+                {aiLoading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Deep Diving...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5" /> Re-Analyze with Gemini
+                  </>
+                )}
+              </button>
+            )}
+
+            {openExceptions.length > 0 && (
+              <button
+                onClick={() => {
+                  setSelectedExceptionForDispute(primaryException);
+                  setShowDisputeModal(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm"
+              >
+                <FileText className="w-3.5 h-3.5" /> Dispute Notice
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Narrative Box */}
+        <div className="space-y-3">
+          <div className="bg-[var(--surface)]/90 backdrop-blur-sm p-3.5 rounded-lg border border-blue-100/80 dark:border-blue-900/30 text-sm leading-relaxed text-[var(--foreground)]">
+            {aiResult ? aiResult.explanation : getNaturalSummary()}
+          </div>
+
+          {/* AI Recommended Next Step & Prevention Callout */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30 text-xs">
+            <div className="flex items-start sm:items-center gap-2">
+              <span className="font-semibold text-[#528FF0] uppercase tracking-wider whitespace-nowrap">Recommended Action:</span>
+              <span className="text-[var(--foreground)]">
+                {aiResult?.recommendedAction || (
+                  openExceptions.some(e => e.type === 'FEE_MISMATCH')
+                    ? 'Generate an RBI dispute claim to recover overcharged fees from gateway operations.'
+                    : openExceptions.some(e => e.type === 'MISSING_SETTLEMENT')
+                    ? 'Wait for next nodal clearing cycle or raise a payout inquiry if T+2 SLA expires.'
+                    : 'No further action required. Transaction is fully settled.'
+                )}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 self-end sm:self-auto">
+              <button
+                onClick={() => {
+                  setPreventionType(primaryException?.type || 'FEE_MISMATCH');
+                  setShowPreventionModal(true);
+                }}
+                className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline flex items-center gap-1"
+              >
+                <ShieldCheck className="w-3 h-3" /> Prevention Guide
+              </button>
+              <Link
+                href={`/copilot`}
+                className="text-[#528FF0] hover:underline font-semibold flex items-center gap-1 whitespace-nowrap"
+              >
+                Ask Copilot <ExternalLink className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Detected Exceptions List */}
       {hasExceptions && (
         <div className="rounded-lg border border-red-200 dark:border-red-800/30 bg-red-50/50 dark:bg-red-900/10 p-5 shadow-sm">
-          <h3 className="text-base font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-2" /> 
-            Detected Exceptions
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-red-700 dark:text-red-400 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-2" /> 
+              Detected Exceptions ({tx.exceptions.length})
+            </h3>
+            <button
+              onClick={() => {
+                setPreventionType(primaryException?.type || 'FEE_MISMATCH');
+                setShowPreventionModal(true);
+              }}
+              className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1"
+            >
+              <Lightbulb className="w-3.5 h-3.5" /> How to Prevent These Mismatches
+            </button>
+          </div>
+
           <div className="space-y-2">
-            {tx.exceptions.map(ex => (
-              <div key={ex.id} className="flex justify-between items-center bg-[var(--surface)] p-3.5 rounded-lg border border-red-100 dark:border-red-900/30 shadow-sm">
-                <div>
-                  <div className="font-semibold text-sm">{ex.type.replace(/_/g, ' ')}</div>
-                  <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{ex.description}</div>
+            {tx.exceptions.map(ex => {
+              const isObsolete = ex.status === 'OBSOLETE';
+              return (
+                <div 
+                  key={ex.id} 
+                  className={`flex flex-col sm:flex-row justify-between sm:items-center p-3.5 rounded-lg border shadow-sm transition-colors duration-150 gap-2 ${
+                    isObsolete 
+                      ? 'bg-[var(--surface)]/60 border-gray-200 dark:border-gray-800 opacity-70' 
+                      : 'bg-[var(--surface)] border-red-100 dark:border-red-900/30'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{ex.type.replace(/_/g, ' ')}</span>
+                      <span className={`px-2 py-0.2 rounded text-[10px] uppercase font-bold tracking-wider ${
+                        isObsolete ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      }`}>
+                        {ex.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-[var(--muted-foreground)]">{ex.description}</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--border)]">
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(ex.financialImpact)}</div>
+                      <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">{ex.severity} Priority</div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setPreventionType(ex.type);
+                          setShowPreventionModal(true);
+                        }}
+                        title="View prevention playbook for this mismatch"
+                        className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 h-7 px-2 transition-colors"
+                      >
+                        <ShieldCheck className="w-3 h-3 mr-1" /> Prevent
+                      </button>
+                      <Link 
+                        href={`/exceptions/${ex.id}`}
+                        className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] h-7 px-2.5 transition-colors"
+                      >
+                        <FileText className="w-3 h-3 mr-1 text-red-600" /> Triage
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(ex.financialImpact)}</div>
-                  <div className="text-xs text-[var(--muted-foreground)] font-medium mt-0.5">{ex.status}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Lineage Timeline */}
+      {/* Financial Lineage Timeline */}
       <div className="space-y-3">
         <h3 className="text-base font-semibold">Financial Lineage</h3>
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-sm overflow-hidden">
@@ -227,6 +502,25 @@ export default function TransactionDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Dispute Modal */}
+      {selectedExceptionForDispute && (
+        <DisputePacketModal
+          isOpen={showDisputeModal}
+          onClose={() => setShowDisputeModal(false)}
+          exception={selectedExceptionForDispute}
+          payment={tx}
+        />
+      )}
+
+      {/* Prevention Playbook Modal */}
+      <PreventionPlaybookModal
+        isOpen={showPreventionModal}
+        onClose={() => setShowPreventionModal(false)}
+        exceptionType={preventionType}
+      />
     </div>
   );
 }
+
+

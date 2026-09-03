@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, AlertCircle, FileText, CheckCircle2, ExternalLink, Sparkles, Bot, Loader2, Send } from 'lucide-react';
+import { ArrowLeft, AlertCircle, FileText, CheckCircle2, ExternalLink, Sparkles, Bot, Loader2, Send, ShieldCheck, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 import { DisputePacketModal } from '@/components/DisputePacketModal';
+import { PreventionPlaybookModal } from '@/components/PreventionPlaybookModal';
 
 export default function ExceptionDetailPage() {
   const params = useParams();
@@ -12,6 +13,7 @@ export default function ExceptionDetailPage() {
   const [ex, setEx] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showPreventionModal, setShowPreventionModal] = useState(false);
   
   // Resolution Form State
   const [note, setNote] = useState('');
@@ -123,26 +125,35 @@ export default function ExceptionDetailPage() {
 
   return (
     <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
-      <div className="flex items-center space-x-3">
-        <button 
-          onClick={() => router.back()} 
-          className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150"
-        >
-          <ArrowLeft className="w-4 h-4 text-[var(--muted-foreground)]" />
-        </button>
-        <div>
-          <div className="flex items-center space-x-2.5">
-            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">Exception Triage</h2>
-            <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
-              isResolved 
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' 
-                : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-            }`}>
-              {ex.status}
-            </span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => router.back()} 
+            className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150"
+          >
+            <ArrowLeft className="w-4 h-4 text-[var(--muted-foreground)]" />
+          </button>
+          <div>
+            <div className="flex items-center space-x-2.5">
+              <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">Exception Triage</h2>
+              <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
+                isResolved 
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' 
+                  : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+              }`}>
+                {ex.status}
+              </span>
+            </div>
+            <p className="text-[var(--muted-foreground)] mt-0.5 text-sm">Detected at {formatDate(ex.createdAt)}</p>
           </div>
-          <p className="text-[var(--muted-foreground)] mt-0.5 text-sm">Detected at {formatDate(ex.createdAt)}</p>
         </div>
+
+        <button
+          onClick={() => setShowPreventionModal(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" /> How to Avoid This Mismatch
+        </button>
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
@@ -210,6 +221,25 @@ export default function ExceptionDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Inline Prevention Tip Card */}
+          <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <Lightbulb className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-semibold text-emerald-800 dark:text-emerald-300 block">Want to prevent this mismatch permanently?</span>
+                <span className="text-[var(--muted-foreground)]">Review our 3-step operational and engineering prevention playbook.</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPreventionModal(true)}
+              className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium whitespace-nowrap transition-colors"
+            >
+              Open Playbook
+            </button>
+          </div>
 
           {ex.paymentId && (
             <div className="border-t border-[var(--border)] pt-5">
@@ -296,6 +326,14 @@ export default function ExceptionDetailPage() {
         exception={ex}
         payment={ex.payment}
       />
+
+      {/* Prevention Playbook Modal */}
+      <PreventionPlaybookModal
+        isOpen={showPreventionModal}
+        onClose={() => setShowPreventionModal(false)}
+        exceptionType={ex?.type}
+      />
     </div>
   );
 }
+
