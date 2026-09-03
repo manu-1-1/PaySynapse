@@ -113,6 +113,19 @@ export default function ShopPage() {
             text: `Payment Successful! Payment ID: ${razorpayResponse.razorpay_payment_id}. Saved to My Orders.`,
             orderId: newOrderRecord.id
           });
+
+          // Sync directly to PaySynapse Reconciler & Bank Ecosystem
+          fetch("/api/sync-paysynapse", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentId: razorpayResponse.razorpay_payment_id,
+              orderId: razorpayResponse.razorpay_order_id,
+              amount: totalAmount,
+              currency: "INR",
+              method: "card"
+            })
+          }).catch((err) => console.warn("Sync to PaySynapse error:", err));
         },
         prefill: {
           name: "Test Customer",

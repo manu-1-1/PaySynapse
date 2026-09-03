@@ -8,6 +8,40 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get('filter') || 'ALL'; // ALL, PENDING, CLEARED, HELD
 
+    // Auto-detect newly captured payments from Razorpay/PaySynapse and enqueue pending settlements
+    try {
+      const unSettledPayments = await prisma.payment.findMany({
+        where: {
+          status: 'CAPTURED',
+          settlements: { none: {} }
+        },
+        include: {
+          fees: true,
+          order: true
+        }
+      });
+
+      for (const p of unSettledPayments) {
+        const gross = parseFloat(p.amount.toString());
+        const fee = p.fees.reduce(
+          (acc, f) => acc + parseFloat(f.amount.toString()) + parseFloat(f.tax.toString()),
+          0
+        );
+        const net = Math.max(0, parseFloat((gross - fee).toFixed(2)));
+
+        await prisma.settlement.create({
+          data: {
+            externalSettlementId: `set_${p.externalPaymentId || Date.now()}`,
+            paymentId: p.id,
+            amount: net,
+            status: 'PENDING',
+          }
+        });
+      }
+    } catch (enqueueErr) {
+      console.warn('Error enqueuing captured payments into bank portal:', enqueueErr);
+    }
+
     // Fetch settlements with associated payment and bank transactions
     const settlements = await prisma.settlement.findMany({
       orderBy: { createdAt: 'desc' },
