@@ -450,6 +450,11 @@ export default function DigitalTwinPage() {
   const [copiedId, setCopiedId] = useState(null);
   const [mounted, setMounted] = useState(false);
 
+  // Dynamic What-If Simulation Sandbox State
+  const [customAmount, setCustomAmount] = useState('299');
+  const [customMethod, setCustomMethod] = useState('CARD');
+  const [latestLiveTx, setLatestLiveTx] = useState(null);
+
   // Smooth Simulation Mechanism State
   const [simScenario, setSimScenario] = useState('PERFECT_MATCH');
   const [simScenarioLabel, setSimScenarioLabel] = useState('Normal Flow');
@@ -473,21 +478,24 @@ export default function DigitalTwinPage() {
   const [fixingId, setFixingId] = useState(null);
   const [fixedIds, setFixedIds] = useState([]);
 
-  // Auto-load the first transaction or latest live transaction
+  // Auto-load the latest live transaction
   useEffect(() => {
     setMounted(true);
-    const fetchFirst = async () => {
+    const fetchLatestLive = async () => {
       try {
-        const res = await fetch('/api/transactions?limit=1');
+        const res = await fetch('/api/transactions?limit=5');
         const data = await res.json();
         if (data.data?.length > 0) {
-          handleSearch(data.data[0].id, 'Initial Live');
+          // Find first real live payment or default first
+          const firstLive = data.data.find(d => !d.externalPaymentId?.includes('_sim_')) || data.data[0];
+          setLatestLiveTx(firstLive);
+          handleSearch(firstLive.id, 'Live DB Record');
         }
       } catch (e) {
         console.error(e);
       }
     };
-    fetchFirst();
+    fetchLatestLive();
   }, []);
 
   // Smooth Simulation progression timer
@@ -570,7 +578,7 @@ export default function DigitalTwinPage() {
           externalPaymentId: loadedTx.externalPaymentId || loadedTx.id,
           amount: loadedTx.amount,
           scenario: scenarioLabel || (prev.length === 0 ? 'Original' : 'Inspected'),
-          isSim: Boolean(scenarioLabel?.startsWith('Sim:')),
+          isSim: Boolean(scenarioLabel?.startsWith('Sim:') || loadedTx.externalPaymentId?.includes('_sim_')),
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         return [entry, ...prev.slice(0, 9)];
@@ -583,8 +591,11 @@ export default function DigitalTwinPage() {
     }
   };
 
-  // Launch smooth step-by-step simulation
-  const handleSimulate = async (scenarioId, scenarioLabel) => {
+  // Launch smooth step-by-step simulation with dynamic amount & method
+  const handleSimulate = async (scenarioId, scenarioLabel, overrideAmount = null, overrideMethod = null) => {
+    const targetAmount = overrideAmount !== null ? overrideAmount : (parseFloat(customAmount) || 299);
+    const targetMethod = overrideMethod || customMethod;
+
     setSimulating(scenarioId);
     setError('');
     setAiResult(null);
@@ -598,7 +609,11 @@ export default function DigitalTwinPage() {
       const res = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenario: scenarioId })
+        body: JSON.stringify({ 
+          scenario: scenarioId,
+          amount: targetAmount,
+          method: targetMethod
+        })
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ error: 'Simulation failed' }));
@@ -844,7 +859,7 @@ export default function DigitalTwinPage() {
       {/* Interactive Simulation Sandbox Bar */}
       <div className="w-full print:hidden space-y-3">
         
-        {/* Top Control: Search Bar & Back to Original Button */}
+        {/* Top Control: Search Bar & Live vs Sandbox Indicator */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-[280px]">
             <div className="relative flex-1">
@@ -867,36 +882,103 @@ export default function DigitalTwinPage() {
             </button>
           </div>
 
-          {originalTx && tx?.id !== originalTx?.id && (
-            <button
-              onClick={() => handleSearch(originalTx.id, 'Original')}
-              className="h-9 px-3.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-150 flex items-center gap-1.5 shadow-sm animate-pulse"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Back to Original ({originalTx.externalPaymentId?.slice(0, 16) || 'Live Transaction'})</span>
-            </button>
-          )}
-        </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* ⚡ Load Latest Live Payment Button */}
+            {latestLiveTx && (
+              <button
+                onClick={() => handleSearch(latestLiveTx.id, 'Live DB Record')}
+                className="h-9 px-3.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 transition-all duration-150 flex items-center gap-1.5 shadow-sm"
+              >
+                <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Load Latest Live ({latestLiveTx.externalPaymentId?.slice(0, 14)}... • {formatCurrency(latestLiveTx.amount)})</span>
+              </button>
+            )}
 
-        {/* Simulation Scenarios Grid */}
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                <Zap className="w-4 h-4 text-amber-500" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-[var(--foreground)] uppercase tracking-wider">Simulation Scenarios</h3>
-                <p className="text-[11px] text-[var(--muted-foreground)]">Click any edge-case to observe real-time topology reaction and ledger mechanics</p>
-              </div>
-            </div>
-            {simulating && (
-              <span className="text-xs text-amber-600 flex items-center gap-1.5 font-medium animate-pulse bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-500/30">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ingesting scenario pipeline...
-              </span>
+            {originalTx && tx?.id !== originalTx?.id && (
+              <button
+                onClick={() => handleSearch(originalTx.id, 'Original')}
+                className="h-9 px-3.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-150 flex items-center gap-1.5 shadow-sm"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Back to Live ({originalTx.externalPaymentId?.slice(0, 14) || 'Live Transaction'})</span>
+              </button>
             )}
           </div>
+        </div>
+
+        {/* Dynamic Sandbox Simulator Controls */}
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm relative overflow-hidden space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Sliders className="w-4 h-4 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-[var(--foreground)] uppercase tracking-wider flex items-center gap-2">
+                  Dynamic What-If Sandbox Simulator
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                    tx?.externalPaymentId?.includes('_sim_') || simScenario !== 'PERFECT_MATCH'
+                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  }`}>
+                    {tx?.externalPaymentId?.includes('_sim_') ? '🧪 Sandbox Model' : '🟢 Live DB Record'}
+                  </span>
+                </h3>
+                <p className="text-[11px] text-[var(--muted-foreground)]">Customize amount & payment method to dynamically test fee mathematics across all 5 nodes</p>
+              </div>
+            </div>
+
+            {/* Dynamic Input Controls */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Amount Input */}
+              <div className="flex items-center bg-[var(--muted)] rounded-lg border border-[var(--border)] px-2.5 py-1">
+                <span className="text-xs font-semibold text-[var(--muted-foreground)] mr-1.5">₹</span>
+                <input
+                  type="number"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                  placeholder="Amount"
+                  className="w-20 bg-transparent text-xs font-bold text-[var(--foreground)] focus:outline-none"
+                />
+              </div>
+
+              {/* Quick Amount Presets */}
+              <div className="hidden md:flex items-center gap-1">
+                {['299', '800', '2500', '5000'].map(amt => (
+                  <button
+                    key={amt}
+                    onClick={() => setCustomAmount(amt)}
+                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                      customAmount === amt
+                        ? 'bg-[#528FF0] text-white border-[#528FF0]'
+                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border-[var(--border)]'
+                    }`}
+                  >
+                    ₹{amt}
+                  </button>
+                ))}
+              </div>
+
+              {/* Method Selector */}
+              <select
+                value={customMethod}
+                onChange={(e) => setCustomMethod(e.target.value)}
+                className="bg-[var(--muted)] rounded-lg px-2.5 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--foreground)] focus:outline-none cursor-pointer"
+              >
+                <option value="CARD">Credit/Debit Card (1.8% MDR)</option>
+                <option value="UPI">UPI (0.0% / 1.1%)</option>
+                <option value="NETBANKING">Netbanking (Flat ₹15)</option>
+              </select>
+
+              {simulating && (
+                <span className="text-xs text-amber-600 flex items-center gap-1.5 font-medium animate-pulse bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-500/30">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ingesting scenario pipeline...
+                </span>
+              )}
+            </div>
+          </div>
           
+          {/* Scenario Buttons */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
             {SCENARIOS.map(s => {
               const isSelected = simScenario === s.id;
@@ -919,7 +1001,7 @@ export default function DigitalTwinPage() {
 
           {/* Simulation History Reel */}
           {history.length > 0 && (
-            <div className="mt-3.5 pt-3 border-t border-[var(--border)] flex items-center gap-2 overflow-x-auto text-xs pb-1">
+            <div className="pt-2 border-t border-[var(--border)] flex items-center gap-2 overflow-x-auto text-xs pb-1">
               <span className="text-[11px] font-semibold text-[var(--muted-foreground)] flex items-center gap-1 flex-shrink-0">
                 <Clock className="w-3 h-3" /> History:
               </span>

@@ -18,15 +18,25 @@ export async function POST(req) {
       data: { name: 'Acme Corp (Simulation)' }
     });
 
-    const grossAmount = 5000.00;
+    const grossAmount = body.amount ? parseFloat(body.amount) : 5000.00;
     const orderExtId = generateId('order');
     const paymentExtId = generateId('pay');
     const settlementExtId = generateId('setl');
     const txnExtId = generateId('txn');
 
     // Method and standard fee calculation
-    const method = scenario === 'FEE_MISMATCH' ? 'NETBANKING' : 'CARD';
-    let standardFee = method === 'NETBANKING' ? 15.00 : parseFloat((grossAmount * 0.018).toFixed(2));
+    const method = (body.method || (scenario === 'FEE_MISMATCH' ? 'CARD' : 'CARD')).toUpperCase();
+    
+    // Calculate standard contractual rate
+    let standardFee = 0;
+    if (method === 'NETBANKING') {
+      standardFee = 15.00;
+    } else if (method === 'UPI') {
+      standardFee = grossAmount > 2000 ? parseFloat((grossAmount * 0.011).toFixed(2)) : 0.00;
+    } else {
+      // Default Card 1.80%
+      standardFee = parseFloat((grossAmount * 0.018).toFixed(2));
+    }
     let standardTax = parseFloat((standardFee * 0.18).toFixed(2));
 
     // Create Order
@@ -53,11 +63,18 @@ export async function POST(req) {
       }
     });
 
-    // Determine actual fee
+    // Determine actual fee (simulate gateway overcharge for FEE_MISMATCH)
     let actualFee = standardFee;
     let actualTax = standardTax;
     if (scenario === 'FEE_MISMATCH') {
-      actualFee = 45.00; // Overcharged fee for Netbanking (expected ₹15)
+      if (method === 'NETBANKING') {
+        actualFee = 45.00; // Overcharged fee for Netbanking (expected ₹15)
+      } else if (method === 'UPI') {
+        actualFee = parseFloat((grossAmount * 0.015).toFixed(2)); // Billed 1.5% instead of 0%/1.1%
+      } else {
+        // Card: Billed standard retail 2.00% + GST instead of 1.80%
+        actualFee = parseFloat((grossAmount * 0.02).toFixed(2));
+      }
       actualTax = parseFloat((actualFee * 0.18).toFixed(2));
     }
 
@@ -84,7 +101,8 @@ export async function POST(req) {
     if (scenario !== 'MISSING_SETTLEMENT' && scenario !== 'MISSING_REFUND') {
       let settledAmount = expectedSettlement;
       if (scenario === 'AMOUNT_MISMATCH') {
-        settledAmount = parseFloat((expectedSettlement - 350.00).toFixed(2)); // Short-settled by ₹350
+        const deficit = grossAmount < 1000 ? parseFloat((grossAmount * 0.10).toFixed(2)) : 350.00;
+        settledAmount = parseFloat((expectedSettlement - deficit).toFixed(2));
       }
 
       const settlement = await prisma.settlement.create({
