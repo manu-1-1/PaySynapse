@@ -35,7 +35,6 @@ By replacing manual spreadsheet matching with a **deterministic 5-point reconcil
 * **Audit Compliant**: Strict double-entry ledger mathematics without speculative numbers.
 
 ### 2. Interactive Digital Twin Topology Visualizer
-![PaySynapse Live Digital Twin Financial Lineage](docs/images/digital-twin-live-demo.png)
 * **5-Stage Pipeline Graph**: Interactive step-by-step financial topology visualization with directional connectors and status pills.
 * **Step-Through Playback Controller**: `▶ Step-Through` controller to walk through each node's funds flow step-by-step.
 * **Arithmetic Balance Reconciliation Bar**: Live verification of Gross Amount $-$ Deductions (Fee + GST) $=$ Expected Batch.
@@ -169,18 +168,25 @@ npm run dev
 
 ## Getting Started & Setup
 
-### Option A: 🐳 Docker Container Quickstart (PaySynapse + PostgreSQL)
+### Option A: 🐳 Docker Container Quickstart (Complete Ecosystem)
 
-Run the containerized stack in one command:
+Run the entire tripartite container stack (PaySynapse Core, CyberDeck Store, Apex Bank, and PostgreSQL) in one command:
 
 ```bash
 docker compose up --build
 ```
 
-* PaySynapse Web Application will be available at [http://localhost:3000](http://localhost:3000).
-* PostgreSQL will automatically initialize with persistent storage and seed demo datasets.
+* ⚡ **PaySynapse Reconciler**: [http://localhost:3000](http://localhost:3000)
+* 🛒 **CyberDeck Merchant Store**: [http://localhost:3001](http://localhost:3001)
+* 🏦 **Apex Nodal Bank Simulator**: [http://localhost:3002](http://localhost:3002)
+* 🗄️ **PostgreSQL**: `localhost:5432` (auto-migrated and seeded with demo data)
 
-To stop the containers:
+To run only the core PaySynapse reconciler and PostgreSQL:
+```bash
+docker compose up --build app postgres
+```
+
+To stop all containers:
 ```bash
 docker compose down
 ```
