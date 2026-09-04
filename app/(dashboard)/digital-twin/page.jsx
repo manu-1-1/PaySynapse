@@ -45,28 +45,17 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-// Scenario definitions
+// Scenario definitions with clean, cohesive design system styling
 const SCENARIOS = [
-  { id: 'PERFECT_MATCH', label: 'Normal Flow', desc: '100% Reconciled 5-node match', color: 'emerald' },
-  { id: 'MISSING_SETTLEMENT', label: 'Missing Settlement', desc: 'Unsettled Gateway batch', color: 'red' },
-  { id: 'FEE_MISMATCH', label: 'Fee Discrepancy', desc: 'Gateway commission overcharge', color: 'amber' },
-  { id: 'AMOUNT_MISMATCH', label: 'Short Settlement', desc: 'Net settlement difference', color: 'orange' },
-  { id: 'DELAYED_SETTLEMENT', label: 'T+10 Settlement', desc: 'SLA breach delay', color: 'blue' },
-  { id: 'DUPLICATE_TRANSACTION', label: 'Duplicate Entry', desc: 'Double ledger posting', color: 'purple' },
-  { id: 'STATUS_MISMATCH', label: 'Status Mismatch', desc: 'Capture vs Authorize sync', color: 'pink' },
-  { id: 'MISSING_REFUND', label: 'Missing Refund', desc: 'Unsettled reversal credit', color: 'cyan' },
+  { id: 'PERFECT_MATCH', label: 'Normal Flow', desc: '100% Reconciled 5-node match', statusType: 'healthy' },
+  { id: 'MISSING_SETTLEMENT', label: 'Missing Settlement', desc: 'Unsettled Gateway batch', statusType: 'error' },
+  { id: 'FEE_MISMATCH', label: 'Fee Discrepancy', desc: 'Gateway commission overcharge', statusType: 'warning' },
+  { id: 'AMOUNT_MISMATCH', label: 'Short Settlement', desc: 'Net settlement difference', statusType: 'error' },
+  { id: 'DELAYED_SETTLEMENT', label: 'T+10 Settlement', desc: 'SLA breach delay', statusType: 'warning' },
+  { id: 'DUPLICATE_TRANSACTION', label: 'Duplicate Entry', desc: 'Double ledger posting', statusType: 'error' },
+  { id: 'STATUS_MISMATCH', label: 'Status Mismatch', desc: 'Capture vs Authorize sync', statusType: 'error' },
+  { id: 'MISSING_REFUND', label: 'Missing Refund', desc: 'Unsettled reversal credit', statusType: 'error' },
 ];
-
-const SCENARIO_COLOR_MAP = {
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/15 dark:text-emerald-400 dark:border-emerald-800/30 hover:bg-emerald-100',
-  red: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/15 dark:text-red-400 dark:border-red-800/30 hover:bg-red-100',
-  amber: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/15 dark:text-amber-400 dark:border-amber-800/30 hover:bg-amber-100',
-  orange: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/15 dark:text-orange-400 dark:border-orange-800/30 hover:bg-orange-100',
-  blue: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/15 dark:text-blue-400 dark:border-blue-800/30 hover:bg-blue-100',
-  purple: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/15 dark:text-purple-400 dark:border-purple-800/30 hover:bg-purple-100',
-  pink: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/15 dark:text-pink-400 dark:border-pink-800/30 hover:bg-pink-100',
-  cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/15 dark:text-cyan-400 dark:border-cyan-800/30 hover:bg-cyan-100',
-};
 
 // Deep financial mechanism explanations per scenario and stage
 const SCENARIO_MECHANISMS = {
@@ -108,7 +97,7 @@ const SCENARIO_MECHANISMS = {
       5: {
         stage: '05 • NODAL BANK CLEARING & RECON',
         title: '3-Way Reconciliation Audit Complete',
-        desc: 'HDFC Nodal Escrow confirms UTR clearance. 3-way reconciliation engine confirms zero ledger delta. Lineage: MATCHED ✓',
+        desc: 'HDFC Nodal Escrow confirms UTR clearance. 3-way reconciliation engine confirms zero ledger delta. Lineage: MATCHED',
         status: 'PASS',
         node: 'bank',
         highlight: 'Zero Variance | Fully Balanced'
@@ -143,15 +132,15 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Projected Net: ₹4,893.80'
       },
       4: {
-        stage: '04 • ⚠️ SETTLEMENT BATCH MISSING',
+        stage: '04: Settlement Batch Missing',
         title: 'Gateway Payout Batch Not Delivered',
         desc: 'Acquiring gateway failed to disburse settlement file within SLA window. Batch is missing from ledger feed.',
         status: 'FAIL',
         node: 'settlement',
-        highlight: '⚠️ Unsettled: ₹4,893.80 held at gateway'
+        highlight: 'Unsettled: ₹4,893.80 held at gateway'
       },
       5: {
-        stage: '05 • RECON ANOMALY DETECTION',
+        stage: '05: Reconciliation Anomaly Flagged',
         title: 'MISSING_SETTLEMENT Anomaly Raised',
         desc: 'Recon engine flags settlement delay. Automated remediation: Query Nodal Bank Status & trigger gateway escalation ticket.',
         status: 'FAIL',
@@ -164,7 +153,7 @@ const SCENARIO_MECHANISMS = {
     title: 'Gateway Fee Overcharge Discrepancy',
     steps: {
       1: {
-        stage: '01 • ORDER INGESTION',
+        stage: '01: Order Ingestion',
         title: 'Netbanking Order Initialized',
         desc: 'Merchant checkout created for Netbanking payment of ₹5,000.00 (Contracted flat fee: ₹15.00).',
         status: 'PASS',
@@ -172,7 +161,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Contracted Flat MDR: ₹15.00'
       },
       2: {
-        stage: '02 • GATEWAY CAPTURE',
+        stage: '02: Gateway Capture',
         title: 'Netbanking Payment Authorized',
         desc: 'Payment authorized through banking gateway integration.',
         status: 'PASS',
@@ -180,15 +169,15 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Payment Captured'
       },
       3: {
-        stage: '03 • ⚠️ MDR OVERCHARGE DETECTED',
+        stage: '03: MDR Overcharge Detected',
         title: 'Discrepant MDR Applied by Gateway',
-        desc: 'Contracted flat fee was ₹15.00 (+₹2.70 GST), but Gateway deducted ₹45.00 (+₹8.10 GST) — an excess fee overcharge of +₹35.40!',
+        desc: 'Contracted flat fee was ₹15.00 (+₹2.70 GST), but Gateway deducted ₹45.00 (+₹8.10 GST) — an excess fee overcharge of +₹35.40.',
         status: 'WARN',
         node: 'fees',
-        highlight: '⚠️ Fee Variance: +₹35.40 Overcharge'
+        highlight: 'Fee Variance: +₹35.40 Overcharge'
       },
       4: {
-        stage: '04 • REDUCED SETTLEMENT BATCH',
+        stage: '04: Reduced Settlement Batch',
         title: 'Lower Payout Batch Received',
         desc: 'Gateway disbursed ₹4,946.90 instead of the contracted expected net payout of ₹4,982.30.',
         status: 'WARN',
@@ -196,9 +185,9 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Settled: ₹4,946.90 vs Expected: ₹4,982.30'
       },
       5: {
-        stage: '05 • RECON EXCEPTION FILED',
+        stage: '05: Recon Exception Filed',
         title: 'FEE_MISMATCH Discrepancy Flagged',
-        desc: 'Reconciliation audit isolates exact ₹35.40 MDR leakage. Auto-remediation: File Dispute Ticket to Gateway with line-item proof.',
+        desc: 'Reconciliation audit isolates exact ₹35.40 MDR leakage. Remediation: File Dispute Ticket to Gateway with line-item proof.',
         status: 'WARN',
         node: 'bank',
         highlight: 'Exception: FEE_MISMATCH (+₹35.40)'
@@ -209,7 +198,7 @@ const SCENARIO_MECHANISMS = {
     title: 'Short Settlement Discrepancy',
     steps: {
       1: {
-        stage: '01 • ORDER INGESTION',
+        stage: '01: Order Ingestion',
         title: 'Merchant Order Created',
         desc: 'Order created for gross amount of ₹5,000.00.',
         status: 'PASS',
@@ -217,7 +206,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Gross: ₹5,000.00'
       },
       2: {
-        stage: '02 • PAYMENT CAPTURED',
+        stage: '02: Payment Captured',
         title: 'Gateway Payment Processed',
         desc: 'Payment captured with standard authorization token.',
         status: 'PASS',
@@ -225,7 +214,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Captured'
       },
       3: {
-        stage: '03 • DEDUCTIONS APPLIED',
+        stage: '03: Deductions Applied',
         title: 'Standard Charges Computed',
         desc: 'Fees ₹90.00 + GST ₹16.20 applied. Expected net settlement amount: ₹4,893.80.',
         status: 'PASS',
@@ -233,17 +222,17 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Expected Net: ₹4,893.80'
       },
       4: {
-        stage: '04 • ⚠️ SHORT SETTLEMENT BATCH',
+        stage: '04: Short Settlement Batch',
         title: 'Deficit in Gateway Disbursement',
-        desc: 'Gateway disbursed ₹4,543.80 into the settlement batch — an unexplained shortfall of -₹350.00!',
+        desc: 'Gateway disbursed ₹4,543.80 into the settlement batch — an unexplained shortfall of -₹350.00.',
         status: 'FAIL',
         node: 'settlement',
-        highlight: '⚠️ Deficit: -₹350.00 Shortfall'
+        highlight: 'Deficit: -₹350.00 Shortfall'
       },
       5: {
-        stage: '05 • RECON VARIANCE DETECTED',
+        stage: '05: Recon Variance Detected',
         title: 'AMOUNT_MISMATCH Exception Raised',
-        desc: 'Lineage reconciliation engine identifies ₹350.00 balance sheet deficit. Auto-remediation: Request Short-Settlement True-Up.',
+        desc: 'Lineage reconciliation engine identifies ₹350.00 balance sheet deficit. Remediation: Request Short-Settlement True-Up.',
         status: 'FAIL',
         node: 'bank',
         highlight: 'Exception: AMOUNT_MISMATCH (-₹350.00)'
@@ -254,7 +243,7 @@ const SCENARIO_MECHANISMS = {
     title: 'T+10 SLA Settlement Window Breach',
     steps: {
       1: {
-        stage: '01 • ORDER INGESTION',
+        stage: '01: Order Ingestion',
         title: 'Order Created',
         desc: 'Customer purchase initiated for ₹5,000.00.',
         status: 'PASS',
@@ -262,15 +251,15 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Order: ₹5,000.00'
       },
       2: {
-        stage: '02 • PAYMENT CAPTURED 10 DAYS AGO',
-        title: 'Payment Captured on T-10',
-        desc: 'Payment was captured 10 days prior, far exceeding the contractual T+1 settlement SLA window.',
+        stage: '02: Payment Captured On T-10',
+        title: 'Payment Captured 10 Days Ago',
+        desc: 'Payment was captured 10 days prior, exceeding the contractual T+1 settlement SLA window.',
         status: 'WARN',
         node: 'payment',
         highlight: 'T+10 Days Elapsed'
       },
       3: {
-        stage: '03 • CHARGES COMPUTED',
+        stage: '03: Charges Computed',
         title: 'MDR Deductions Applied',
         desc: 'Fee deductions of ₹106.20 accounted for in ledger.',
         status: 'PASS',
@@ -278,7 +267,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Expected: ₹4,893.80'
       },
       4: {
-        stage: '04 • DELAYED BATCH RECEIVED',
+        stage: '04: Delayed Batch Received',
         title: 'Payout Arrives After Extended Latency',
         desc: 'Gateway batch arrived with 10 days latency. Settlement amount matches, but timeline violated contract SLA.',
         status: 'WARN',
@@ -286,7 +275,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'SLA Breach: 9 Days Overdue'
       },
       5: {
-        stage: '05 • AUDIT RECORD LOGGED',
+        stage: '05: Audit Record Logged',
         title: 'SLA Latency Penalty Flagged',
         desc: 'Amounts reconciled, but SLA breach logged for gateway performance scorecard and merchant interest credit calculation.',
         status: 'WARN',
@@ -299,7 +288,7 @@ const SCENARIO_MECHANISMS = {
     title: 'Duplicate Ledger Posting',
     steps: {
       1: {
-        stage: '01 • ORDER INGESTION',
+        stage: '01: Order Ingestion',
         title: 'Single Merchant Order',
         desc: 'Single checkout cart created for ₹5,000.00.',
         status: 'PASS',
@@ -307,7 +296,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Single Order: ₹5,000.00'
       },
       2: {
-        stage: '02 • PAYMENT CAPTURED',
+        stage: '02: Payment Captured',
         title: 'Single Gateway Charge',
         desc: 'Single payment authorized & captured.',
         status: 'PASS',
@@ -315,7 +304,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Single Charge'
       },
       3: {
-        stage: '03 • DEDUCTIONS',
+        stage: '03: Deductions',
         title: 'MDR Calculated',
         desc: 'Standard fee calculated for single transaction.',
         status: 'PASS',
@@ -323,17 +312,17 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Fee: ₹106.20'
       },
       4: {
-        stage: '04 • ⚠️ DUPLICATE SETTLEMENT BATCHES',
+        stage: '04: Duplicate Settlement Batches',
         title: 'Gateway Disbursed Payout Twice',
-        desc: 'Gateway generated 2 separate settlement batches (setl_... and setl_dup_...) for the same single payment charge!',
+        desc: 'Gateway generated 2 separate settlement batches for the same single payment charge.',
         status: 'FAIL',
         node: 'settlement',
-        highlight: '⚠️ Double Settlement: 2x ₹4,893.80'
+        highlight: 'Double Settlement: 2x ₹4,893.80'
       },
       5: {
-        stage: '05 • RECON ANOMALY INTERCEPTED',
+        stage: '05: Recon Anomaly Intercepted',
         title: 'DUPLICATE_TRANSACTION Anomaly Flagged',
-        desc: 'Recon engine catches duplicate ₹4,893.80 payout before bank ledger reconciliation. Auto-remediation: Auto-Reverse Duplicate Entry.',
+        desc: 'Recon engine catches duplicate ₹4,893.80 payout before bank ledger reconciliation. Remediation: Auto-Reverse Duplicate Entry.',
         status: 'FAIL',
         node: 'bank',
         highlight: 'Anomaly: DUPLICATE_TRANSACTION'
@@ -344,7 +333,7 @@ const SCENARIO_MECHANISMS = {
     title: 'Status Mismatch (Merchant Cart vs Gateway)',
     steps: {
       1: {
-        stage: '01 • ⚠️ ORDER MARKED FAILED',
+        stage: '01: Order Marked Failed',
         title: 'Merchant Checkout Cart Failed',
         desc: 'Merchant website recorded order as FAILED / Abandoned during checkout callback.',
         status: 'FAIL',
@@ -352,7 +341,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Order State: FAILED'
       },
       2: {
-        stage: '02 • ⚠️ PAYMENT STATE CONFLICT',
+        stage: '02: Payment State Conflict',
         title: 'Gateway Payment Synchronized',
         desc: 'Gateway webhook synchronization confirms payment failed or in state conflict with cart.',
         status: 'FAIL',
@@ -360,7 +349,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Status Conflict'
       },
       3: {
-        stage: '03 • LEDGER SUSPENDED',
+        stage: '03: Ledger Suspended',
         title: 'No Deductions Assessed',
         desc: 'MDR charges held due to state mismatch.',
         status: 'WARN',
@@ -368,7 +357,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Ledger Hold'
       },
       4: {
-        stage: '04 • SETTLEMENT SKIPPED',
+        stage: '04: Settlement Skipped',
         title: 'No Batch Generated',
         desc: 'Uncaptured payment skipped from payout batch cycle.',
         status: 'WARN',
@@ -376,9 +365,9 @@ const SCENARIO_MECHANISMS = {
         highlight: 'No Settlement'
       },
       5: {
-        stage: '05 • RECON ISOLATION',
+        stage: '05: Recon Isolation',
         title: 'STATUS_MISMATCH Exception Raised',
-        desc: 'Recon engine isolates cart vs gateway status discrepancy. Auto-remediation: Sync Status from Gateway API.',
+        desc: 'Recon engine isolates cart vs gateway status discrepancy. Remediation: Sync Status from Gateway API.',
         status: 'FAIL',
         node: 'bank',
         highlight: 'Exception: STATUS_MISMATCH'
@@ -389,7 +378,7 @@ const SCENARIO_MECHANISMS = {
     title: 'Missing Refund Reversal Batch',
     steps: {
       1: {
-        stage: '01 • ORDER INGESTION',
+        stage: '01: Order Ingestion',
         title: 'Original Order Record',
         desc: 'Customer purchase of ₹5,000.00 registered on merchant database.',
         status: 'PASS',
@@ -397,7 +386,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Order: ₹5,000.00'
       },
       2: {
-        stage: '02 • ⚠️ PAYMENT MARKED REFUNDED',
+        stage: '02: Payment Marked Refunded',
         title: 'Customer Refund Initiated',
         desc: 'Payment state marked REFUNDED on merchant portal; reversal request submitted to gateway.',
         status: 'WARN',
@@ -405,7 +394,7 @@ const SCENARIO_MECHANISMS = {
         highlight: 'State: REFUNDED'
       },
       3: {
-        stage: '03 • REVERSAL ACCOUNTING',
+        stage: '03: Reversal Accounting',
         title: 'Fee Reversal Adjustments',
         desc: 'Ledger prepares debit entry for refund disbursement.',
         status: 'PASS',
@@ -413,17 +402,17 @@ const SCENARIO_MECHANISMS = {
         highlight: 'Refund Debit: ₹5,000.00'
       },
       4: {
-        stage: '04 • ⚠️ MISSING REFUND CREDIT',
+        stage: '04: Missing Refund Credit',
         title: 'Gateway Reversal Batch Not Delivered',
         desc: 'Gateway has not posted the refund reversal batch credit to the nodal bank within banking cutoff.',
         status: 'FAIL',
         node: 'settlement',
-        highlight: '⚠️ Uncredited Refund: ₹5,000.00'
+        highlight: 'Uncredited Refund: ₹5,000.00'
       },
       5: {
-        stage: '05 • RECON ANOMALY FLAGGED',
+        stage: '05: Recon Anomaly Flagged',
         title: 'MISSING_REFUND Exception Raised',
-        desc: 'Recon engine flags uncredited ₹5,000.00 reversal. Auto-remediation: Force Retry Refund API with gateway gateway.',
+        desc: 'Recon engine flags uncredited ₹5,000.00 reversal. Remediation: Force Retry Refund API with gateway.',
         status: 'FAIL',
         node: 'bank',
         highlight: 'Exception: MISSING_REFUND'
@@ -693,8 +682,7 @@ export default function DigitalTwinPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'AI investigation failed');
-      const r = data.data;
-      setAiResult(`### 🧠 Autonomous AI Root Cause Analysis\n\n**Root Cause Diagnosis:** ${r.explanation}\n\n**AI Confidence Score:** ${(r.confidence * 100).toFixed(0)}%\n\n**Recommended Remediation:** ${r.recommendedAction}`);
+      setAiResult(`### Root Cause Analysis\n\n**Diagnosis:** ${r.explanation}\n\n**Confidence Score:** ${(r.confidence * 100).toFixed(0)}%\n\n**Recommended Action:** ${r.recommendedAction}`);
     } catch (e) {
       alert("AI Error: " + (e.message || 'Investigation failed'));
     } finally {
@@ -794,7 +782,7 @@ export default function DigitalTwinPage() {
         ];
       case 'fees':
         return [
-          { label: 'MDR Commission Rate', status: totalFeesAmount > 0 ? (simScenario === 'FEE_MISMATCH' ? 'WARN' : 'PASS') : 'WARN', note: simScenario === 'FEE_MISMATCH' ? '⚠️ Overcharged fee ₹' + totalFeesAmount : `Calculated fee ₹${totalFeesAmount}` },
+          { label: 'MDR Commission Rate', status: totalFeesAmount > 0 ? (simScenario === 'FEE_MISMATCH' ? 'WARN' : 'PASS') : 'WARN', note: simScenario === 'FEE_MISMATCH' ? 'Overcharged fee: ₹' + totalFeesAmount : `Calculated fee ₹${totalFeesAmount}` },
           { label: 'GST Tax Rate (18%)', status: totalTaxAmount > 0 ? 'PASS' : 'WARN', note: `GST component ₹${totalTaxAmount}` },
           { label: 'Ledger Parity', status: simScenario === 'FEE_MISMATCH' ? 'WARN' : 'PASS', note: simScenario === 'FEE_MISMATCH' ? 'Variance with agreed rate card' : 'Expected deduction ledger matching' }
         ];
@@ -817,22 +805,22 @@ export default function DigitalTwinPage() {
   };
 
   return (
-    <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen print:bg-white print:text-black print:p-2 print:space-y-4">
+    <div className="flex-1 space-y-5 p-4 sm:p-6 pt-4 sm:pt-5 min-h-screen print:bg-white print:text-black print:p-2 print:space-y-4">
       
       {/* Header - Hidden in Print */}
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl font-semibold text-[var(--foreground)]">Digital Twin Financial Lineage</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-[#528FF0] dark:bg-blue-900/20 font-medium flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#528FF0]" /> Quantum Mesh Simulation
+            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)] font-medium">
+              Live Flow Simulator
             </span>
           </div>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
             Step through, inspect, and understand underlying financial mechanics across all 5 financial nodes.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center bg-[var(--muted)] rounded-lg p-0.5">
             <button onClick={() => setViewMode('graph')} className={`px-3 py-1.5 rounded-md font-medium text-sm flex items-center transition-colors duration-150 ${viewMode === 'graph' ? 'bg-[#528FF0] text-white shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}>
               <Activity className="w-4 h-4 mr-1.5" /> Pipeline Topology
@@ -883,75 +871,79 @@ export default function DigitalTwinPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* ⚡ Load Latest Live Payment Button */}
             {latestLiveTx && (
               <button
-                onClick={() => handleSearch(latestLiveTx.id, 'Live DB Record')}
-                className="h-9 px-3.5 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 transition-all duration-150 flex items-center gap-1.5 shadow-sm"
+                onClick={() => handleSearch(latestLiveTx.id, 'Live Transaction')}
+                className="h-8 px-3 rounded text-xs font-medium bg-[#1C1D22] hover:bg-[#26272E] border border-[#2D2E36] text-[#E8EAED] transition-colors flex items-center gap-1.5"
               >
-                <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Load Latest Live ({latestLiveTx.externalPaymentId?.slice(0, 14)}... • {formatCurrency(latestLiveTx.amount)})</span>
+                <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Latest Live: <strong className="font-mono">{latestLiveTx.externalPaymentId?.slice(0, 16)}...</strong> ({formatCurrency(latestLiveTx.amount)})</span>
               </button>
             )}
 
             {originalTx && tx?.id !== originalTx?.id && (
               <button
                 onClick={() => handleSearch(originalTx.id, 'Original')}
-                className="h-9 px-3.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-150 flex items-center gap-1.5 shadow-sm"
+                className="h-8 px-3 rounded text-xs font-medium bg-[#1C1D22] hover:bg-[#26272E] border border-[#2D2E36] text-[#8AB4F8] transition-colors flex items-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Back to Live ({originalTx.externalPaymentId?.slice(0, 14) || 'Live Transaction'})</span>
+                <span>Reset to Live Feed</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Dynamic Sandbox Simulator Controls */}
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm relative overflow-hidden space-y-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+        {/* Clean Professional Financial Trace Workbench */}
+        <div className="rounded-lg border border-[#2D2E36] bg-[#1C1D22] p-3.5 shadow-sm text-xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                <Sliders className="w-4 h-4 text-amber-500" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-[var(--foreground)] uppercase tracking-wider flex items-center gap-2">
-                  Dynamic What-If Sandbox Simulator
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
-                    tx?.externalPaymentId?.includes('_sim_') || simScenario !== 'PERFECT_MATCH'
-                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
-                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                  }`}>
-                    {tx?.externalPaymentId?.includes('_sim_') ? '🧪 Sandbox Model' : '🟢 Live DB Record'}
-                  </span>
-                </h3>
-                <p className="text-[11px] text-[var(--muted-foreground)]">Customize amount & payment method to dynamically test fee mathematics across all 5 nodes</p>
-              </div>
+              <span className="font-medium text-[#E8EAED]">Scenario Pipeline Testbed:</span>
+              <select
+                value={simScenario}
+                onChange={(e) => {
+                  const targetScenario = SCENARIOS.find(s => s.id === e.target.value);
+                  if (targetScenario) handleSimulate(targetScenario.id, targetScenario.label);
+                }}
+                disabled={simulating}
+                className="bg-[#131417] text-[#E8EAED] font-medium text-xs rounded px-3 py-1.5 border border-[#2D2E36] focus:border-[#8AB4F8] outline-none cursor-pointer"
+              >
+                <optgroup label="Healthy Baseline">
+                  <option value="PERFECT_MATCH">Normal Flow (100% Reconciled 5-Node Parity)</option>
+                </optgroup>
+                <optgroup label="Discrepancy & Variance Scenarios">
+                  <option value="MISSING_SETTLEMENT">Missing Settlement Batch (Unsettled Gateway)</option>
+                  <option value="FEE_MISMATCH">Fee Discrepancy (MDR Rate Card Overcharge)</option>
+                  <option value="SHORT_SETTLEMENT">Short Settlement (Net Payout Delta)</option>
+                  <option value="DELAYED_SETTLEMENT">T+10 SLA Settlement Window Breach</option>
+                  <option value="DUPLICATE_TRANSACTION">Duplicate Ledger Entry (Double Payout)</option>
+                  <option value="STATUS_MISMATCH">Status Mismatch (Cart vs Gateway Conflict)</option>
+                  <option value="MISSING_REFUND">Missing Refund Reversal Batch</option>
+                </optgroup>
+              </select>
             </div>
 
-            {/* Dynamic Input Controls */}
+            {/* Input Controls */}
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Amount Input */}
-              <div className="flex items-center bg-[var(--muted)] rounded-lg border border-[var(--border)] px-2.5 py-1">
-                <span className="text-xs font-semibold text-[var(--muted-foreground)] mr-1.5">₹</span>
+              <div className="flex items-center bg-[#131417] rounded border border-[#2D2E36] px-2 py-1">
+                <span className="text-xs text-[#9AA0A6] mr-1">₹</span>
                 <input
                   type="number"
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
                   placeholder="Amount"
-                  className="w-20 bg-transparent text-xs font-bold text-[var(--foreground)] focus:outline-none"
+                  className="w-16 bg-transparent text-xs font-mono font-medium text-[#E8EAED] focus:outline-none"
                 />
               </div>
 
-              {/* Quick Amount Presets */}
-              <div className="hidden md:flex items-center gap-1">
+              <div className="hidden sm:flex items-center gap-1">
                 {['299', '800', '2500', '5000'].map(amt => (
                   <button
                     key={amt}
                     onClick={() => setCustomAmount(amt)}
-                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                    className={`px-2 py-1 rounded text-[11px] font-mono transition-colors ${
                       customAmount === amt
-                        ? 'bg-[#528FF0] text-white border-[#528FF0]'
-                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border-[var(--border)]'
+                        ? 'bg-[#1E2838] text-[#8AB4F8] border border-[#8AB4F8]/40'
+                        : 'bg-[#131417] text-[#9AA0A6] hover:text-[#E8EAED] border border-[#2D2E36]'
                     }`}
                   >
                     ₹{amt}
@@ -959,66 +951,48 @@ export default function DigitalTwinPage() {
                 ))}
               </div>
 
-              {/* Method Selector */}
               <select
                 value={customMethod}
                 onChange={(e) => setCustomMethod(e.target.value)}
-                className="bg-[var(--muted)] rounded-lg px-2.5 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--foreground)] focus:outline-none cursor-pointer"
+                className="bg-[#131417] rounded px-2.5 py-1 text-xs text-[#E8EAED] border border-[#2D2E36] focus:outline-none cursor-pointer"
               >
                 <option value="CARD">Credit/Debit Card (1.8% MDR)</option>
-                <option value="UPI">UPI (0.0% / 1.1%)</option>
+                <option value="UPI">UPI / QR (0.0%)</option>
                 <option value="NETBANKING">Netbanking (Flat ₹15)</option>
               </select>
 
-              {simulating && (
-                <span className="text-xs text-amber-600 flex items-center gap-1.5 font-medium animate-pulse bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-500/30">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ingesting scenario pipeline...
-                </span>
-              )}
+              <button
+                onClick={() => {
+                  const targetScenario = SCENARIOS.find(s => s.id === simScenario) || SCENARIOS[0];
+                  handleSimulate(targetScenario.id, targetScenario.label);
+                }}
+                disabled={simulating}
+                className="px-3 py-1 rounded bg-[#1A73E8] hover:bg-[#1B66C9] text-white font-medium text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {simulating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                Run Trace
+              </button>
             </div>
           </div>
-          
-          {/* Scenario Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
-            {SCENARIOS.map(s => {
-              const isSelected = simScenario === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => handleSimulate(s.id, s.label)}
-                  disabled={simulating}
-                  className={`text-xs p-2.5 rounded-lg font-medium transition-all duration-200 border text-left flex flex-col justify-between disabled:opacity-50 hover:scale-[1.03] active:scale-[0.97] ${SCENARIO_COLOR_MAP[s.color]} ${isSelected ? 'ring-2 ring-[#528FF0] shadow-md -translate-y-0.5' : ''}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold truncate">{s.label}</span>
-                    {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#528FF0] animate-ping" />}
-                  </div>
-                  <div className="text-[10px] opacity-75 mt-1 truncate">{s.desc}</div>
-                </button>
-              );
-            })}
-          </div>
 
-          {/* Simulation History Reel */}
+          {/* Trace History Breadcrumb */}
           {history.length > 0 && (
-            <div className="pt-2 border-t border-[var(--border)] flex items-center gap-2 overflow-x-auto text-xs pb-1">
-              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] flex items-center gap-1 flex-shrink-0">
-                <Clock className="w-3 h-3" /> History:
+            <div className="pt-2 border-t border-[#2D2E36] flex items-center gap-2 overflow-x-auto text-xs">
+              <span className="text-[11px] text-[#9AA0A6] flex items-center gap-1 flex-shrink-0">
+                <Clock className="w-3 h-3" /> Recent Traces:
               </span>
               <div className="flex items-center gap-1.5 flex-nowrap">
                 {history.map((h, i) => (
                   <button
                     key={`${h.id}_${i}`}
                     onClick={() => handleSearch(h.id, h.scenario)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium flex items-center gap-1.5 transition-all flex-shrink-0 border ${
+                    className={`px-2 py-0.5 rounded text-[11px] font-mono transition-all flex-shrink-0 border ${
                       h.id === tx?.id
-                        ? 'bg-[#528FF0] text-white border-[#528FF0] shadow-sm font-semibold'
-                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border-[var(--border)]'
+                        ? 'bg-[#1E2838] text-[#8AB4F8] border-[#8AB4F8]/40 font-medium'
+                        : 'bg-[#131417] text-[#9AA0A6] hover:text-[#E8EAED] border-[#2D2E36]'
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${h.isSim ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-                    <span className="truncate max-w-[120px]">{h.scenario}</span>
-                    <span className="opacity-75 font-mono text-[10px]">({formatCurrency(h.amount)})</span>
+                    {h.scenario} ({formatCurrency(h.amount)})
                   </button>
                 ))}
               </div>
@@ -1038,70 +1012,65 @@ export default function DigitalTwinPage() {
       {tx && (
         <div className="space-y-4">
           {viewMode === 'graph' ? (
-            <div className="rounded-2xl border border-slate-800 shadow-2xl overflow-hidden bg-[#070D1B] text-white print:bg-white print:text-black relative">
-              
-              {/* Futuristic Ambient Glow Backdrop Blobs */}
-              <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="rounded-lg border border-[#2D2E36] shadow-sm overflow-hidden bg-[#1C1D22] text-[#E8EAED] relative">
 
               {/* Financial Balance & Flow Controller Header */}
-              <div className="border-b border-slate-800/90 bg-[#0C1427]/90 backdrop-blur-md px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 text-xs relative z-10">
+              <div className="border-b border-[#2D2E36] bg-[#18191E] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs relative z-10">
                 
                 {/* Arithmetic Flow Breakdown Cards */}
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   
-                  {/* Item 1 */}
-                  <div className="bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-lg shadow-sm">
-                    <span className="text-slate-400 block text-[9px] font-mono uppercase tracking-wider">Gross Payment</span>
-                    <span className="font-bold text-emerald-400 text-sm font-mono">{formatCurrency(tx.amount)}</span>
+                  {/* Item 1: Gross */}
+                  <div className="bg-[#131417] border border-[#2D2E36] px-3 py-1 rounded">
+                    <span className="text-[#9AA0A6] block text-[10px] font-medium uppercase tracking-wider">Gross Payment</span>
+                    <span className="font-semibold text-emerald-400 text-xs font-mono">{formatCurrency(tx.amount)}</span>
                   </div>
 
-                  <div className="text-slate-500 font-bold text-base">−</div>
+                  <span className="text-[#9AA0A6] font-mono text-xs">-</span>
 
-                  {/* Item 2 */}
-                  <div className={`bg-slate-900/90 border px-3 py-1.5 rounded-lg shadow-sm ${simScenario === 'FEE_MISMATCH' ? 'border-amber-500/60 bg-amber-950/20' : 'border-slate-800'}`}>
-                    <span className="text-slate-400 block text-[9px] font-mono uppercase tracking-wider flex items-center gap-1">
-                      Charges & GST {simScenario === 'FEE_MISMATCH' && <span className="text-amber-400">⚠️</span>}
+                  {/* Item 2: Charges */}
+                  <div className={`bg-[#131417] border px-3 py-1 rounded ${simScenario === 'FEE_MISMATCH' ? 'border-amber-500/40 bg-amber-500/10' : 'border-[#2D2E36]'}`}>
+                    <span className="text-[#9AA0A6] block text-[10px] font-medium uppercase tracking-wider">
+                      Charges & GST
                     </span>
-                    <span className={`font-bold text-sm font-mono ${simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-red-400'}`}>
+                    <span className={`font-semibold text-xs font-mono ${simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-[#9AA0A6]'}`}>
                       -{formatCurrency(totalDeductions)}
                     </span>
                   </div>
 
-                  <div className="text-slate-500 font-bold text-base">=</div>
+                  <span className="text-[#9AA0A6] font-mono text-xs">=</span>
 
-                  {/* Item 3 */}
-                  <div className="bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-lg shadow-sm">
-                    <span className="text-slate-400 block text-[9px] font-mono uppercase tracking-wider">Expected Net</span>
-                    <span className="font-bold text-blue-400 text-sm font-mono">{formatCurrency(expectedSettlement)}</span>
+                  {/* Item 3: Expected Net */}
+                  <div className="bg-[#131417] border border-[#2D2E36] px-3 py-1 rounded">
+                    <span className="text-[#9AA0A6] block text-[10px] font-medium uppercase tracking-wider">Expected Net</span>
+                    <span className="font-semibold text-[#8AB4F8] text-xs font-mono">{formatCurrency(expectedSettlement)}</span>
                   </div>
 
-                  <div className="text-slate-500 font-bold text-base">➔</div>
+                  <span className="text-[#9AA0A6] font-mono text-xs">-&gt;</span>
 
-                  {/* Item 4 */}
-                  <div className={`bg-slate-900/90 border px-3 py-1.5 rounded-lg shadow-sm ${actualSettlement === 0 ? 'border-red-500/60 bg-red-950/20' : Math.abs(reconDelta) > 0.01 ? 'border-amber-500/60 bg-amber-950/20' : 'border-emerald-500/40 bg-emerald-950/10'}`}>
-                    <span className="text-slate-400 block text-[9px] font-mono uppercase tracking-wider">Bank Cleared</span>
-                    <span className={`font-bold text-sm font-mono ${actualSettlement === 0 ? 'text-red-400' : Math.abs(reconDelta) > 0.01 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  {/* Item 4: Bank Cleared */}
+                  <div className={`bg-[#131417] border px-3 py-1 rounded ${actualSettlement === 0 ? 'border-rose-500/40 bg-rose-500/10' : Math.abs(reconDelta) > 0.01 ? 'border-amber-500/40 bg-amber-500/10' : 'border-emerald-500/30'}`}>
+                    <span className="text-[#9AA0A6] block text-[10px] font-medium uppercase tracking-wider">Bank Cleared</span>
+                    <span className={`font-semibold text-xs font-mono ${actualSettlement === 0 ? 'text-rose-400' : Math.abs(reconDelta) > 0.01 ? 'text-amber-400' : 'text-emerald-400'}`}>
                       {formatCurrency(actualSettlement)}
                     </span>
                   </div>
 
                   {/* Variance Pill */}
                   {Math.abs(reconDelta) > 0.01 && (
-                    <div className="px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold flex items-center gap-1 animate-pulse">
-                      <AlertTriangle className="w-3 h-3" /> Variance: {formatCurrency(reconDelta)}
+                    <div className="px-2 py-0.5 rounded bg-rose-950/40 text-rose-300 border border-rose-800/40 text-[10px] font-mono font-semibold flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-rose-400" /> Variance: {formatCurrency(reconDelta)}
                     </div>
                   )}
 
                 </div>
 
                 {/* Playback & Step Controller */}
-                <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-700/80 rounded-xl p-1 shadow-inner">
+                <div className="flex items-center gap-1 bg-[#131417] border border-[#2D2E36] rounded p-0.5">
                   <button 
                     onClick={() => stepNode('prev')}
                     title="Previous Node"
-                    className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                    className="p-1 text-[#9AA0A6] hover:text-[#E8EAED] rounded hover:bg-[#1C1D22] transition-colors"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
@@ -1114,18 +1083,18 @@ export default function DigitalTwinPage() {
                         setIsPlaying(!isPlaying);
                       }
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+                    className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
                       isSimRunning
                         ? isSimPaused
                           ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                          : 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold'
+                          : 'bg-amber-600 hover:bg-amber-500 text-white'
                         : isPlaying 
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
-                          : 'bg-[#528FF0] text-white hover:bg-[#4080E0]'
+                          ? 'bg-[#1E2838] text-[#8AB4F8] border border-[#8AB4F8]/40' 
+                          : 'bg-[#1A73E8] text-white hover:bg-[#1B66C9]'
                     }`}
                   >
                     {isSimRunning ? (
-                      isSimPaused ? <><Play className="w-3 h-3 fill-current" /> Resume Sim</> : <><Pause className="w-3 h-3 fill-current" /> Pause Sim</>
+                      isSimPaused ? <><Play className="w-3 h-3 fill-current" /> Resume</> : <><Pause className="w-3 h-3 fill-current" /> Pause</>
                     ) : (
                       isPlaying ? <><Pause className="w-3 h-3 fill-current" /> Pause</> : <><Play className="w-3 h-3 fill-current" /> Step-Through</>
                     )}
@@ -1134,56 +1103,55 @@ export default function DigitalTwinPage() {
                   <button 
                     onClick={() => stepNode('next')}
                     title="Next Node"
-                    className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                    className="p-1 text-[#9AA0A6] hover:text-[#E8EAED] rounded hover:bg-[#1C1D22] transition-colors"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
-
               </div>
 
               {/* Dynamic Simulation Mechanics Explainer HUD */}
-              <div className="bg-gradient-to-r from-slate-950/90 via-[#0B152B]/90 to-slate-950/90 border-b border-slate-800/80 px-6 py-4 relative z-10 backdrop-blur-sm">
+              <div className="bg-[var(--surface)] border-b border-[var(--border)] px-5 py-4 relative z-10">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   
                   {/* Stage Tracker & Mechanism Insight */}
                   <div className="flex items-start gap-3.5 flex-1">
-                    <div className={`p-2.5 rounded-xl shrink-0 mt-0.5 shadow-md ${
+                    <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${
                       currentStepInfo.status === 'PASS' 
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                        ? 'bg-blue-50 text-[#528FF0] dark:bg-blue-950/40 dark:text-[#528FF0] border border-blue-200 dark:border-blue-800/40' 
                         : currentStepInfo.status === 'WARN'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse'
-                        : 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
+                        ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40'
+                        : 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40'
                     }`}>
                       {currentStepInfo.status === 'PASS' ? (
-                        <Activity className="w-5 h-5" />
+                        <Activity className="w-4 h-4" />
                       ) : currentStepInfo.status === 'WARN' ? (
-                        <AlertTriangle className="w-5 h-5" />
+                        <AlertTriangle className="w-4 h-4" />
                       ) : (
-                        <AlertCircle className="w-5 h-5" />
+                        <AlertCircle className="w-4 h-4" />
                       )}
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#528FF0] bg-[#528FF0]/10 px-2 py-0.5 rounded-md border border-[#528FF0]/20">
+                        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-[var(--foreground)] bg-[var(--muted)] px-2 py-0.5 rounded border border-[var(--border)]">
                           {currentStepInfo.stage}
                         </span>
-                        <span className="text-slate-600 text-xs">•</span>
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-[var(--muted-foreground)] text-xs">•</span>
+                        <span className="text-sm font-semibold text-[var(--foreground)]">
                           {currentStepInfo.title}
                         </span>
-                        <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-mono font-bold shadow-sm ${
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
                           currentStepInfo.status === 'PASS' 
-                            ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60' 
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40' 
                             : currentStepInfo.status === 'WARN'
-                            ? 'bg-amber-950/90 text-amber-300 border border-amber-800/60'
-                            : 'bg-red-950/90 text-red-400 border border-red-800/60'
+                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40'
+                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40'
                         }`}>
                           {currentStepInfo.highlight}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-300 mt-1.5 leading-relaxed max-w-4xl font-normal">
+                      <p className="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed max-w-4xl font-normal">
                         {currentStepInfo.desc}
                       </p>
                     </div>
@@ -1193,27 +1161,27 @@ export default function DigitalTwinPage() {
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                     
                     {/* Speed Selector */}
-                    <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 text-[11px]">
+                    <div className="flex items-center bg-[var(--muted)] border border-[var(--border)] rounded-lg p-0.5 text-[11px]">
                       <button
                         onClick={() => setSimSpeed(0.5)}
-                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${simSpeed === 0.5 ? 'bg-[#528FF0] text-white shadow' : 'text-slate-400 hover:text-white'}`}
-                        title="Slow Motion (2.4s per stage - recommended for deep inspection)"
+                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${simSpeed === 0.5 ? 'bg-[#528FF0] text-white shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
+                        title="Slow Speed"
                       >
-                        0.5x Slow
+                        0.5x
                       </button>
                       <button
                         onClick={() => setSimSpeed(1)}
-                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${simSpeed === 1 ? 'bg-[#528FF0] text-white shadow' : 'text-slate-400 hover:text-white'}`}
-                        title="Normal Speed (1.5s per stage)"
+                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${simSpeed === 1 ? 'bg-[#528FF0] text-white shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
+                        title="Normal Speed"
                       >
-                        1x Normal
+                        1x
                       </button>
                       <button
                         onClick={() => setSimSpeed(2)}
-                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${simSpeed === 2 ? 'bg-[#528FF0] text-white shadow' : 'text-slate-400 hover:text-white'}`}
-                        title="Fast Speed (0.7s per stage)"
+                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${simSpeed === 2 ? 'bg-[#528FF0] text-white shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
+                        title="Fast Speed"
                       >
-                        2x Fast
+                        2x
                       </button>
                     </div>
 
@@ -1221,7 +1189,7 @@ export default function DigitalTwinPage() {
                     <button
                       onClick={handleReplaySimulation}
                       title="Replay this simulation mechanism from step 1"
-                      className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition-colors shadow-sm"
+                      className="px-3 py-1 rounded-lg bg-[var(--surface)] hover:bg-[var(--muted)] text-[var(--foreground)] text-xs font-medium border border-[var(--border)] flex items-center gap-1.5 transition-colors shadow-sm"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-[#528FF0]" /> Replay
                     </button>
@@ -1231,7 +1199,7 @@ export default function DigitalTwinPage() {
                       <button
                         onClick={handleSkipSimulation}
                         title="Skip straight to completed state"
-                        className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center gap-1 transition-colors shadow-sm"
+                        className="px-3 py-1 rounded-lg bg-[var(--surface)] hover:bg-[var(--muted)] text-[var(--foreground)] text-xs font-medium border border-[var(--border)] flex items-center gap-1 transition-colors shadow-sm"
                       >
                         <FastForward className="w-3.5 h-3.5" /> Skip
                       </button>
@@ -1255,17 +1223,17 @@ export default function DigitalTwinPage() {
                           setSimStep(stepNum);
                           setSelectedNode(nodeName);
                         }}
-                        className={`flex-1 group relative h-2 rounded-full transition-all duration-300 ${
+                        className={`flex-1 group relative h-1.5 rounded-full transition-all duration-200 ${
                           isCurrent
-                            ? 'bg-[#528FF0] shadow-[0_0_12px_#528FF0]'
+                            ? 'bg-[#528FF0]'
                             : isPassed
-                            ? 'bg-blue-600/70'
-                            : 'bg-slate-800'
+                            ? 'bg-[#528FF0]/60'
+                            : 'bg-[var(--muted)]'
                         }`}
                         title={`Stage ${stepNum}: ${nodeName.toUpperCase()}`}
                       >
-                        <span className={`absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] font-mono font-bold transition-opacity ${
-                          isCurrent ? 'opacity-100 text-[#528FF0]' : 'opacity-40 text-slate-400 group-hover:opacity-100'
+                        <span className={`absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] font-mono font-semibold transition-opacity ${
+                          isCurrent ? 'opacity-100 text-[#528FF0]' : 'opacity-40 text-[var(--muted-foreground)] group-hover:opacity-100'
                         }`}>
                           {stepNum}. {nodeName.toUpperCase()}
                         </span>
@@ -1276,352 +1244,416 @@ export default function DigitalTwinPage() {
 
               </div>
 
-              {/* Hyper-Visual Quantum Topology Nodes Canvas */}
-              <div className="p-7 md:p-9 relative overflow-x-auto">
-                {/* Circuit Grid Canvas Texture */}
-                <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #528FF0 1.5px, transparent 1.5px)', backgroundSize: '28px 28px' }} />
+              {/* Graph Topology Canvas — SVG DAG */}
+              <div 
+                className="relative overflow-x-auto select-none"
+                style={{
+                  backgroundColor: '#131417',
+                  backgroundImage: 'radial-gradient(circle, #1E1F25 1px, transparent 1px)',
+                  backgroundSize: '20px 20px',
+                }}
+              >
+                {/* Reconciliation Status Chip */}
+                <div className="sticky top-0 left-0 z-30 flex items-center justify-between px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 bg-[#1C1D22]/80 backdrop-blur-sm border border-[#2D2E36] rounded-md px-2.5 py-1.5 text-[10px] font-mono text-[#9AA0A6]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[#E8EAED] font-medium">Reconciliation: </span>
+                      <span className="text-emerald-400">{isChainHealthy ? 'Dual-Sync Verified' : 'Pending'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-[#1C1D22]/80 backdrop-blur-sm border border-[#2D2E36] rounded-md px-2.5 py-1.5 text-[10px] font-mono text-[#9AA0A6]">
+                      <ShieldCheck className="w-3 h-3 text-[#8AB4F8]" />
+                      <span>HMAC Signature: <strong className="text-[#E8EAED]">Verified</strong></span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 bg-[#1C1D22]/80 backdrop-blur-sm border border-[#2D2E36] rounded-md p-0.5 shadow-lg text-[#9AA0A6]">
+                    <button className="p-1.5 hover:text-[#E8EAED] hover:bg-[#26272E] rounded text-xs transition-colors" title="Fit to View">
+                      <Layers className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-                <div className="flex items-center justify-between min-w-[960px] relative z-10 py-4">
-                  
-                  {/* NODE 1: ORDER */}
-                  <div 
-                    onClick={() => { setSelectedNode('order'); setSimStep(1); setIsPlaying(false); setIsSimRunning(false); }}
-                    className={`flex-1 max-w-[175px] cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left relative backdrop-blur-md ${
-                      selectedNode === 'order' 
-                        ? 'bg-slate-900/95 border-[#528FF0] ring-2 ring-[#528FF0]/60 shadow-[0_0_25px_rgba(82,143,240,0.35)] scale-105 animate-glow-pulse' 
-                        : simStep < 1
-                        ? 'opacity-40 bg-slate-950/60 border-slate-800'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-900 shadow-md'
-                    }`}
+                {/* Fixed-width inner container — SVG + Nodes share same coordinate space */}
+                <div className="relative" style={{ width: '1100px', height: '340px', margin: '0 auto' }}>
+
+                  {/* SVG Edge Layer — same pixel coordinate space as nodes */}
+                  <svg 
+                    className="absolute inset-0 pointer-events-none" 
+                    style={{ zIndex: 1, width: '1100px', height: '340px' }}
                   >
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" /> 01 • ORDER
-                      </span>
-                      <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                        <Receipt className="w-3.5 h-3.5" />
-                      </div>
-                    </div>
-                    
-                    <div className="font-bold text-sm truncate text-white">Merchant Order</div>
-                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
-                      {tx.order ? formatCurrency(tx.order.amount) : <span className="text-red-400">Missing</span>}
-                    </div>
+                    <defs>
+                      <linearGradient id="edgeGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#8AB4F8" stopOpacity="0.2" />
+                        <stop offset="50%" stopColor="#8AB4F8" stopOpacity="0.7" />
+                        <stop offset="100%" stopColor="#8AB4F8" stopOpacity="0.2" />
+                      </linearGradient>
+                      <linearGradient id="edgeGradientWarn" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.2" />
+                        <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.7" />
+                        <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.2" />
+                      </linearGradient>
+                      <linearGradient id="edgeGradientFail" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F87171" stopOpacity="0.2" />
+                        <stop offset="50%" stopColor="#F87171" stopOpacity="0.7" />
+                        <stop offset="100%" stopColor="#F87171" stopOpacity="0.2" />
+                      </linearGradient>
+                      <linearGradient id="edgeGradientBank" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#34D399" stopOpacity="0.2" />
+                        <stop offset="50%" stopColor="#34D399" stopOpacity="0.7" />
+                        <stop offset="100%" stopColor="#34D399" stopOpacity="0.2" />
+                      </linearGradient>
+                      <marker id="arrowBlue" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                        <path d="M0,0 L6,2 L0,4" fill="#8AB4F8" opacity="0.6" />
+                      </marker>
+                      <marker id="arrowGreen" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                        <path d="M0,0 L6,2 L0,4" fill="#34D399" opacity="0.6" />
+                      </marker>
+                    </defs>
 
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span className="truncate max-w-[100px]">{tx.order?.externalOrderId || 'No Order'}</span>
-                      <span className="text-emerald-400 font-semibold">ISO INR</span>
-                    </div>
-
-                    {simStep === 1 && isSimRunning && (
-                      <div className="absolute -top-2.5 -right-2.5 bg-[#528FF0] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg animate-pulse-ring flex items-center gap-1">
-                        <Radio className="w-2.5 h-2.5" /> INGESTING
-                      </div>
+                    {/* Edge 1→2: Order (right port ~185, 65) to Payment (left port ~265, 155) */}
+                    <path 
+                      d="M 185 65 C 225 65, 225 155, 265 155"
+                      fill="none" 
+                      stroke="#2D2E36" 
+                      strokeWidth="1.5" 
+                      strokeDasharray={simStep >= 2 ? 'none' : '4 4'}
+                      markerEnd={simStep >= 2 ? 'url(#arrowBlue)' : undefined}
+                    />
+                    {simStep >= 2 && (
+                      <>
+                        <path 
+                          d="M 185 65 C 225 65, 225 155, 265 155"
+                          fill="none" 
+                          stroke="url(#edgeGradient1)" 
+                          strokeWidth="1.5"
+                        />
+                        <circle r="2.5" fill="#8AB4F8" opacity="0.9">
+                          <animateMotion dur="2s" repeatCount="indefinite" path="M 185 65 C 225 65, 225 155, 265 155" />
+                        </circle>
+                      </>
                     )}
-                  </div>
+                    <rect x="195" y="100" width="50" height="16" rx="4" fill="#131417" stroke="#2D2E36" strokeWidth="0.5" />
+                    <text x="220" y="112" textAnchor="middle" fill="#9AA0A6" fontSize="8" fontFamily="monospace">Auth ACK</text>
 
-                  {/* CONNECTOR 1 -> 2 */}
-                  <div className="flex-1 flex flex-col items-center px-1.5">
-                    <span className="text-[9px] font-mono text-slate-400 mb-1.5 flex items-center gap-0.5">
-                      <Lock className="w-2.5 h-2.5 text-blue-400" /> Auth ACK
-                    </span>
-                    <div className="w-full flex items-center relative">
-                      <div className="h-[3px] w-full bg-slate-800 relative overflow-hidden rounded-full shadow-inner">
-                        <div className={`h-full w-full transition-all duration-500 ${
-                          simStep >= 2 ? 'bg-[#528FF0]' : 'bg-slate-700/40'
-                        }`} />
-                        {simStep === 2 && isSimRunning && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-300 to-transparent animate-laser-flow" />
-                        )}
-                      </div>
-                      <ArrowRight className={`w-4 h-4 -ml-1 shrink-0 transition-colors duration-300 ${
-                        simStep >= 2 ? 'text-[#528FF0]' : 'text-slate-600'
-                      }`} />
-                    </div>
-                  </div>
+                    {/* Edge 2→3: Payment (right port ~435, 155) to Fees (left port ~500, 65) */}
+                    <path 
+                      d="M 435 155 C 468 155, 468 65, 500 65"
+                      fill="none" 
+                      stroke="#2D2E36" 
+                      strokeWidth="1.5" 
+                      strokeDasharray={simStep >= 3 ? 'none' : '4 4'}
+                      markerEnd={simStep >= 3 ? 'url(#arrowBlue)' : undefined}
+                    />
+                    {simStep >= 3 && (
+                      <>
+                        <path 
+                          d="M 435 155 C 468 155, 468 65, 500 65"
+                          fill="none" 
+                          stroke={simScenario === 'FEE_MISMATCH' ? 'url(#edgeGradientWarn)' : 'url(#edgeGradient1)'}
+                          strokeWidth="1.5"
+                        />
+                        <circle r="2.5" fill={simScenario === 'FEE_MISMATCH' ? '#F59E0B' : '#8AB4F8'} opacity="0.9">
+                          <animateMotion dur="2s" repeatCount="indefinite" path="M 435 155 C 468 155, 468 65, 500 65" />
+                        </circle>
+                      </>
+                    )}
+                    <rect x="441" y="100" width="56" height="16" rx="4" fill="#131417" stroke="#2D2E36" strokeWidth="0.5" />
+                    <text x="469" y="112" textAnchor="middle" fill="#9AA0A6" fontSize="8" fontFamily="monospace">MDR Engine</text>
 
-                  {/* NODE 2: PAYMENT */}
+                    {/* Edge 3→4: Fees (right port ~665, 65) to Settlement (left port ~730, 195) */}
+                    <path 
+                      d="M 665 65 C 698 65, 698 195, 730 195"
+                      fill="none" 
+                      stroke="#2D2E36" 
+                      strokeWidth="1.5" 
+                      strokeDasharray={simStep >= 4 ? 'none' : '4 4'}
+                      markerEnd={simStep >= 4 ? 'url(#arrowBlue)' : undefined}
+                    />
+                    {simStep >= 4 && (
+                      <>
+                        <path 
+                          d="M 665 65 C 698 65, 698 195, 730 195"
+                          fill="none" 
+                          stroke={tx.settlements?.length > 0 ? 'url(#edgeGradient1)' : 'url(#edgeGradientFail)'}
+                          strokeWidth="1.5"
+                        />
+                        <circle r="2.5" fill={tx.settlements?.length > 0 ? '#8AB4F8' : '#F87171'} opacity="0.9">
+                          <animateMotion dur="2s" repeatCount="indefinite" path="M 665 65 C 698 65, 698 195, 730 195" />
+                        </circle>
+                      </>
+                    )}
+                    <rect x="672" y="120" width="50" height="16" rx="4" fill="#131417" stroke="#2D2E36" strokeWidth="0.5" />
+                    <text x="697" y="132" textAnchor="middle" fill="#9AA0A6" fontSize="8" fontFamily="monospace">Net Batch</text>
+
+                    {/* Edge 4→5: Settlement (right port ~900, 195) to Bank (left port ~940, 85) */}
+                    <path 
+                      d="M 900 195 C 920 195, 920 85, 940 85"
+                      fill="none" 
+                      stroke="#2D2E36" 
+                      strokeWidth="1.5" 
+                      strokeDasharray={simStep >= 5 ? 'none' : '4 4'}
+                      markerEnd={simStep >= 5 ? 'url(#arrowGreen)' : undefined}
+                    />
+                    {simStep >= 5 && (
+                      <>
+                        <path 
+                          d="M 900 195 C 920 195, 920 85, 940 85"
+                          fill="none" 
+                          stroke="url(#edgeGradientBank)"
+                          strokeWidth="1.5"
+                        />
+                        <circle r="2.5" fill="#34D399" opacity="0.9">
+                          <animateMotion dur="2s" repeatCount="indefinite" path="M 900 195 C 920 195, 920 85, 940 85" />
+                        </circle>
+                      </>
+                    )}
+                    <rect x="905" y="128" width="46" height="16" rx="4" fill="#131417" stroke="#2D2E36" strokeWidth="0.5" />
+                    <text x="928" y="140" textAnchor="middle" fill="#34D399" fontSize="8" fontFamily="monospace">UTR Clear</text>
+
+                  </svg>
+
+                  {/* Node Layer — same coordinate space as SVG */}
+
+                  {/* NODE 1: ORDER — top-left area */}
                   <div 
-                    onClick={() => { setSelectedNode('payment'); setSimStep(2); setIsPlaying(false); setIsSimRunning(false); }}
-                    className={`flex-1 max-w-[175px] cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left relative backdrop-blur-md ${
-                      selectedNode === 'payment' 
-                        ? 'bg-slate-900/95 border-[#528FF0] ring-2 ring-[#528FF0]/60 shadow-[0_0_25px_rgba(82,143,240,0.35)] scale-105 animate-glow-pulse' 
-                        : simStep < 2
-                        ? 'opacity-40 bg-slate-950/60 border-slate-800'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-900 shadow-md'
-                    }`}
+                    className="absolute z-10"
+                    style={{ left: '15px', top: '20px', width: '170px' }}
                   >
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-[10px] font-mono font-bold text-[#528FF0] flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#528FF0] animate-pulse" /> 02 • PAYMENT
-                      </span>
-                      <div className="w-7 h-7 rounded-lg bg-[#528FF0]/10 border border-[#528FF0]/20 flex items-center justify-center text-[#528FF0]">
-                        <CreditCard className="w-3.5 h-3.5" />
-                      </div>
-                    </div>
-                    
-                    <div className="font-bold text-sm truncate text-white">Gateway Charge</div>
-                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">{formatCurrency(tx.amount)}</div>
+                    <div 
+                      onClick={() => { setSelectedNode('order'); setSimStep(1); setIsPlaying(false); setIsSimRunning(false); }}
+                      className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border text-left bg-[#1C1D22] relative shadow-md ${
+                        selectedNode === 'order' 
+                          ? 'border-[#8AB4F8] ring-1 ring-[#8AB4F8]/30 shadow-lg shadow-[#1A73E8]/10' 
+                          : simStep < 1
+                          ? 'opacity-30 border-[#2D2E36]'
+                          : 'border-[#2D2E36] hover:border-[#8AB4F8]/50'
+                      }`}
+                    >
+                      {/* Output port — right side center (~185, 65 in SVG coords = right edge, vertical center) */}
+                      <div className="absolute -right-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-[#8AB4F8] z-20 shadow-sm shadow-[#8AB4F8]/30" />
 
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono">
-                      <span className="text-slate-400 truncate max-w-[85px]">{tx.externalPaymentId}</span>
-                      <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
-                        tx.status === 'CAPTURED' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40' : 'bg-red-950 text-red-400 border border-red-800/40'
-                      }`}>
-                        {tx.status}
-                      </span>
-                    </div>
-
-                    {simStep === 2 && isSimRunning && (
-                      <div className="absolute -top-2.5 -right-2.5 bg-[#528FF0] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg animate-pulse-ring flex items-center gap-1">
-                        <Radio className="w-2.5 h-2.5" /> CAPTURING
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono font-medium text-[#9AA0A6] flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${simStep >= 1 ? 'bg-[#8AB4F8]' : 'bg-[#2D2E36]'}`} /> 01 • ORDER
+                        </span>
+                        <Receipt className="w-3.5 h-3.5 text-[#8AB4F8]" />
                       </div>
-                    )}
-                  </div>
-
-                  {/* CONNECTOR 2 -> 3 */}
-                  <div className="flex-1 flex flex-col items-center px-1.5">
-                    <span className="text-[9px] font-mono text-slate-400 mb-1.5 flex items-center gap-0.5">
-                      <Cpu className="w-2.5 h-2.5 text-amber-400" /> MDR Engine
-                    </span>
-                    <div className="w-full flex items-center relative">
-                      <div className="h-[3px] w-full bg-slate-800 relative overflow-hidden rounded-full shadow-inner">
-                        <div className={`h-full w-full transition-all duration-500 ${
-                          simStep >= 3 ? (simScenario === 'FEE_MISMATCH' ? 'bg-amber-500' : 'bg-[#528FF0]') : 'bg-slate-700/40'
-                        }`} />
-                        {simStep === 3 && isSimRunning && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300 to-transparent animate-laser-flow" />
-                        )}
+                      <div className="font-semibold text-xs text-[#E8EAED] truncate">Merchant Order</div>
+                      <div className="text-xs font-mono text-emerald-400 font-bold mt-0.5">
+                        {tx.order ? formatCurrency(tx.order.amount) : <span className="text-rose-400">Missing</span>}
                       </div>
-                      <ArrowRight className={`w-4 h-4 -ml-1 shrink-0 transition-colors duration-300 ${
-                        simStep >= 3 ? (simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-[#528FF0]') : 'text-slate-600'
-                      }`} />
+                      <div className="mt-1.5 pt-1.5 border-t border-[#2D2E36] flex items-center justify-between text-[10px] text-[#9AA0A6] font-mono">
+                        <span className="truncate max-w-[85px]">{tx.order?.externalOrderId?.slice(0, 16) || 'No Order'}...</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* NODE 3: FEES & TAXES */}
+                  {/* NODE 2: PAYMENT — center-left, lower */}
                   <div 
-                    onClick={() => { setSelectedNode('fees'); setSimStep(3); setIsPlaying(false); setIsSimRunning(false); }}
-                    className={`flex-1 max-w-[175px] cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left relative backdrop-blur-md ${
-                      selectedNode === 'fees' 
-                        ? simScenario === 'FEE_MISMATCH'
-                          ? 'bg-slate-900/95 border-amber-500 ring-2 ring-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.35)] scale-105 animate-glow-pulse-amber'
-                          : 'bg-slate-900/95 border-[#528FF0] ring-2 ring-[#528FF0]/60 shadow-[0_0_25px_rgba(82,143,240,0.35)] scale-105 animate-glow-pulse' 
-                        : simStep < 3
-                        ? 'opacity-40 bg-slate-950/60 border-slate-800'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-900 shadow-md'
-                    }`}
+                    className="absolute z-10"
+                    style={{ left: '265px', top: '110px', width: '170px' }}
                   >
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${simScenario === 'FEE_MISMATCH' ? 'bg-amber-400 animate-ping' : 'bg-blue-400 animate-pulse'}`} /> 03 • CHARGES
-                      </span>
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                        <ArrowRightLeft className="w-3.5 h-3.5" />
-                      </div>
-                    </div>
-                    
-                    <div className="font-bold text-sm truncate text-white">Fees & Tax</div>
-                    <div className={`text-xs font-mono font-bold mt-1 ${simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-red-400'}`}>
-                      -{formatCurrency(totalDeductions)}
-                    </div>
+                    <div 
+                      onClick={() => { setSelectedNode('payment'); setSimStep(2); setIsPlaying(false); setIsSimRunning(false); }}
+                      className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border text-left bg-[#1C1D22] relative shadow-md ${
+                        selectedNode === 'payment' 
+                          ? 'border-[#8AB4F8] ring-1 ring-[#8AB4F8]/30 shadow-lg shadow-[#1A73E8]/10' 
+                          : simStep < 2
+                          ? 'opacity-30 border-[#2D2E36]'
+                          : 'border-[#2D2E36] hover:border-[#8AB4F8]/50'
+                      }`}
+                    >
+                      {/* Input port — left center */}
+                      <div className="absolute -left-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-[#8AB4F8] z-20 shadow-sm shadow-[#8AB4F8]/30" />
+                      {/* Output port — right center */}
+                      <div className="absolute -right-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-[#8AB4F8] z-20 shadow-sm shadow-[#8AB4F8]/30" />
 
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span>Fee: {formatCurrency(totalFeesAmount)}</span>
-                      <span className="text-red-400">GST: 18%</span>
-                    </div>
-
-                    {simStep === 3 && isSimRunning && (
-                      <div className="absolute -top-2.5 -right-2.5 bg-amber-500 text-slate-950 text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg animate-pulse-ring flex items-center gap-1">
-                        <Radio className="w-2.5 h-2.5" /> DEDUCTING
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono font-medium text-[#8AB4F8] flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${simStep >= 2 ? 'bg-[#8AB4F8]' : 'bg-[#2D2E36]'}`} /> 02 • PAYMENT
+                        </span>
+                        <CreditCard className="w-3.5 h-3.5 text-[#8AB4F8]" />
                       </div>
-                    )}
-                  </div>
-
-                  {/* CONNECTOR 3 -> 4 */}
-                  <div className="flex-1 flex flex-col items-center px-1.5">
-                    <span className={`text-[9px] font-mono mb-1.5 flex items-center gap-0.5 ${
-                      simStep >= 4 
-                        ? (tx.settlements?.length > 0 ? 'text-slate-400' : 'text-red-400 font-bold') 
-                        : 'text-slate-600'
-                    }`}>
-                      <Layers className="w-2.5 h-2.5" /> {tx.settlements?.length > 0 ? 'Net Batch' : '⚠️ Missing'}
-                    </span>
-                    <div className="w-full flex items-center relative">
-                      <div className="h-[3px] w-full bg-slate-800 relative overflow-hidden rounded-full shadow-inner">
-                        <div className={`h-full w-full transition-all duration-500 ${
-                          simStep >= 4
-                            ? (tx.settlements?.length > 0 ? 'bg-[#528FF0]' : 'bg-red-500')
-                            : 'bg-slate-700/40'
-                        }`} />
-                        {simStep === 4 && isSimRunning && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-300 to-transparent animate-laser-flow" />
-                        )}
+                      <div className="font-semibold text-xs text-[#E8EAED] truncate">Gateway Charge</div>
+                      <div className="text-xs font-mono text-emerald-400 font-bold mt-0.5">{formatCurrency(tx.amount)}</div>
+                      <div className="mt-1.5 pt-1.5 border-t border-[#2D2E36] flex items-center justify-between text-[10px] font-mono">
+                        <span className="text-[#9AA0A6] truncate max-w-[75px]">{tx.externalPaymentId}</span>
+                        <span className={`px-1.5 rounded text-[9px] font-semibold ${
+                          tx.status === 'CAPTURED' ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+                        }`}>
+                          {tx.status}
+                        </span>
                       </div>
-                      <ArrowRight className={`w-4 h-4 -ml-1 shrink-0 transition-colors duration-300 ${
-                        simStep >= 4 
-                          ? (tx.settlements?.length > 0 ? 'text-[#528FF0]' : 'text-red-500') 
-                          : 'text-slate-600'
-                      }`} />
                     </div>
                   </div>
 
-                  {/* NODE 4: SETTLEMENT */}
+                  {/* NODE 3: FEES — top center */}
                   <div 
-                    onClick={() => { setSelectedNode('settlement'); setSimStep(4); setIsPlaying(false); setIsSimRunning(false); }}
-                    className={`flex-1 max-w-[175px] cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left relative backdrop-blur-md ${
-                      selectedNode === 'settlement' 
-                        ? tx.settlements?.length > 0
-                          ? 'bg-slate-900/95 border-[#528FF0] ring-2 ring-[#528FF0]/60 shadow-[0_0_25px_rgba(82,143,240,0.35)] scale-105 animate-glow-pulse'
-                          : 'bg-red-950/95 border-red-500 ring-2 ring-red-500/60 shadow-[0_0_25px_rgba(239,68,68,0.35)] scale-105 animate-glow-pulse-red' 
-                        : simStep < 4
-                        ? 'opacity-40 bg-slate-950/60 border-slate-800'
-                        : tx.settlements?.length > 0 
-                          ? 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-900 shadow-md'
-                          : 'bg-red-950/40 border-red-800/60'
-                    }`}
+                    className="absolute z-10"
+                    style={{ left: '500px', top: '20px', width: '165px' }}
                   >
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${tx.settlements?.length > 0 ? 'bg-blue-400 animate-pulse' : 'bg-red-500 animate-ping'}`} /> 04 • BATCH
-                      </span>
-                      <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                        <Clock className="w-3.5 h-3.5" />
-                      </div>
-                    </div>
-                    
-                    <div className="font-bold text-sm truncate text-white">Settlement Batch</div>
-                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
-                      {tx.settlements?.length > 0 ? formatCurrency(tx.settlements[0].amount) : <span className="text-red-400 font-bold">Unsettled</span>}
-                    </div>
+                    <div 
+                      onClick={() => { setSelectedNode('fees'); setSimStep(3); setIsPlaying(false); setIsSimRunning(false); }}
+                      className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border text-left bg-[#1C1D22] relative shadow-md ${
+                        selectedNode === 'fees' 
+                          ? simScenario === 'FEE_MISMATCH'
+                            ? 'border-amber-500 ring-1 ring-amber-500/30 shadow-lg shadow-amber-500/10'
+                            : 'border-[#8AB4F8] ring-1 ring-[#8AB4F8]/30 shadow-lg shadow-[#1A73E8]/10' 
+                          : simStep < 3
+                          ? 'opacity-30 border-[#2D2E36]'
+                          : 'border-[#2D2E36] hover:border-[#8AB4F8]/50'
+                      }`}
+                    >
+                      {/* Input port */}
+                      <div className="absolute -left-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-amber-400 z-20 shadow-sm shadow-amber-400/30" />
+                      {/* Output port */}
+                      <div className="absolute -right-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-amber-400 z-20 shadow-sm shadow-amber-400/30" />
 
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span className="truncate max-w-[90px]">{tx.settlements?.[0]?.externalSettlementId || 'None'}</span>
-                      <span className={tx.settlements?.length > 0 ? 'text-emerald-400' : 'text-red-400'}>
-                        {tx.settlements?.length > 0 ? 'T+1 SLA' : 'HELD'}
-                      </span>
-                    </div>
-
-                    {simStep === 4 && isSimRunning && (
-                      <div className="absolute -top-2.5 -right-2.5 bg-[#528FF0] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg animate-pulse-ring flex items-center gap-1">
-                        <Radio className="w-2.5 h-2.5" /> BATCHING
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono font-medium text-[#9AA0A6] flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${simScenario === 'FEE_MISMATCH' ? 'bg-amber-400' : simStep >= 3 ? 'bg-[#8AB4F8]' : 'bg-[#2D2E36]'}`} /> 03 • CHARGES
+                        </span>
+                        <ArrowRightLeft className="w-3.5 h-3.5 text-amber-400" />
                       </div>
-                    )}
-                  </div>
-
-                  {/* CONNECTOR 4 -> 5 */}
-                  <div className="flex-1 flex flex-col items-center px-1.5">
-                    <span className="text-[9px] font-mono text-slate-400 mb-1.5 flex items-center gap-0.5">
-                      <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" /> UTR Clear
-                    </span>
-                    <div className="w-full flex items-center relative">
-                      <div className="h-[3px] w-full bg-slate-800 relative overflow-hidden rounded-full shadow-inner">
-                        <div className={`h-full w-full transition-all duration-500 ${
-                          simStep >= 5 ? 'bg-[#528FF0]' : 'bg-slate-700/40'
-                        }`} />
-                        {simStep === 5 && isSimRunning && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-300 to-transparent animate-laser-flow" />
-                        )}
+                      <div className="font-semibold text-xs text-[#E8EAED] truncate">Fees &amp; Tax</div>
+                      <div className={`text-xs font-mono font-bold mt-0.5 ${simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-[#9AA0A6]'}`}>
+                        -{formatCurrency(totalDeductions)}
                       </div>
-                      <ArrowRight className={`w-4 h-4 -ml-1 shrink-0 transition-colors duration-300 ${
-                        simStep >= 5 ? 'text-[#528FF0]' : 'text-slate-600'
-                      }`} />
+                      <div className="mt-1.5 pt-1.5 border-t border-[#2D2E36] flex items-center justify-between text-[10px] text-[#9AA0A6] font-mono">
+                        <span>Fee: {formatCurrency(totalFeesAmount)}</span>
+                        <span>GST 18%</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* NODE 5: BANK */}
+                  {/* NODE 4: SETTLEMENT — lower right */}
                   <div 
-                    onClick={() => { setSelectedNode('bank'); setSimStep(5); setIsPlaying(false); setIsSimRunning(false); }}
-                    className={`flex-1 max-w-[175px] cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left relative backdrop-blur-md ${
-                      selectedNode === 'bank' 
-                        ? 'bg-slate-900/95 border-[#528FF0] ring-2 ring-[#528FF0]/60 shadow-[0_0_25px_rgba(82,143,240,0.35)] scale-105 animate-glow-pulse' 
-                        : simStep < 5
-                        ? 'opacity-40 bg-slate-950/60 border-slate-800'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-900 shadow-md'
-                    }`}
+                    className="absolute z-10"
+                    style={{ left: '730px', top: '150px', width: '170px' }}
                   >
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> 05 • BANK
-                      </span>
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                        <Building2 className="w-3.5 h-3.5" />
+                    <div 
+                      onClick={() => { setSelectedNode('settlement'); setSimStep(4); setIsPlaying(false); setIsSimRunning(false); }}
+                      className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border text-left bg-[#1C1D22] relative shadow-md ${
+                        selectedNode === 'settlement' 
+                          ? tx.settlements?.length > 0
+                            ? 'border-[#8AB4F8] ring-1 ring-[#8AB4F8]/30 shadow-lg shadow-[#1A73E8]/10'
+                            : 'border-rose-500 ring-1 ring-rose-500/30 shadow-lg shadow-rose-500/10' 
+                          : simStep < 4
+                          ? 'opacity-30 border-[#2D2E36]'
+                          : 'border-[#2D2E36] hover:border-[#8AB4F8]/50'
+                      }`}
+                    >
+                      {/* Input port */}
+                      <div className="absolute -left-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-[#8AB4F8] z-20 shadow-sm shadow-[#8AB4F8]/30" />
+                      {/* Output port */}
+                      <div className="absolute -right-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-[#8AB4F8] z-20 shadow-sm shadow-[#8AB4F8]/30" />
+
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono font-medium text-[#9AA0A6] flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${tx.settlements?.length > 0 ? 'bg-[#8AB4F8]' : 'bg-rose-400'}`} /> 04 • BATCH
+                        </span>
+                        <Clock className={`w-3.5 h-3.5 ${tx.settlements?.length > 0 ? 'text-[#8AB4F8]' : 'text-rose-400'}`} />
+                      </div>
+                      <div className="font-semibold text-xs text-[#E8EAED] truncate">Settlement Batch</div>
+                      <div className="text-xs font-mono text-emerald-400 font-bold mt-0.5">
+                        {tx.settlements?.length > 0 ? formatCurrency(tx.settlements[0].amount) : <span className="text-rose-400">Unsettled</span>}
+                      </div>
+                      <div className="mt-1.5 pt-1.5 border-t border-[#2D2E36] flex items-center justify-between text-[10px] text-[#9AA0A6] font-mono">
+                        <span className="truncate max-w-[75px]">{tx.settlements?.[0]?.externalSettlementId?.slice(0, 14) || 'None'}...</span>
+                        <span className={tx.settlements?.length > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                          {tx.settlements?.length > 0 ? 'T+1' : 'HELD'}
+                        </span>
                       </div>
                     </div>
-                    
-                    <div className="font-bold text-sm truncate text-white">Nodal Bank UTR</div>
-                    <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
-                      {tx.settlements?.[0]?.bankTransactions?.[0] ? formatCurrency(tx.settlements[0].bankTransactions[0].amount) : formatCurrency(actualSettlement)}
-                    </div>
+                  </div>
 
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span className="truncate max-w-[95px]">{tx.settlements?.[0]?.bankTransactions?.[0]?.reference || 'Nodal Escrow'}</span>
-                      <span className="text-emerald-400 font-semibold">CLEARED</span>
-                    </div>
+                  {/* NODE 5: BANK — far right, top */}
+                  <div 
+                    className="absolute z-10"
+                    style={{ left: '940px', top: '40px', width: '160px' }}
+                  >
+                    <div 
+                      onClick={() => { setSelectedNode('bank'); setSimStep(5); setIsPlaying(false); setIsSimRunning(false); }}
+                      className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border text-left bg-[#1C1D22] relative shadow-md ${
+                        selectedNode === 'bank' 
+                          ? 'border-emerald-400 ring-1 ring-emerald-400/30 shadow-lg shadow-emerald-500/10' 
+                          : simStep < 5
+                          ? 'opacity-30 border-[#2D2E36]'
+                          : 'border-[#2D2E36] hover:border-emerald-400/50'
+                      }`}
+                    >
+                      {/* Input port — left center */}
+                      <div className="absolute -left-[7px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#131417] border-2 border-emerald-400 z-20 shadow-sm shadow-emerald-400/30" />
 
-                    {simStep === 5 && isSimRunning && (
-                      <div className="absolute -top-2.5 -right-2.5 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg animate-pulse-ring flex items-center gap-1">
-                        <Radio className="w-2.5 h-2.5" /> RECONCILING
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono font-medium text-[#9AA0A6] flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${simStep >= 5 ? 'bg-emerald-400' : 'bg-[#2D2E36]'}`} /> 05 • BANK
+                        </span>
+                        <Building2 className="w-3.5 h-3.5 text-emerald-400" />
                       </div>
-                    )}
+                      <div className="font-semibold text-xs text-[#E8EAED] truncate">Nodal Bank UTR</div>
+                      <div className="text-xs font-mono text-emerald-400 font-bold mt-0.5">
+                        {tx.settlements?.[0]?.bankTransactions?.[0] ? formatCurrency(tx.settlements[0].bankTransactions[0].amount) : formatCurrency(actualSettlement)}
+                      </div>
+                      <div className="mt-1.5 pt-1.5 border-t border-[#2D2E36] flex items-center justify-between text-[10px] text-[#9AA0A6] font-mono">
+                        <span className="truncate max-w-[75px]">{tx.settlements?.[0]?.bankTransactions?.[0]?.reference || 'APEX...'}</span>
+                        <span className="text-emerald-400 font-bold">CLEARED</span>
+                      </div>
+                    </div>
                   </div>
 
                 </div>
 
-                {/* Quantum Telemetry Micro-Bar */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5 text-slate-300">
-                      <Radio className="w-3 h-3 text-emerald-400 animate-pulse" /> Telemetry: <span className="text-emerald-400 font-bold">LIVE DUAL-SYNC</span>
+                {/* Graph Canvas Footer */}
+                <div className="px-4 py-2.5 border-t border-[#2D2E36] bg-[#131417] flex items-center justify-between text-[10px] text-[#9AA0A6] font-mono">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[#E8EAED]">DAG Synchronized</span>
                     </span>
-                    <span className="hidden sm:inline text-slate-600">|</span>
-                    <span className="hidden sm:flex items-center gap-1 text-slate-400">
-                      <Lock className="w-3 h-3 text-[#528FF0]" /> HMAC-SHA256: <span className="text-slate-200">VERIFIED</span>
-                    </span>
+                    <span className="text-[#2D2E36]">|</span>
+                    <span>Routing: <strong className="text-[#E8EAED]">HDFC Escrow → RBI Nodal</strong></span>
                   </div>
-
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-slate-300">
-                      Routing: HDFC ESCROW ➔ RBI NODAL
-                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#1C1D22] border border-[#2D2E36]">5 Nodes • 4 Edges</span>
                   </div>
                 </div>
 
               </div>
 
               {/* Interactive Node Deep-Dive Inspector Tabs */}
-              <div className="border-t border-slate-800/90 bg-[#060D1E]/95 p-6 relative z-10">
+              <div className="border-t border-[var(--border)] bg-[var(--muted)]/20 p-5 relative z-10">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-[#528FF0]/20 text-[#528FF0] border border-[#528FF0]/30 shadow-inner">
+                    <div className="p-2 rounded-lg bg-[var(--muted)] text-[#528FF0] border border-[var(--border)]">
                       <Info className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-                        Node Deep-Dive Inspector: <span className="text-[#528FF0] font-mono bg-[#528FF0]/10 px-2 py-0.2 rounded border border-[#528FF0]/30">{selectedNode.toUpperCase()}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">Step {PIPELINE_NODES.indexOf(selectedNode) + 1} of 5</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-[var(--foreground)] flex items-center gap-2">
+                        Node Inspector: <span className="text-[#528FF0] font-mono bg-[var(--muted)] px-2 py-0.5 rounded border border-[var(--border)]">{selectedNode.toUpperCase()}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--muted)] text-[var(--muted-foreground)] font-mono">Step {PIPELINE_NODES.indexOf(selectedNode) + 1} of 5</span>
                       </span>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Live state verification and ledger telemetry for active stage</p>
+                      <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Live state verification and ledger telemetry for active stage</p>
                     </div>
                   </div>
 
                   {/* Tabs */}
-                  <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 text-xs shadow-inner">
+                  <div className="flex items-center bg-[var(--muted)] border border-[var(--border)] rounded-lg p-1 text-xs">
                     <button 
                       onClick={() => setInspectorTab('overview')}
-                      className={`px-3.5 py-1.5 rounded-lg transition-all ${inspectorTab === 'overview' ? 'bg-[#528FF0] text-white font-semibold shadow' : 'text-slate-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded-md transition-all ${inspectorTab === 'overview' ? 'bg-[#528FF0] text-white font-semibold shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
                     >
                       Overview
                     </button>
                     <button 
                       onClick={() => setInspectorTab('checks')}
-                      className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${inspectorTab === 'checks' ? 'bg-[#528FF0] text-white font-semibold shadow' : 'text-slate-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${inspectorTab === 'checks' ? 'bg-[#528FF0] text-white font-semibold shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
                     >
                       <FileCheck2 className="w-3.5 h-3.5" /> Validation Checks
                     </button>
                     <button 
                       onClick={() => setInspectorTab('json')}
-                      className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${inspectorTab === 'json' ? 'bg-[#528FF0] text-white font-semibold shadow' : 'text-slate-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${inspectorTab === 'json' ? 'bg-[#528FF0] text-white font-semibold shadow-sm' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
                     >
                       <Code2 className="w-3.5 h-3.5" /> Raw JSON
                     </button>
@@ -1632,106 +1664,106 @@ export default function DigitalTwinPage() {
                 {inspectorTab === 'overview' && (
                   <div className="transition-all duration-200">
                     {selectedNode === 'order' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">External Order ID</span>
-                          <div className="flex items-center justify-between mt-1.5">
-                            <span className="font-mono text-slate-200 text-sm font-semibold">{tx.order?.externalOrderId || 'N/A'}</span>
+                      <div className="border border-[var(--border)] rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)] bg-[var(--surface)] overflow-hidden grid grid-cols-1 sm:grid-cols-3 text-xs">
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">External Order ID</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono text-[var(--foreground)] text-xs font-semibold truncate">{tx.order?.externalOrderId || 'N/A'}</span>
                             {tx.order?.externalOrderId && (
-                              <button onClick={() => handleCopy(tx.order.externalOrderId, 'ord')} className="text-slate-400 hover:text-white p-1">
-                                {copiedId === 'ord' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                              <button onClick={() => handleCopy(tx.order.externalOrderId, 'ord')} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                                {copiedId === 'ord' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                               </button>
                             )}
                           </div>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Order Total Amount</span>
-                          <span className="font-mono text-emerald-400 font-bold text-base mt-1.5 block">{formatCurrency(tx.order?.amount)}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Order Total Amount</span>
+                          <span className="font-mono text-emerald-400 font-bold text-sm mt-1 block">{formatCurrency(tx.order?.amount)}</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Creation Timestamp</span>
-                          <span className="text-slate-200 mt-1.5 block font-mono">{formatDate(tx.order?.createdAt)}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Creation Timestamp</span>
+                          <span className="text-[var(--foreground)] mt-1 block font-mono text-xs">{formatDate(tx.order?.createdAt)}</span>
                         </div>
                       </div>
                     )}
 
                     {selectedNode === 'payment' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Gateway Payment ID</span>
-                          <div className="flex items-center justify-between mt-1.5">
-                            <span className="font-mono text-slate-200 text-sm font-semibold">{tx.externalPaymentId}</span>
-                            <button onClick={() => handleCopy(tx.externalPaymentId, 'pay')} className="text-slate-400 hover:text-white p-1">
-                              {copiedId === 'pay' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <div className="border border-[var(--border)] rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)] bg-[var(--surface)] overflow-hidden grid grid-cols-1 sm:grid-cols-4 text-xs">
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Gateway Payment ID</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono text-[var(--foreground)] text-xs font-semibold truncate">{tx.externalPaymentId}</span>
+                            <button onClick={() => handleCopy(tx.externalPaymentId, 'pay')} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                              {copiedId === 'pay' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Payment Method</span>
-                          <span className="text-slate-200 font-medium mt-1.5 block">{tx.method || 'CARD / UPI / NETBANKING'}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Payment Method</span>
+                          <span className="text-[var(--foreground)] font-mono text-xs mt-1 block truncate">{tx.method || 'CARD / UPI / NETBANKING'}</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Authorized State</span>
-                          <span className="text-emerald-400 font-semibold mt-1.5 block">{tx.status}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Authorized State</span>
+                          <span className="text-emerald-400 font-mono font-semibold text-xs mt-1 block">{tx.status}</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Capture Timestamp</span>
-                          <span className="text-slate-200 mt-1.5 block font-mono">{formatDate(tx.capturedAt || tx.createdAt)}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Capture Timestamp</span>
+                          <span className="text-[var(--foreground)] mt-1 block font-mono text-xs">{formatDate(tx.capturedAt || tx.createdAt)}</span>
                         </div>
                       </div>
                     )}
 
                     {selectedNode === 'fees' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Merchant Discount Rate (MDR)</span>
-                          <span className={`font-mono font-bold text-base mt-1.5 block ${simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-red-400'}`}>
+                      <div className="border border-[var(--border)] rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)] bg-[var(--surface)] overflow-hidden grid grid-cols-1 sm:grid-cols-3 text-xs">
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">MDR Processing Fee</span>
+                          <span className={`font-mono font-bold text-sm mt-1 block ${simScenario === 'FEE_MISMATCH' ? 'text-amber-400' : 'text-[var(--foreground)]'}`}>
                             -{formatCurrency(totalFeesAmount)}
                           </span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Goods & Services Tax (GST 18%)</span>
-                          <span className="font-mono text-red-400 font-bold text-base mt-1.5 block">-{formatCurrency(totalTaxAmount)}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Goods & Services Tax (18%)</span>
+                          <span className="font-mono text-[var(--foreground)] font-bold text-sm mt-1 block">-{formatCurrency(totalTaxAmount)}</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Total Deductions %</span>
-                          <span className="font-mono text-slate-200 mt-1.5 block font-semibold">{tx.amount ? ((totalDeductions / tx.amount) * 100).toFixed(2) : 0}% of Gross</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Total Deductions %</span>
+                          <span className="font-mono text-[var(--foreground)] mt-1 block text-xs">{tx.amount ? ((totalDeductions / tx.amount) * 100).toFixed(2) : 0}% of Gross</span>
                         </div>
                       </div>
                     )}
 
                     {selectedNode === 'settlement' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Settlement Batch ID</span>
-                          <span className="font-mono text-slate-200 mt-1.5 block font-semibold">{tx.settlements?.[0]?.externalSettlementId || 'None (Missing)'}</span>
+                      <div className="border border-[var(--border)] rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)] bg-[var(--surface)] overflow-hidden grid grid-cols-1 sm:grid-cols-3 text-xs">
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Settlement Batch ID</span>
+                          <span className="font-mono text-[var(--foreground)] mt-1 block text-xs truncate">{tx.settlements?.[0]?.externalSettlementId || 'None (Missing)'}</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Net Batch Amount</span>
-                          <span className={`font-mono font-bold text-base mt-1.5 block ${actualSettlement > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Net Batch Amount</span>
+                          <span className={`font-mono font-bold text-sm mt-1 block ${actualSettlement > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {actualSettlement > 0 ? formatCurrency(actualSettlement) : 'Unsettled'}
                           </span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Settlement Batch Timestamp</span>
-                          <span className="text-slate-200 mt-1.5 block font-mono">{formatDate(tx.settlements?.[0]?.settledAt)}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Batch Timestamp</span>
+                          <span className="text-[var(--foreground)] mt-1 block font-mono text-xs">{formatDate(tx.settlements?.[0]?.settledAt)}</span>
                         </div>
                       </div>
                     )}
 
                     {selectedNode === 'bank' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Nodal UTR Reference</span>
-                          <span className="font-mono text-slate-200 mt-1.5 block font-semibold">{tx.settlements?.[0]?.bankTransactions?.[0]?.reference || 'CMS589210940'}</span>
+                      <div className="border border-[var(--border)] rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)] bg-[var(--surface)] overflow-hidden grid grid-cols-1 sm:grid-cols-3 text-xs">
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Nodal UTR Reference</span>
+                          <span className="font-mono text-[var(--foreground)] mt-1 block text-xs truncate">{tx.settlements?.[0]?.bankTransactions?.[0]?.reference || 'CMS589210940'}</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Disbursement Channel</span>
-                          <span className="text-slate-200 font-medium mt-1.5 block">HDFC Bank Nodal Escrow</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Disbursement Channel</span>
+                          <span className="text-[var(--foreground)] font-mono text-xs mt-1 block truncate">HDFC Bank Nodal Escrow</span>
                         </div>
-                        <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-sm">
-                          <span className="text-slate-500 block text-[11px] font-mono">Value Date (Bank Clearance)</span>
-                          <span className="text-slate-200 mt-1.5 block font-mono">{formatDate(tx.settlements?.[0]?.bankTransactions?.[0]?.transactionDate || tx.createdAt)}</span>
+                        <div className="p-3.5">
+                          <span className="text-[var(--muted-foreground)] block text-[10px] font-mono uppercase tracking-wider">Value Date (Bank Clearance)</span>
+                          <span className="text-[var(--foreground)] mt-1 block font-mono text-xs">{formatDate(tx.settlements?.[0]?.bankTransactions?.[0]?.transactionDate || tx.createdAt)}</span>
                         </div>
                       </div>
                     )}
@@ -1742,20 +1774,20 @@ export default function DigitalTwinPage() {
                 {inspectorTab === 'checks' && (
                   <div className="space-y-2.5">
                     {getValidationChecks(selectedNode).map((chk, i) => (
-                      <div key={i} className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs shadow-sm">
+                      <div key={i} className="flex items-center justify-between p-3.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs shadow-sm">
                         <div className="flex items-center gap-3">
                           <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
                             chk.status === 'PASS' 
-                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60' 
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40' 
                               : chk.status === 'WARN'
-                              ? 'bg-amber-950 text-amber-400 border border-amber-800/60'
-                              : 'bg-red-950 text-red-400 border border-red-800/60'
+                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40'
+                              : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40'
                           }`}>
                             {chk.status}
                           </span>
-                          <span className="font-semibold text-slate-200">{chk.label}</span>
+                          <span className="font-semibold text-[var(--foreground)]">{chk.label}</span>
                         </div>
-                        <span className="text-slate-400 font-mono text-[11px]">{chk.note}</span>
+                        <span className="text-[var(--muted-foreground)] font-mono text-[11px]">{chk.note}</span>
                       </div>
                     ))}
                   </div>
@@ -1764,7 +1796,7 @@ export default function DigitalTwinPage() {
                 {/* Tab 3: Raw JSON */}
                 {inspectorTab === 'json' && (
                   <div className="relative">
-                    <pre className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 font-mono text-xs max-h-52 overflow-auto shadow-inner">
+                    <pre className="p-4 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] font-mono text-xs max-h-52 overflow-auto shadow-inner">
                       {selectedNode === 'order' && JSON.stringify(tx.order, null, 2)}
                       {selectedNode === 'payment' && JSON.stringify({ id: tx.id, externalPaymentId: tx.externalPaymentId, amount: tx.amount, status: tx.status, method: tx.method, capturedAt: tx.capturedAt }, null, 2)}
                       {selectedNode === 'fees' && JSON.stringify(tx.fees, null, 2)}
@@ -1773,9 +1805,9 @@ export default function DigitalTwinPage() {
                     </pre>
                     <button 
                       onClick={() => handleCopy(JSON.stringify(tx, null, 2), 'raw-json')}
-                      className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 border border-slate-700 shadow"
+                      className="absolute top-3 right-3 px-3 py-1.5 rounded-md bg-[var(--muted)] hover:bg-[var(--surface-hover)] text-[var(--foreground)] text-xs font-semibold flex items-center gap-1.5 border border-[var(--border)] shadow-sm"
                     >
-                      {copiedId === 'raw-json' ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy JSON</>}
+                      {copiedId === 'raw-json' ? <><Check className="w-3.5 h-3.5 text-emerald-500" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy JSON</>}
                     </button>
                   </div>
                 )}
@@ -1810,61 +1842,69 @@ export default function DigitalTwinPage() {
             </div>
           )}
 
-          {/* Exceptions Overlay & Auto-Fix */}
+          {/* Exceptions Overlay & Diagnostics */}
           {tx.exceptions?.length > 0 && (
-            <div className="mt-5 rounded-2xl border border-red-200 dark:border-red-800/30 bg-red-50/50 dark:bg-red-900/10 p-5 relative overflow-hidden shadow-sm print:bg-red-50 print:border-red-200">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500 rounded-r" />
-              <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4 flex items-center print:text-red-700">
-                <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/20 mr-2.5 border border-red-500/20">
-                  <AlertTriangle className="w-4 h-4 text-red-600" />
+            <div className="mt-4 rounded-lg border border-[#2D2E36] bg-[#1C1D22] p-4 shadow-sm print:bg-red-50 print:border-red-200">
+              <div className="flex items-center justify-between mb-3 border-b border-[#2D2E36] pb-2.5">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-xs font-mono uppercase tracking-wider font-semibold text-[#E8EAED]">
+                    Active Pipeline Discrepancies
+                  </h3>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#26272E] border border-[#2D2E36] text-[#9AA0A6]">
+                    {tx.exceptions.length} detected
+                  </span>
                 </div>
-                Detected Pipeline Anomalies ({tx.exceptions.length})
-              </h3>
-              <div className="grid md:grid-cols-2 gap-3.5">
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
                 {tx.exceptions.map((ex) => (
-                  <div key={ex.id} className="bg-[var(--surface)] print:bg-white p-4 rounded-xl border border-red-200/60 dark:border-red-800/30 print:border-red-200 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="font-bold text-red-600 dark:text-red-400 text-sm print:text-red-700">{ex.type.replace(/_/g, ' ')}</div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 border border-red-200 dark:border-red-800/40">{ex.severity}</span>
+                  <div key={ex.id} className="bg-[#131417] print:bg-white p-3.5 rounded-lg border border-[#2D2E36] print:border-rose-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono font-medium text-xs text-[#E8EAED]">{ex.type.replace(/_/g, ' ')}</div>
+                        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border border-[#2D2E36] bg-[#1C1D22] text-[#9AA0A6]">{ex.severity} Priority</span>
+                      </div>
+                      <p className="text-[#9AA0A6] print:text-gray-700 text-xs mt-1.5 leading-relaxed font-sans">{ex.description}</p>
+                      <div className="text-xs font-mono text-[#9AA0A6] mt-2.5">
+                        Variance Impact: <span className="font-semibold text-[#E8EAED]">{formatCurrency(ex.financialImpact)}</span>
+                      </div>
                     </div>
-                    <div className="text-[var(--muted-foreground)] print:text-gray-700 text-sm mt-1">{ex.description}</div>
-                    <div className="text-red-600 dark:text-red-400 print:text-red-700 font-mono font-bold text-lg mt-2">{formatCurrency(ex.financialImpact)}</div>
                     
-                    {/* AI Investigation & Exception Center Link */}
-                    <div className="flex flex-col sm:flex-row items-center gap-2 mt-3 pt-3 border-t border-red-200/50 dark:border-red-800/20 print:hidden">
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#2D2E36] print:hidden">
                       <button 
                         onClick={() => handleAIInvestigate(ex.id)}
                         disabled={aiLoading}
-                        className="w-full sm:flex-1 flex items-center justify-center bg-[#528FF0] hover:bg-[#4080E0] text-white px-4 py-2 rounded-xl font-semibold text-xs transition-colors duration-150 disabled:opacity-50 shadow-sm"
+                        className="flex-1 h-8 px-3 rounded text-xs font-mono font-medium border border-[#2D2E36] bg-[#26272E] hover:bg-[#2F3038] text-[#E8EAED] hover:text-white transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
                       >
-                        <Brain className="w-4 h-4 mr-2" />
                         {aiLoading && activeExceptionId === ex.id ? (
-                          <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Investigating...</>
-                        ) : 'Ask AI to Investigate'}
+                          <><Loader2 className="w-3.5 h-3.5 animate-spin text-[#8AB4F8]" /> Analyzing...</>
+                        ) : (
+                          <><Code2 className="w-3.5 h-3.5 text-[#8AB4F8]" /> Root Cause Diagnostics</>
+                        )}
                       </button>
 
                       <a
                         href="/exceptions"
-                        className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-semibold border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--foreground)] transition-colors flex items-center justify-center gap-1"
+                        className="h-8 px-3 rounded text-xs font-mono font-medium border border-[#2D2E36] bg-[#1C1D22] hover:bg-[#26272E] text-[#9AA0A6] hover:text-[#E8EAED] transition-colors flex items-center gap-1"
                       >
-                        <span>Exception Desk</span>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Exceptions</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
                       </a>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Inline AI Result */}
+              {/* Inline Diagnostic Result */}
               {aiResult && (
-                <div className="mt-5 bg-[var(--surface)] print:bg-white p-5 rounded-xl border border-blue-200 dark:border-blue-800/30 print:border-gray-300 shadow-sm print:shadow-none">
-                  <div className="flex items-center text-[#528FF0] font-bold text-base mb-3">
-                    <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 mr-2.5 border border-blue-500/20">
-                      <Brain className="w-4 h-4" />
-                    </div>
-                    AI Root Cause Analysis
+                <div className="mt-4 bg-[#131417] print:bg-white p-4 rounded-lg border border-[#2D2E36] print:border-gray-300 shadow-sm print:shadow-none">
+                  <div className="flex items-center text-[#8AB4F8] font-mono text-xs mb-2.5 gap-2 border-b border-[#2D2E36] pb-2">
+                    <Code2 className="w-3.5 h-3.5" />
+                    <span>Diagnostic Trace Analysis</span>
                   </div>
-                  <div className="prose prose-slate dark:prose-invert max-w-none text-sm print:prose-slate">
+                  <div className="prose prose-slate dark:prose-invert max-w-none text-xs print:prose-slate">
                     <ReactMarkdown>{aiResult}</ReactMarkdown>
                   </div>
                 </div>
@@ -1880,7 +1920,7 @@ export default function DigitalTwinPage() {
                 Full Financial Lineage Reconciled
               </h3>
               <p className="text-[var(--muted-foreground)] print:text-gray-600 mt-0.5 text-sm">
-                All 5 nodes (Order ➔ Payment ➔ Fees ➔ Settlement ➔ Nodal Bank) matched with zero variance.
+                All 5 nodes (Order -&gt; Payment -&gt; Fees -&gt; Settlement -&gt; Nodal Bank) matched with zero variance.
               </p>
             </div>
           )}
