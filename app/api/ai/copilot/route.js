@@ -91,20 +91,20 @@ ${recentExceptionsList || 'No open exceptions.'}
 
       if (q.includes('exception') || q.includes('error') || q.includes('issue') || q.includes('today')) {
         if (totalOpenExCount === 0) {
-          return `### 🟢 System Healthy — Zero Open Exceptions\n\nAll **${totalTx} payments** are currently reconciled with **100% parity**. No financial leakage or missing settlements detected.`;
+          return `### System Status: Fully Reconciled\n\nAll **${totalTx} payments** are currently reconciled with **100% parity**. No financial leakage or missing settlements detected.`;
         }
-        return `### ⚠️ Current Open Exceptions (${totalOpenExCount} Active • ₹${totalImpact.toFixed(2)} at Risk)\n\nHere is the active exception ledger:\n\n${recentExceptionsList}\n\n**Recommended Next Step:** Head over to the **[Exceptions Center](/exceptions)** to investigate root causes and generate RBI-compliant dispute packets.`;
+        return `### Active Exceptions (${totalOpenExCount} Active • ₹${totalImpact.toFixed(2)} at Risk)\n\nHere is the active exception ledger:\n\n${recentExceptionsList}\n\n**Next Steps:** Review the **[Exceptions Center](/exceptions)** to inspect audit lineage and generate formal dispute notices.`;
       }
 
       if (q.includes('match') || q.includes('rate') || q.includes('recon') || q.includes('parity')) {
-        return `### 📊 Reconciliation Parity: ${matchRate}%\n\n• **Total Transactions Processed:** ${totalTx}\n• **Fully Reconciled:** ${totalMatched}\n• **Open Variances:** ${totalOpenExCount}\n\nOur deterministic 5-point reconciliation engine is operating with active dual-sync monitoring.`;
+        return `### Reconciliation Parity: ${matchRate}%\n\n• **Total Transactions Processed:** ${totalTx}\n• **Fully Reconciled:** ${totalMatched}\n• **Open Variances:** ${totalOpenExCount}\n\nThe deterministic 5-point reconciliation engine is operating with active dual-sync monitoring.`;
       }
 
       if (q.includes('risk') || q.includes('impact') || q.includes('exposure') || q.includes('money')) {
-        return `### 🛡️ Financial Risk Exposure Analysis\n\n• **Total Value at Risk:** **₹${totalImpact.toFixed(2)} INR** across **${totalOpenExCount} anomalies**.\n• **Breakdown:**\n${breakdownStr}\n\nAll open exceptions have active ledger tracking with automated dispute generation ready in the Exception Desk.`;
+        return `### Financial Risk Exposure Analysis\n\n• **Total Value at Risk:** **₹${totalImpact.toFixed(2)} INR** across **${totalOpenExCount} anomalies**.\n• **Breakdown:**\n${breakdownStr}\n\nAll open exceptions have active ledger tracking with dispute packet generation ready in the Exception Desk.`;
       }
 
-      return `### 💡 PaySynapse Ledger Summary\n\n• **Audited Transactions:** ${totalTx}\n• **Match Rate:** ${matchRate}%\n• **Open Exceptions:** ${totalOpenExCount} (₹${totalImpact.toFixed(2)} at risk)\n\nYou can ask me specific questions like:\n- *"Show me today's exceptions"*\n- *"What is the current match rate?"*\n- *"Summarize financial risk exposure"*`;
+      return `### Ledger Summary\n\n• **Audited Transactions:** ${totalTx}\n• **Match Rate:** ${matchRate}%\n• **Open Exceptions:** ${totalOpenExCount} (₹${totalImpact.toFixed(2)} at risk)\n\nYou can query the ledger directly:\n- *"Show me today's exceptions"*\n- *"What is the current match rate?"*\n- *"Summarize financial risk exposure"*`;
     };
 
     // If no AI key configured, use local analysis

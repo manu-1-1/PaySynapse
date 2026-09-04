@@ -37,7 +37,7 @@ export default function CopilotPage() {
       } else {
         setMessages(prev => [...prev, { 
           role: 'ai', 
-          content: `⚠️ **Service Notice:** Google Gemini experienced high temporary traffic. Showing local ledger analysis instead.\n\n${data.response || 'Please retry your query.'}` 
+          content: `**Service Notice:** The AI provider is experiencing temporary high traffic. Showing local ledger analysis instead.\n\n${data.response || 'Please retry your query.'}` 
         }]);
       }
     } catch (e) {
@@ -60,8 +60,8 @@ export default function CopilotPage() {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-[var(--foreground)]">AI Copilot</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-[#528FF0] dark:bg-blue-900/20 font-medium flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#528FF0]" /> Google Gemini + Live Ledger Sync
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--muted)] text-[var(--foreground)] border border-[var(--border)] font-medium flex items-center gap-1.5">
+              <Bot className="w-3.5 h-3.5 text-[#528FF0]" /> Live Ledger Intelligence
             </span>
           </div>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
@@ -82,7 +82,7 @@ export default function CopilotPage() {
                   <button
                     key={i}
                     onClick={() => handleSend(s)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-[var(--surface)] text-[#528FF0] border border-[var(--border)] hover:border-[#528FF0] hover:bg-[var(--surface-hover)] transition-all duration-150 shadow-sm"
+                    className="text-xs px-3 py-1.5 rounded-lg bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] hover:border-[#528FF0] hover:bg-[var(--surface-hover)] transition-all duration-150 shadow-sm"
                   >
                     {s}
                   </button>
@@ -98,7 +98,7 @@ export default function CopilotPage() {
                 <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm ${
                   msg.role === 'user' 
                     ? 'bg-[#528FF0] text-white ml-3' 
-                    : 'bg-slate-900 text-blue-400 border border-slate-700 mr-3'
+                    : 'bg-[var(--muted)] text-[#528FF0] border border-[var(--border)] mr-3'
                 }`}>
                   {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
