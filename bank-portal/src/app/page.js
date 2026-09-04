@@ -422,8 +422,8 @@ export default function BankDashboard() {
                       {/* Action */}
                       <td className="py-3 px-4 text-right">
                         {hasClearedTxn ? (
-                          <span className="text-[11px] text-slate-400 font-mono">
-                            Disbursed ✓
+                          <span className="text-[11px] text-emerald-400 font-medium">
+                            Disbursed
                           </span>
                         ) : (
                           <button

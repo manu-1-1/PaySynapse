@@ -179,7 +179,7 @@ export default function ChaosStudio() {
       {/* 4 Chaos Scenario Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Scenario 1: Short Settlement */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col justify-between group">
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -189,7 +189,7 @@ export default function ChaosStudio() {
                 SHORT_SETTLEMENT
               </span>
             </div>
-            <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
+            <h3 className="text-sm font-bold text-white group-hover:text-slate-200 transition-colors">
               1. Intermediary Bank Wire Surcharge
             </h3>
             <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
@@ -204,7 +204,7 @@ export default function ChaosStudio() {
                 type="number"
                 value={shortAmount}
                 onChange={(e) => setShortAmount(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:outline-none focus:border-slate-500"
               />
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function ChaosStudio() {
           <button
             onClick={() => handleInjectChaos("SHORT_SETTLEMENT")}
             disabled={loading || !selectedSettlementId}
-            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           >
             {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
             Inject Short-Settlement (-₹{shortAmount})
@@ -220,17 +220,17 @@ export default function ChaosStudio() {
         </div>
 
         {/* Scenario 2: SLA Clearing Delay */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col justify-between group">
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <Clock className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 DELAYED_SETTLEMENT
               </span>
             </div>
-            <h3 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">
+            <h3 className="text-sm font-bold text-white group-hover:text-slate-200 transition-colors">
               2. Bank Clearing SLA Breach (T+5 Delay)
             </h3>
             <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
@@ -245,7 +245,7 @@ export default function ChaosStudio() {
                 type="number"
                 value={delayDays}
                 onChange={(e) => setDelayDays(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:outline-none focus:border-sky-400"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono text-white focus:outline-none focus:border-slate-500"
               />
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function ChaosStudio() {
           <button
             onClick={() => handleInjectChaos("DELAYED_SETTLEMENT")}
             disabled={loading || !selectedSettlementId}
-            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           >
             {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
             Inject SLA Breach ({delayDays} Days Delay)
@@ -261,7 +261,7 @@ export default function ChaosStudio() {
         </div>
 
         {/* Scenario 3: Compliance Freeze */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-rose-500/40 transition-all flex flex-col justify-between group">
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
@@ -271,7 +271,7 @@ export default function ChaosStudio() {
                 COMPLIANCE_HOLD
               </span>
             </div>
-            <h3 className="text-sm font-bold text-white group-hover:text-rose-300 transition-colors">
+            <h3 className="text-sm font-bold text-white group-hover:text-slate-200 transition-colors">
               3. Nodal AML Escrow Freeze
             </h3>
             <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
@@ -282,7 +282,7 @@ export default function ChaosStudio() {
           <button
             onClick={() => handleInjectChaos("COMPLIANCE_HOLD")}
             disabled={loading || !selectedSettlementId}
-            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 shadow-md shadow-rose-600/20"
+            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-rose-400 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           >
             {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
             Freeze Escrow Disbursement
@@ -290,17 +290,17 @@ export default function ChaosStudio() {
         </div>
 
         {/* Scenario 4: Duplicate Credit */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-purple-500/40 transition-all flex flex-col justify-between group">
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
                 <Copy className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
                 DUPLICATE_CREDIT
               </span>
             </div>
-            <h3 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">
+            <h3 className="text-sm font-bold text-white group-hover:text-slate-200 transition-colors">
               4. Duplicate Bank Clearance Glitch
             </h3>
             <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
@@ -311,7 +311,7 @@ export default function ChaosStudio() {
           <button
             onClick={() => handleInjectChaos("DUPLICATE_CREDIT")}
             disabled={loading || !selectedSettlementId}
-            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 shadow-md shadow-purple-600/20"
+            className="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-rose-400 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           >
             {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
             Dispatch Duplicate Bank Credit

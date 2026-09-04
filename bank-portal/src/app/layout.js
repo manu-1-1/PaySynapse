@@ -83,7 +83,7 @@ export default function RootLayout({ children }) {
                   className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white hover:border-slate-700 transition-all shadow-sm"
                   title="Open CyberDeck Merchant Store Demo"
                 >
-                  <span>🛒 Store (:3001)</span>
+                  <span>Store (:3001)</span>
                   <ExternalLink className="w-3 h-3 text-slate-400" />
                 </a>
 
@@ -91,10 +91,10 @@ export default function RootLayout({ children }) {
                   href={paysynapseUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-semibold text-white transition-all shadow-md shadow-blue-500/20"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-all shadow-sm"
                   title="Open PaySynapse Reconciliation Engine"
                 >
-                  <span>⚡ PaySynapse (:3000)</span>
+                  <span>PaySynapse (:3000)</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
               </div>
