@@ -297,13 +297,7 @@ export default function IntegrationsPage() {
                 {feeRules.map((rule, idx) => (
                   <tr key={rule.paymentMethod || idx} className="hover:bg-[var(--muted)]/50 transition-colors">
                     <td className="p-3 font-medium flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded text-[11px] font-mono font-semibold ${
-                        rule.paymentMethod === 'UPI' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800' :
-                        rule.paymentMethod === 'CREDIT_CARD' || rule.paymentMethod === 'CARD' ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' :
-                        rule.paymentMethod === 'DEBIT_CARD' ? 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800' :
-                        rule.paymentMethod === 'NETBANKING' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800' :
-                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700'
-                      }`}>
+                      <span className="px-2 py-1 rounded text-[11px] font-mono font-semibold bg-[var(--muted)] text-[var(--foreground)] border border-[var(--border)]">
                         {rule.paymentMethod}
                       </span>
                     </td>
@@ -615,11 +609,16 @@ export default function IntegrationsPage() {
           <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
             
             {/* Clear All Data */}
-            <div className="p-4 rounded-lg border border-red-200 dark:border-red-900/30 bg-red-50/40 dark:bg-red-900/10 flex flex-col justify-between space-y-3">
+            <div className="p-4 rounded-lg border border-[var(--border)] bg-[var(--muted)] flex flex-col justify-between space-y-3">
               <div>
-                <div className="flex items-center gap-2 text-red-600 font-semibold text-sm">
-                  <Trash2 className="w-4 h-4" />
-                  Purge All Test Transactions
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[var(--foreground)] font-semibold text-sm">
+                    <Trash2 className="w-4 h-4 text-rose-500 dark:text-rose-400" />
+                    Purge All Test Transactions
+                  </div>
+                  <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/20">
+                    Danger Zone
+                  </span>
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
                   Clears all payments, settlements, and exceptions to start with a clean 0-volume slate for live webhook testing.
@@ -628,7 +627,7 @@ export default function IntegrationsPage() {
               <button
                 onClick={() => handleDataAction('clear_all')}
                 disabled={resetting !== false}
-                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 hover:bg-rose-600 hover:text-white text-rose-400 transition-all duration-150 disabled:opacity-50"
               >
                 {resetting === 'clear_all' ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Purging Data...</> : <><Trash2 className="w-3.5 h-3.5" /> Clear All Data (0 Volume)</>}
               </button>
