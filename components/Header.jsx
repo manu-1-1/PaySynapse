@@ -1,6 +1,17 @@
 'use client';
 
-import { Search, Bell, User, RefreshCw, Sun, Moon, AlertTriangle, LogOut, PanelLeftOpen, PanelLeftClose } from "lucide-react"
+import { 
+  Search, 
+  Bell, 
+  User, 
+  RefreshCw, 
+  AlertTriangle, 
+  LogOut, 
+  Menu,
+  Terminal,
+  MoreVertical,
+  X
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
@@ -9,10 +20,18 @@ import { useSidebar } from "./SidebarContext";
 
 export function Header() {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const { isCollapsed, toggleCollapse } = useSidebar();
+  const { isCollapsed, toggleCollapse, toggleMobileMenu } = useSidebar();
   const [mounted, setMounted] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleMenuClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      toggleMobileMenu();
+    } else {
+      toggleCollapse();
+    }
+  };
   
   // Notifications state
   const [notifications, setNotifications] = useState([]);
@@ -23,32 +42,24 @@ export function Header() {
   // Profile state
   const [showProfile, setShowProfile] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [savingProfile, setSavingProfile] = useState(false);
   const profileRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
     
-    // Polling logic
+    // Polling notifications
     const fetchNotifications = async () => {
       try {
-        const lastChecked = localStorage.getItem('lastCheckedNotifs');
-        const url = lastChecked ? `/api/exceptions/recent?since=${lastChecked}` : `/api/exceptions/recent`;
-        const res = await fetch(url);
+        const res = await fetch('/api/exceptions/recent');
         if (res.ok) {
           const data = await res.json();
           setNotifications(data.data || []);
-          if (!lastChecked) {
-            setUnreadCount(data.data?.length || 0);
-          } else {
-            setUnreadCount(typeof data.unreadCount === 'number' ? data.unreadCount : (data.data?.length || 0));
-          }
+          setUnreadCount(data.data?.length || 0);
         }
       } catch (err) {}
     };
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000);
 
     // Fetch user profile
     const fetchProfile = async () => {
@@ -61,8 +72,6 @@ export function Header() {
       } catch (err) {}
     };
     fetchProfile();
-
-    return () => clearInterval(interval);
   }, []);
 
   // Close dropdowns on click outside
@@ -79,41 +88,6 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleOpenNotifications = () => {
-    setShowProfile(false);
-    setShowDropdown(!showDropdown);
-    if (!showDropdown) {
-      setUnreadCount(0);
-      localStorage.setItem('lastCheckedNotifs', new Date().toISOString());
-    }
-  };
-
-  const handleOpenProfile = () => {
-    setShowDropdown(false);
-    setShowProfile(!showProfile);
-  };
-
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    setSavingProfile(true);
-    try {
-      const res = await fetch('/api/auth/me', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: profile.name, email: profile.email })
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setProfile(updated);
-        setShowProfile(false);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSavingProfile(false);
-    }
-  };
-
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
@@ -128,79 +102,88 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-6 sticky top-0 z-40 print:hidden">
-      {/* Merchant / Context Header */}
-      <div className="flex items-center gap-3">
+    <header className="flex h-12 items-center justify-between border-b border-[#2D2E36] bg-[#1C1D22] px-3 sticky top-0 z-40 print:hidden select-none text-xs">
+      {/* Left: Hamburger + PaySynapse Brand + Environment Selector Pill */}
+      <div className="flex items-center gap-2">
         <button
-          onClick={toggleCollapse}
-          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          className="p-1.5 -ml-2 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-[var(--muted)] transition-colors"
+          onClick={handleMenuClick}
+          title="Toggle Navigation Menu"
+          className="p-1.5 rounded text-[#9AA0A6] hover:text-[#E8EAED] hover:bg-[#26272E] transition-colors"
         >
-          {isCollapsed ? <PanelLeftOpen className="h-4 w-4 text-[#528FF0]" /> : <PanelLeftClose className="h-4 w-4" />}
+          <Menu className="h-4 w-4" />
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--foreground)] tracking-tight">PaySynapse Ops</span>
-          <span className="text-gray-400 text-xs">/</span>
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Live Production
+        {/* Brand Logo & Name */}
+        <Link href="/" className="flex items-center gap-2 mr-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="PaySynapse" className="h-5 w-5 rounded" />
+          <span className="font-semibold text-sm tracking-tight text-[#E8EAED]">
+            PaySynapse
+          </span>
+        </Link>
+      </div>
+
+      {/* Center: Search Box */}
+      <div className="flex-1 max-w-xl mx-4 hidden md:block">
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search transactions, exceptions, orders (Ctrl + /)"
+            className="w-full bg-[#131417] hover:bg-[#18191E] focus:bg-[#131417] text-[#E8EAED] placeholder-[#9AA0A6] text-xs rounded-full pl-9 pr-14 py-1.5 border border-[#2D2E36] focus:border-[#8AB4F8] outline-none transition-all"
+          />
+          <Search className="w-3.5 h-3.5 text-[#9AA0A6] absolute left-3 pointer-events-none" />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-9 text-[#9AA0A6] hover:text-[#E8EAED]"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          <span className="absolute right-3 text-[10px] font-mono text-[#9AA0A6] bg-[#1C1D22] border border-[#2D2E36] px-1.5 py-0.5 rounded">
+            /
           </span>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1.5">
-        {/* Sync */}
-        <button className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 px-3 py-1.5 rounded-lg hover:bg-[var(--muted)] transition-colors duration-150">
-          <RefreshCw className="h-4 w-4" />
-          <span className="hidden sm:inline">Sync</span>
-        </button>
-
-        {/* Theme Toggle */}
+      {/* Right: Action Utilities */}
+      <div className="flex items-center gap-1">
+        {/* Sync / Refresh */}
         <button 
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-[var(--muted)] transition-colors duration-150"
+          onClick={() => window.location.reload()}
+          title="Sync Ledger"
+          className="p-1.5 rounded text-[#9AA0A6] hover:text-[#E8EAED] hover:bg-[#26272E] transition-colors"
         >
-          {mounted ? (
-            theme === 'dark' 
-              ? <Moon className="h-4 w-4 text-gray-400" /> 
-              : <Sun className="h-4 w-4 text-gray-500" />
-          ) : (
-            <Sun className="h-4 w-4" />
-          )}
-          <span className="sr-only">Toggle Theme</span>
+          <RefreshCw className="h-4 w-4" />
         </button>
 
         {/* Notifications */}
         <div className="relative" ref={dropdownRef}>
           <button 
-            onClick={handleOpenNotifications}
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg hover:bg-[var(--muted)] transition-colors duration-150"
+            onClick={() => setShowDropdown(!showDropdown)}
+            title="Notifications"
+            className="relative p-1.5 rounded text-[#9AA0A6] hover:text-[#E8EAED] hover:bg-[#26272E] transition-colors"
           >
-            <Bell className="h-4 w-4 text-gray-500" />
+            <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
+              <span className="absolute top-0.5 right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#1A73E8] text-[9px] font-bold text-white px-1">
                 {unreadCount}
               </span>
             )}
-            <span className="sr-only">Notifications</span>
           </button>
           
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-[340px] rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg z-50 overflow-hidden animate-fade-in">
-              <div className="p-3 border-b border-[var(--border)] bg-[var(--muted)] font-semibold text-sm flex justify-between items-center">
-                <span className="flex items-center gap-2">
-                  <Bell className="h-4 w-4 text-[#528FF0]" />
-                  Notifications
-                </span>
-                <span className="text-xs text-[var(--muted-foreground)] font-normal bg-[var(--surface)] px-2 py-0.5 rounded-md">{notifications.length} recent</span>
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-24px)] rounded-lg border border-[#2D2E36] bg-[#1C1D22] shadow-2xl z-50 overflow-hidden">
+              <div className="p-3 border-b border-[#2D2E36] bg-[#131417] font-semibold text-xs text-[#E8EAED] flex justify-between items-center">
+                <span>Exception Alerts</span>
+                <span className="text-[10px] text-[#8AB4F8]">{notifications.length} unresolved</span>
               </div>
-              <div className="max-h-[320px] overflow-y-auto">
+              <div className="max-h-72 overflow-y-auto divide-y divide-[#2D2E36]">
                 {notifications.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-gray-400">
-                    <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-                    No new alerts
+                  <div className="p-6 text-center text-xs text-[#9AA0A6]">
+                    No open exception alerts
                   </div>
                 ) : (
                   notifications.map((notif) => (
@@ -208,100 +191,62 @@ export function Header() {
                       key={notif.id} 
                       href={`/exceptions/${notif.id}`}
                       onClick={() => setShowDropdown(false)}
-                      className="block p-3 border-b border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors duration-100 last:border-0"
+                      className="block p-3 hover:bg-[#26272E] transition-colors"
                     >
-                      <div className="flex items-start">
-                        <div className={`flex-shrink-0 mt-0.5 mr-3 p-1.5 rounded-md ${notif.severity === 'HIGH' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20'}`}>
-                          <AlertTriangle className={`w-3.5 h-3.5 ${notif.severity === 'HIGH' ? 'text-red-500' : 'text-amber-500'}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[var(--foreground)]">{notif.type.replace(/_/g, ' ')}</div>
-                          <div className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-2">{notif.description}</div>
-                          <div className="text-xs font-semibold mt-1 text-[#528FF0]">
-                            ₹{Number(notif.financialImpact || 0).toLocaleString('en-IN')} Variance
-                          </div>
-                        </div>
+                      <div className="font-medium text-[#E8EAED]">{notif.type.replace(/_/g, ' ')}</div>
+                      <div className="text-[11px] text-[#9AA0A6] mt-0.5 line-clamp-2">{notif.description}</div>
+                      <div className="text-[11px] font-mono text-[#8AB4F8] mt-1">
+                        ₹{Number(notif.financialImpact || 0).toLocaleString('en-IN')} Variance
                       </div>
                     </Link>
                   ))
                 )}
               </div>
-              <div className="p-2.5 border-t border-[var(--border)] text-center bg-[var(--muted)]">
-                <Link href="/exceptions" onClick={() => setShowDropdown(false)} className="text-xs text-[#528FF0] hover:underline font-medium">
-                  View all exceptions →
-                </Link>
-              </div>
             </div>
           )}
         </div>
 
-        {/* Profile */}
-        <div className="relative" ref={profileRef}>
+        {/* More Options / 3 dots */}
+        <button 
+          title="More options"
+          className="p-1.5 rounded text-[#9AA0A6] hover:text-[#E8EAED] hover:bg-[#26272E] transition-colors"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+
+        {/* User Avatar */}
+        <div className="relative ml-1" ref={profileRef}>
           <button 
-            onClick={handleOpenProfile}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#528FF0] hover:bg-[#4080E0] transition-colors duration-150"
+            onClick={() => setShowProfile(!showProfile)}
+            title="Account"
+            className="w-7 h-7 rounded-full bg-[#1A73E8] text-white flex items-center justify-center font-bold text-xs hover:ring-2 hover:ring-[#8AB4F8] transition-all"
           >
-            <User className="h-4 w-4 text-white" />
-            <span className="sr-only">Profile</span>
+            {profile?.name?.charAt(0)?.toUpperCase() || 'P'}
           </button>
 
-          {showProfile && profile && (
-            <div className="absolute right-0 mt-2 w-72 rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg z-50 overflow-hidden animate-fade-in">
-              <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-[#528FF0] flex items-center justify-center text-white font-semibold text-sm">
-                    {profile.name?.charAt(0)?.toUpperCase() || 'U'}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-[var(--foreground)]">{profile.name}</div>
-                    <div className="text-xs text-[var(--muted-foreground)]">{profile.role}</div>
-                  </div>
+          {showProfile && (
+            <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] rounded-lg border border-[#2D2E36] bg-[#1C1D22] shadow-2xl z-50 overflow-hidden p-4 space-y-3">
+              <div className="flex items-center gap-3 pb-3 border-b border-[#2D2E36]">
+                <div className="w-9 h-9 rounded-full bg-[#1A73E8] text-white flex items-center justify-center font-bold text-sm">
+                  {profile?.name?.charAt(0)?.toUpperCase() || 'P'}
+                </div>
+                <div>
+                  <div className="font-semibold text-xs text-[#E8EAED]">{profile?.name || 'Operations Lead'}</div>
+                  <div className="text-[11px] text-[#9AA0A6]">{profile?.email || 'ops@paysynapse.com'}</div>
                 </div>
               </div>
-              <form onSubmit={handleProfileUpdate} className="p-4 space-y-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--muted-foreground)]">Name</label>
-                  <input 
-                    type="text" 
-                    value={profile.name}
-                    onChange={(e) => setProfile({...profile, name: e.target.value})}
-                    className="w-full text-sm px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--muted)] focus:outline-none focus:border-[#528FF0] transition-colors duration-150"
-                    required
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--muted-foreground)]">Email</label>
-                  <input 
-                    type="email" 
-                    value={profile.email}
-                    onChange={(e) => setProfile({...profile, email: e.target.value})}
-                    className="w-full text-sm px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--muted)] focus:outline-none focus:border-[#528FF0] transition-colors duration-150"
-                    required
-                  />
-                </div>
-                <div className="pt-1 space-y-2">
-                  <button 
-                    type="submit" 
-                    disabled={savingProfile}
-                    className="w-full bg-[#528FF0] hover:bg-[#4080E0] text-white py-2 rounded-lg text-sm font-medium transition-colors duration-150 disabled:opacity-60"
-                  >
-                    {savingProfile ? 'Saving...' : 'Save Changes'}
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                    className="w-full flex items-center justify-center gap-2 border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-lg text-sm font-medium transition-colors duration-150 disabled:opacity-60"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {loggingOut ? 'Logging out...' : 'Sign Out'}
-                  </button>
-                </div>
-              </form>
+              <button 
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="w-full flex items-center justify-center gap-2 py-1.5 rounded bg-[#26272E] hover:bg-[#2D2E36] text-[#E8EAED] text-xs font-medium transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5 text-rose-400" />
+                {loggingOut ? 'Signing out...' : 'Sign Out'}
+              </button>
             </div>
           )}
         </div>
       </div>
     </header>
-  )
+  );
 }

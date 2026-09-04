@@ -6,6 +6,10 @@ const SidebarContext = createContext({
   width: 256,
   isCollapsed: false,
   isDragging: false,
+  isMobileOpen: false,
+  setIsMobileOpen: () => {},
+  toggleMobileMenu: () => {},
+  closeMobileMenu: () => {},
   toggleCollapse: () => {},
   setWidth: () => {},
   setIsDragging: () => {},
@@ -15,6 +19,7 @@ export function SidebarProvider({ children }) {
   const [width, setWidthState] = useState(256);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -57,12 +62,24 @@ export function SidebarProvider({ children }) {
     }
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileOpen(prev => !prev);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileOpen(false);
+  };
+
   return (
     <SidebarContext.Provider
       value={{
         width: isCollapsed ? 68 : width,
         isCollapsed,
         isDragging,
+        isMobileOpen,
+        setIsMobileOpen,
+        toggleMobileMenu,
+        closeMobileMenu,
         toggleCollapse,
         setWidth,
         setIsDragging,
