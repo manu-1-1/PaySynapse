@@ -37,6 +37,44 @@ services:
     ports:
       - "3000:3000"
 
+  merchant-store:
+    build:
+      context: ./merchant-store
+      dockerfile: Dockerfile
+    container_name: paysynapse-merchant-store
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      RAZORPAY_KEY_ID: "${RAZORPAY_KEY_ID:-rzp_test_placeholder}"
+      RAZORPAY_KEY_SECRET: "${RAZORPAY_KEY_SECRET:-test_secret}"
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: "${NEXT_PUBLIC_RAZORPAY_KEY_ID:-rzp_test_placeholder}"
+      NODE_ENV: production
+      PORT: 3001
+    ports:
+      - "3001:3001"
+
+  bank-portal:
+    build:
+      context: ./bank-portal
+      dockerfile: Dockerfile
+    container_name: paysynapse-bank-portal
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      app:
+        condition: service_started
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgrespassword@postgres:5432/paysynapse?schema=public"
+      NEXT_PUBLIC_PAYSYNAPSE_URL: "http://localhost:3000"
+      NEXT_PUBLIC_MERCHANT_STORE_URL: "http://localhost:3001"
+      NODE_ENV: production
+      PORT: 3002
+    ports:
+      - "3002:3002"
+
 volumes:
   postgres_data:
     driver: local
