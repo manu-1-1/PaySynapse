@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-blue?style=flat-square&logo=react)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-[![Prisma](https://img.prisma.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-8E75FF?style=flat-square&logo=google)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
@@ -31,9 +31,9 @@ By replacing manual spreadsheet matching with a **deterministic 5-point reconcil
 
 ### 2. Interactive Digital Twin Topology Visualizer
 * **5-Stage Pipeline Graph**: Interactive step-by-step financial topology visualization with directional connectors and status pills.
-* **Step-Through Playback Controller**: `▶ Step-Through` controller to walk through each node's funds flow step-by-step.
+* **Step-Through Playback Controller**: Step-Through controller to walk through each node's funds flow step-by-step.
 * **Arithmetic Balance Reconciliation Bar**: Live verification of Gross Amount $-$ Deductions (Fee + GST) $=$ Expected Batch.
-* **1-Click Simulation Sandbox & History Reel**: Inject edge-cases (*Normal Flow, Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Delay, Duplicate Entry, Status Mismatch, Missing Refund*) with an interactive history reel and 1-click **"↩ Back to Original Transaction"** navigation.
+* **1-Click Simulation Sandbox & History Reel**: Inject edge-cases (*Normal Flow, Missing Settlement, Fee Discrepancy, Short Settlement, T+10 Delay, Duplicate Entry, Status Mismatch, Missing Refund*) with an interactive history reel and 1-click **"Back to Original Transaction"** navigation.
 * **Tabbed Node Inspector**: Inspect Overview, Validation Checks, and Raw JSON payload for any node in the transaction chain.
 
 ### 3. Live Razorpay Test API & Cloudflare Tunneling Integration
@@ -89,14 +89,14 @@ PaySynapse includes a comprehensive 9-module documentation index in [`docs/`](do
 
 ```
 PaySynapse 3-Feed Financial Tripartite Ecosystem
-├── ⚡ PaySynapse Core Reconciler (Port 3000)
+├── PaySynapse Core Reconciler (Port 3000)
 │   ├── Frontend: Next.js 16 (App Router), React 19, Tailwind CSS v4, Lucide Icons, Recharts
 │   ├── Backend: 5-Point Deterministic Reconciler, Dynamic MDR Matrix, Webhook Handlers
 │   ├── Database & ORM: PostgreSQL via Prisma ORM 5.22
 │   └── AI Engine: Google Gemini AI SDK (@google/genai)
-├── 🛒 CyberDeck Merchant Store (Port 3001)
+├── CyberDeck Merchant Store (Port 3001)
 │   └── Next.js 16 E-Commerce Checkout with Live Razorpay Sandbox Integration
-└── 🏦 Apex Nodal Bank Simulator (Port 3002)
+└── Apex Nodal Bank Simulator (Port 3002)
     └── RBI Nodal Escrow Vault, Real-Time UTR Clearance, ISO MT940 Feeds & Chaos Studio
 ```
 
@@ -106,12 +106,12 @@ PaySynapse 3-Feed Financial Tripartite Ecosystem
 
 PaySynapse can be run in two flexible modes:
 
-### Mode 1: 🌐 Complete 3-App Tripartite Ecosystem (Recommended for Full Demo)
+### Mode 1: Complete 3-App Tripartite Ecosystem (Recommended for Full Demo)
 
 Run all 3 interconnected services side-by-side for an end-to-end interactive financial simulation:
-* 🛒 **CyberDeck Store** (`http://localhost:3001`): Customer adds products to cart & checks out via Razorpay.
-* ⚡ **PaySynapse Reconciler** (`http://localhost:3000`): Real-time 5-point matching graph, digital twin visualizer & AI copilot.
-* 🏦 **Apex Nodal Bank** (`http://localhost:3002`): Live Nodal Escrow queue, 1-click UTR clearance & Chaos Studio.
+* **CyberDeck Store** (`http://localhost:3001`): Customer adds products to cart & checks out via Razorpay.
+* **PaySynapse Reconciler** (`http://localhost:3000`): Real-time 5-point matching graph, digital twin visualizer & AI copilot.
+* **Apex Nodal Bank** (`http://localhost:3002`): Live Nodal Escrow queue, 1-click UTR clearance & Chaos Studio.
 
 #### 1-Click Launch (Windows)
 ```powershell
@@ -132,7 +132,7 @@ npm run dev:bank
 
 ---
 
-### Mode 2: ⚡ Standalone Mode (Run Single App Alone)
+### Mode 2: Standalone Mode (Run Single App Alone)
 
 If you only need a specific component, each application runs completely independently:
 
@@ -163,7 +163,7 @@ npm run dev
 
 ## Getting Started & Setup
 
-### Option A: 🐳 Docker Container Quickstart (Complete Ecosystem)
+### Option A: Docker Container Quickstart (Complete Ecosystem)
 
 Run the entire tripartite container stack (PaySynapse Core, CyberDeck Store, Apex Bank, and PostgreSQL) in one command:
 
@@ -171,10 +171,10 @@ Run the entire tripartite container stack (PaySynapse Core, CyberDeck Store, Ape
 docker compose up --build
 ```
 
-* ⚡ **PaySynapse Reconciler**: [http://localhost:3000](http://localhost:3000)
-* 🛒 **CyberDeck Merchant Store**: [http://localhost:3001](http://localhost:3001)
-* 🏦 **Apex Nodal Bank Simulator**: [http://localhost:3002](http://localhost:3002)
-* 🗄️ **PostgreSQL**: `localhost:5432` (auto-migrated and seeded with demo data)
+* **PaySynapse Reconciler**: [http://localhost:3000](http://localhost:3000)
+* **CyberDeck Merchant Store**: [http://localhost:3001](http://localhost:3001)
+* **Apex Nodal Bank Simulator**: [http://localhost:3002](http://localhost:3002)
+* **PostgreSQL**: `localhost:5432` (auto-migrated and seeded with demo data)
 
 To run only the core PaySynapse reconciler and PostgreSQL:
 ```bash
