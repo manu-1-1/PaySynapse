@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, AlertCircle, FileText, CheckCircle2, ExternalLink, Sparkles, Bot, Loader2, Send, ShieldCheck, Lightbulb } from 'lucide-react';
+import { ArrowLeft, AlertCircle, FileText, CheckCircle2, ExternalLink, Sparkles, Bot, Loader2, Send, ShieldCheck, Lightbulb, Code2, FileCode } from 'lucide-react';
 import Link from 'next/link';
 import { DisputePacketModal } from '@/components/DisputePacketModal';
 import { PreventionPlaybookModal } from '@/components/PreventionPlaybookModal';
@@ -124,17 +124,17 @@ export default function ExceptionDetailPage() {
   const isResolved = ex.status === 'RESOLVED' || ex.status === 'OBSOLETE';
 
   return (
-    <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="flex-1 space-y-5 p-4 sm:p-6 pt-4 sm:pt-5 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <button 
             onClick={() => router.back()} 
-            className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150"
+            className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150 shrink-0"
           >
             <ArrowLeft className="w-4 h-4 text-[var(--muted-foreground)]" />
           </button>
           <div>
-            <div className="flex items-center space-x-2.5">
+            <div className="flex items-center space-x-2.5 flex-wrap gap-y-1">
               <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">Exception Triage</h2>
               <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
                 isResolved 
@@ -150,73 +150,75 @@ export default function ExceptionDetailPage() {
 
         <button
           onClick={() => setShowPreventionModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm w-full sm:w-auto"
         >
-          <ShieldCheck className="w-3.5 h-3.5" /> How to Avoid This Mismatch
+          <ShieldCheck className="w-3.5 h-3.5" /> Prevention Playbook
         </button>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className="grid gap-5 grid-cols-1 md:grid-cols-3">
         
         {/* Exception Details Card */}
         <div className="md:col-span-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-sm p-5 space-y-5">
-          <div className="flex items-center space-x-2.5 text-red-600 dark:text-red-400">
-            <div className="p-1.5 rounded-md bg-red-50 dark:bg-red-900/20">
-              <AlertCircle className="w-4 h-4" />
+          <div className="flex items-center space-x-2.5 text-red-500">
+            <div className="p-1.5 rounded-md bg-[var(--muted)] border border-[var(--border)]">
+              <AlertCircle className="w-4 h-4 text-rose-400" />
             </div>
-            <h3 className="text-base font-semibold">{ex.type.replace(/_/g, ' ')}</h3>
+            <h3 className="text-base font-semibold text-[var(--foreground)]">{ex.type.replace(/_/g, ' ')}</h3>
           </div>
           
-          <div className="p-3.5 bg-[var(--muted)] rounded-lg border border-[var(--border)] font-mono text-sm">
+          <div className="p-3.5 bg-[var(--muted)] rounded-lg border border-[var(--border)] font-mono text-xs leading-relaxed text-[var(--foreground)]">
             {ex.description}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 border-t border-[var(--border)] pt-5">
-            <div>
-              <div className="text-sm font-medium text-[var(--muted-foreground)] mb-1">Financial Impact</div>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{formatCurrency(ex.financialImpact)}</div>
+          {/* Unified Telemetry Strip */}
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/40 grid grid-cols-2 divide-x divide-[var(--border)] overflow-hidden">
+            <div className="p-3.5">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">Variance Value</div>
+              <div className="text-xl font-bold font-mono text-rose-400 mt-0.5">{formatCurrency(ex.financialImpact)}</div>
+              <div className="text-[10px] font-mono text-[var(--muted-foreground)] mt-0.5">Discrepancy pool</div>
             </div>
-            <div>
-              <div className="text-sm font-medium text-[var(--muted-foreground)] mb-1">Severity</div>
-              <div className="mt-1">
-                <span className={`px-2 py-0.5 rounded-md text-xs uppercase font-bold tracking-wider ${
-                  ex.severity === 'HIGH' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
-                }`}>
-                  {ex.severity}
+            <div className="p-3.5">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">SLA Severity</div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${ex.severity === 'HIGH' ? 'bg-rose-400 animate-pulse' : 'bg-amber-400'}`} />
+                <span className="font-mono font-bold text-xs uppercase tracking-wider text-[var(--foreground)]">
+                  {ex.severity} Priority
                 </span>
               </div>
+              <div className="text-[10px] font-mono text-[var(--muted-foreground)] mt-0.5">Deterministic audit tag</div>
             </div>
           </div>
           
           {!aiResult && !aiLoading && (
             <button 
               onClick={handleInvestigateAI} 
-              className="mt-2 w-full flex items-center justify-center p-2.5 bg-[#528FF0] hover:bg-[#4080E0] text-white rounded-lg font-medium text-sm transition-colors duration-150"
+              className="mt-2 w-full flex items-center justify-center gap-2 p-2.5 bg-[#528FF0] hover:bg-[#4080E0] text-white rounded-lg font-medium text-sm transition-colors duration-150 shadow-sm"
             >
-              <Sparkles className="w-4 h-4 mr-2" /> Run AI Root Cause Investigation
+              <Code2 className="w-4 h-4" /> Run Root Cause Diagnostics
             </button>
           )}
           {aiLoading && (
-            <div className="mt-2 w-full flex items-center justify-center p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-[var(--muted-foreground)] text-sm">
-              <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin text-[#528FF0]" /> AI is analyzing financial nodes...</div>
+            <div className="mt-2 w-full flex items-center justify-center p-3 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-[var(--muted-foreground)] text-sm font-mono text-xs">
+              <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin text-[#528FF0]" /> Evaluating multi-node financial ledgers...</div>
             </div>
           )}
           {aiResult && (
-            <div className="mt-4 border border-blue-200 dark:border-blue-800/30 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg overflow-hidden">
-              <div className="bg-blue-100/70 dark:bg-blue-900/30 px-4 py-2.5 border-b border-blue-200/50 dark:border-blue-800/30 flex items-center justify-between">
-                <div className="flex items-center text-[#528FF0] font-semibold text-sm">
-                  <Bot className="w-4 h-4 mr-2" /> AI Investigation Report
+            <div className="mt-4 border border-[var(--border)] bg-[var(--muted)]/30 rounded-lg overflow-hidden">
+              <div className="bg-[var(--muted)] px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
+                <div className="flex items-center text-[var(--foreground)] font-semibold text-xs font-mono">
+                  <FileCode className="w-4 h-4 mr-2 text-[#528FF0]" /> Root Cause Diagnostic Report
                 </div>
-                <div className="text-xs font-mono text-[#528FF0] bg-blue-200/50 dark:bg-blue-900/50 px-2 py-0.5 rounded-md">Confidence: {(aiResult.confidence * 100).toFixed(1)}%</div>
+                <div className="text-[10px] font-mono text-[var(--muted-foreground)] bg-[var(--surface)] border border-[var(--border)] px-2 py-0.5 rounded">Confidence: {(aiResult.confidence * 100).toFixed(1)}%</div>
               </div>
               <div className="p-4 space-y-3">
                 <div>
-                  <div className="text-xs font-semibold text-[#528FF0]/70 uppercase tracking-wider mb-1">Findings</div>
-                  <div className="text-sm leading-relaxed">{aiResult.explanation}</div>
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">Telemetry Findings</div>
+                  <div className="text-xs leading-relaxed text-[var(--foreground)] font-mono bg-[var(--surface)] p-3 rounded border border-[var(--border)]">{aiResult.explanation}</div>
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-[#528FF0]/70 uppercase tracking-wider mb-1">Recommended Action</div>
-                  <div className="text-sm font-medium bg-[var(--surface)] p-2.5 rounded-lg border border-blue-100 dark:border-blue-800/30">{aiResult.recommendedAction}</div>
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">Recommended Remediation</div>
+                  <div className="text-xs font-mono text-[var(--foreground)] bg-[var(--surface)] p-3 rounded border border-[var(--border)]">{aiResult.recommendedAction}</div>
                 </div>
               </div>
             </div>

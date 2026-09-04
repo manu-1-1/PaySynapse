@@ -21,7 +21,9 @@ import {
   ShieldCheck,
   HelpCircle,
   ExternalLink,
-  Lightbulb
+  Lightbulb,
+  Code2,
+  Terminal
 } from 'lucide-react';
 import Link from 'next/link';
 import { DisputePacketModal } from '@/components/DisputePacketModal';
@@ -154,19 +156,19 @@ export default function TransactionDetailPage() {
   };
 
   return (
-    <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
+    <div className="flex-1 space-y-5 p-4 sm:p-6 pt-4 sm:pt-5 min-h-screen">
       {/* Top Bar Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <button 
             onClick={() => router.back()} 
-            className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150"
+            className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] bg-[var(--surface)] transition-colors duration-150 shrink-0"
           >
             <ArrowLeft className="w-4 h-4 text-[var(--muted-foreground)]" />
           </button>
-          <div>
-            <div className="flex items-center space-x-2.5">
-              <h2 className="text-lg font-semibold">Payment: {tx.externalPaymentId}</h2>
+          <div className="min-w-0">
+            <div className="flex items-center space-x-2.5 flex-wrap gap-y-1">
+              <h2 className="text-lg font-semibold truncate max-w-[220px] sm:max-w-none">Payment: {tx.externalPaymentId}</h2>
               <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
                 tx.status === 'CAPTURED' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
               }`}>
@@ -196,68 +198,67 @@ export default function TransactionDetailPage() {
           </Link>
           <Link
             href={`/copilot`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#528FF0] hover:bg-[#4080E0] text-white transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--muted)] hover:bg-[var(--surface-hover)] text-[var(--foreground)] border border-[var(--border)] transition-colors shadow-sm"
           >
-            <Bot className="w-3.5 h-3.5" /> AI Copilot
+            <Terminal className="w-3.5 h-3.5 text-[#528FF0]" /> Query Engine
           </Link>
         </div>
       </div>
 
-      {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          <div className="text-sm font-medium text-[var(--muted-foreground)] mb-1">Gross Amount</div>
-          <div className="text-xl font-bold">{formatCurrency(tx.amount)}</div>
-          <div className="text-xs text-[var(--muted-foreground)] mt-1">via {tx.method}</div>
+      {/* Unified Telemetry Strip */}
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-sm grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)] overflow-hidden">
+        <div className="p-4">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">Gross Amount</div>
+          <div className="text-xl font-bold font-mono text-[var(--foreground)] mt-1">{formatCurrency(tx.amount)}</div>
+          <div className="text-[11px] font-mono text-[var(--muted-foreground)] mt-1 flex items-center gap-1 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            {tx.method || 'GATEWAY'}
+          </div>
         </div>
         
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          <div className="text-sm font-medium text-[var(--muted-foreground)] mb-1">Expected Settlement</div>
-          <div className="text-xl font-bold text-[#528FF0]">
+        <div className="p-4">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">Expected Settlement</div>
+          <div className="text-xl font-bold font-mono text-[#528FF0] mt-1">
             {recon ? formatCurrency(recon.expectedAmount) : '-'}
           </div>
-          <div className="text-xs text-[var(--muted-foreground)] mt-1">After fees & taxes</div>
+          <div className="text-[11px] font-mono text-[var(--muted-foreground)] mt-1 truncate">Contract rate card net</div>
         </div>
 
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-          <div className="text-sm font-medium text-[var(--muted-foreground)] mb-1">Actual Settlement</div>
-          <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+        <div className="p-4">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">Actual Settlement</div>
+          <div className="text-xl font-bold font-mono text-emerald-400 mt-1">
             {recon ? formatCurrency(recon.actualAmount) : '-'}
           </div>
-          <div className="text-xs text-[var(--muted-foreground)] mt-1">Received in Bank</div>
+          <div className="text-[11px] font-mono text-[var(--muted-foreground)] mt-1 truncate">Bank UTR received</div>
         </div>
 
-        <div className={`rounded-lg border p-4 shadow-sm ${
-          isMatched 
-            ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800/30' 
-            : 'bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-800/30'
-        }`}>
-          <div className="text-sm font-medium text-[var(--muted-foreground)] mb-1">Reconciliation State</div>
-          <div className={`text-lg font-bold flex items-center ${isMatched ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-            {isMatched ? <CheckCircle2 className="w-4 h-4 mr-1.5" /> : <AlertCircle className="w-4 h-4 mr-1.5" />}
+        <div className="p-4">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">Reconciliation Parity</div>
+          <div className={`text-xl font-bold font-mono mt-1 ${isMatched ? 'text-emerald-400' : 'text-rose-400'}`}>
             {recon ? recon.status : 'PENDING'}
           </div>
-          <div className="text-xs mt-1 text-[var(--muted-foreground)]">
-            Diff: {recon ? formatCurrency(recon.difference) : '-'}
+          <div className="text-[11px] font-mono mt-1 flex items-center gap-1 text-[var(--muted-foreground)] truncate">
+            <span className={`w-1.5 h-1.5 rounded-full ${isMatched ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
+            Diff: {recon ? formatCurrency(recon.difference) : '₹0.00'}
           </div>
         </div>
       </div>
 
-      {/* ✨ AI Natural Language Copilot & Executive Audit Review Box */}
-      <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/40 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-[var(--surface)] dark:from-blue-950/20 dark:via-indigo-950/10 dark:to-[var(--surface)] p-5 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-100 dark:border-blue-900/40 pb-3">
+      {/* Deterministic Ledger Audit & Diagnostics Console */}
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-[#528FF0] border border-blue-500/20">
-              <Sparkles className="w-4 h-4" />
+            <div className="p-2 rounded-lg bg-[var(--muted)] text-[#528FF0] border border-[var(--border)]">
+              <FileText className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
-                AI Copilot Natural Language Review
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                  {aiResult ? `${(aiResult.confidence * 100).toFixed(0)}% Confidence` : 'Deterministic NLP'}
+              <h3 className="text-sm font-semibold text-[var(--foreground)] flex items-center gap-2">
+                Ledger Audit & Diagnostics
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)]">
+                  {aiResult ? `${(aiResult.confidence * 100).toFixed(0)}% Confidence` : 'Multi-Node Parity'}
                 </span>
               </h3>
-              <p className="text-xs text-[var(--muted-foreground)]">Plain-English executive explanation of financial lifecycle & contract adherence</p>
+              <p className="text-xs text-[var(--muted-foreground)]">Automated ledger verification of financial lifecycle, MDR commissions, and bank nodal clearance</p>
             </div>
           </div>
 
@@ -269,22 +270,22 @@ export default function TransactionDetailPage() {
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
             >
-              <ShieldCheck className="w-3.5 h-3.5" /> How to Avoid This
+              <ShieldCheck className="w-3.5 h-3.5" /> Prevention Playbook
             </button>
 
             {primaryException && (
               <button
                 onClick={handleRunAiInvestigation}
                 disabled={aiLoading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-300 dark:border-blue-800 bg-[var(--surface)] hover:bg-blue-50 dark:hover:bg-blue-950/30 text-[#528FF0] transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[var(--border)] bg-[var(--muted)] hover:bg-[var(--surface-hover)] text-[var(--foreground)] transition-colors disabled:opacity-50"
               >
                 {aiLoading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Deep Diving...
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#528FF0]" /> Analyzing Nodes...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5" /> Re-Analyze with Gemini
+                    <Code2 className="w-3.5 h-3.5 text-[#528FF0]" /> Run Diagnostics
                   </>
                 )}
               </button>
@@ -306,12 +307,12 @@ export default function TransactionDetailPage() {
 
         {/* Narrative Box */}
         <div className="space-y-3">
-          <div className="bg-[var(--surface)]/90 backdrop-blur-sm p-3.5 rounded-lg border border-blue-100/80 dark:border-blue-900/30 text-sm leading-relaxed text-[var(--foreground)]">
+          <div className="bg-[var(--muted)]/40 p-3.5 rounded-lg border border-[var(--border)] text-sm leading-relaxed text-[var(--foreground)]">
             {aiResult ? aiResult.explanation : getNaturalSummary()}
           </div>
 
           {/* AI Recommended Next Step & Prevention Callout */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--muted)]/60 p-3 rounded-lg border border-[var(--border)] text-xs">
             <div className="flex items-start sm:items-center gap-2">
               <span className="font-semibold text-[#528FF0] uppercase tracking-wider whitespace-nowrap">Recommended Action:</span>
               <span className="text-[var(--foreground)]">

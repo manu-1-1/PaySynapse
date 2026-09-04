@@ -59,8 +59,8 @@ export default function TransactionsPage() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="flex-1 space-y-5 p-6 pt-5 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="flex-1 space-y-5 p-4 sm:p-6 pt-4 sm:pt-5 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-[var(--foreground)]">Transactions</h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
@@ -86,8 +86,8 @@ export default function TransactionsPage() {
         </div>
 
         {/* Table */}
-        <div className="w-full overflow-auto">
-          <table className="w-full caption-bottom text-sm">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full caption-bottom text-sm min-w-[720px]">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--muted)]">
                 <th className="h-10 px-4 text-left font-medium text-[var(--muted-foreground)] text-xs uppercase tracking-wider w-[100px]">Time</th>
@@ -161,7 +161,7 @@ export default function TransactionsPage() {
         </div>
 
         {/* Pagination */}
-        <div className="p-3 border-t border-[var(--border)] flex items-center justify-between text-sm text-[var(--muted-foreground)]">
+        <div className="p-3 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-[var(--muted-foreground)]">
           <div>
             Showing <span className="font-semibold text-[var(--foreground)]">{transactions.length > 0 ? page * limit + 1 : 0}</span> to <span className="font-semibold text-[var(--foreground)]">{Math.min((page + 1) * limit, total)}</span> of <span className="font-semibold text-[var(--foreground)]">{total}</span> transactions
           </div>
