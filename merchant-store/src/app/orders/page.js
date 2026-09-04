@@ -99,7 +99,7 @@ export default function OrdersPage() {
           </p>
           <Link
             href="/"
-            className="inline-block px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm transition shadow-lg shadow-purple-600/30"
+            className="inline-block px-5 py-2.5 rounded-xl bg-[#528FF0] hover:bg-[#4080E0] text-white font-medium text-sm transition shadow-sm"
           >
             Explore Catalog
           </Link>
@@ -132,7 +132,7 @@ export default function OrdersPage() {
                   </div>
                   <div>
                     <span className="text-xs text-gray-500 block">Razorpay Payment ID</span>
-                    <code className="text-xs bg-white/5 px-2 py-0.5 rounded text-purple-300 font-mono">
+                    <code className="text-xs bg-white/5 px-2 py-0.5 rounded text-blue-300 font-mono">
                       {order.paymentId}
                     </code>
                   </div>

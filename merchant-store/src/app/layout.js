@@ -26,7 +26,8 @@ export default function RootLayout({ children }) {
           {/* Navigation Bar */}
           <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-              <Link href="/" className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <Link href="/" className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#528FF0]" />
                 Neon Store
               </Link>
               <div className="flex gap-6 text-sm font-medium text-gray-300">

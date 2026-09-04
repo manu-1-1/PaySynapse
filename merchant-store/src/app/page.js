@@ -133,7 +133,7 @@ export default function ShopPage() {
           contact: "9876543210"
         },
         theme: {
-          color: "#8b5cf6"
+          color: "#528FF0"
         },
         modal: {
           ondismiss: function () {
@@ -194,28 +194,26 @@ export default function ShopPage() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
       {/* Hero Banner */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-black p-8 md:p-12 border border-white/10 shadow-2xl backdrop-blur-xl">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
-            Razorpay Test Sandbox Integrated
+      <section className="relative overflow-hidden rounded-2xl bg-slate-900 p-8 md:p-12 border border-slate-800 shadow-lg">
+        <div className="relative z-10 max-w-2xl space-y-3">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-500/10 text-[#528FF0] border border-blue-500/20">
+            Razorpay Sandbox Verified
           </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Next-Gen Tech & Gear for Creators
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight">
+            Developer Gear & Electronics
           </h1>
-          <p className="text-gray-400 text-base md:text-lg">
-            Use Direct Pay to buy in one click or add multiple items to your cart. Test payments and process refunds anytime.
+          <p className="text-slate-400 text-sm md:text-base">
+            Seamless one-click checkout powered by Razorpay. Test transactions and trace real-time settlement lifecycles.
           </p>
         </div>
       </section>
 
       {/* Notification Banner */}
       {checkoutMessage && (
-        <div className={`p-4 rounded-2xl border backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 ${
+        <div className={`p-4 rounded-xl border backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 ${
           checkoutMessage.type === "success" 
-            ? "bg-emerald-950/50 border-emerald-500/30 text-emerald-300"
-            : "bg-rose-950/50 border-rose-500/30 text-rose-300"
+            ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300"
+            : "bg-rose-950/40 border-rose-500/30 text-rose-300"
         }`}>
           <div className="flex items-center gap-3">
             {checkoutMessage.type === "success" ? (
@@ -243,20 +241,20 @@ export default function ShopPage() {
       {/* Section Header & Cart Toggle */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Featured Catalog</h2>
-          <p className="text-sm text-gray-400">Choose Direct Pay or add items to cart</p>
+          <h2 className="text-2xl font-bold text-white">Product Catalog</h2>
+          <p className="text-sm text-slate-400">Choose Direct Pay or add items to cart</p>
         </div>
 
         <button
           onClick={() => setIsCartOpen(true)}
-          className="relative px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-medium flex items-center gap-2.5 transition active:scale-95 shadow-lg backdrop-blur-md"
+          className="relative px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-sm flex items-center gap-2 transition active:scale-95 shadow-sm"
         >
-          <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <span>View Cart</span>
           {totalItemCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-[#528FF0] text-white text-xs font-bold flex items-center justify-center">
               {totalItemCount}
             </span>
           )}
@@ -271,38 +269,38 @@ export default function ShopPage() {
           return (
             <div
               key={prod.id}
-              className="group relative rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-purple-500/40 p-5 flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-1"
+              className="group relative rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-lg"
             >
               <div className="space-y-4">
                 {/* Product Visual */}
-                <div className="relative h-56 rounded-xl overflow-hidden bg-black/40 border border-white/10">
+                <div className="relative h-56 rounded-lg overflow-hidden bg-slate-950 border border-slate-800">
                   <img
                     src={prod.image}
                     alt={prod.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
 
-                  <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-white border border-white/10">
+                  <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded bg-slate-900/90 text-white border border-slate-700">
                     {prod.badge}
                   </span>
-                  <span className="absolute bottom-3 left-3 text-xs font-semibold px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-gray-200 border border-white/10">
+                  <span className="absolute bottom-3 left-3 text-xs font-semibold px-2 py-0.5 rounded bg-slate-900/90 text-slate-200 border border-slate-700">
                     Rating: {prod.rating}
                   </span>
                 </div>
 
                 {/* Product Details */}
                 <div>
-                  <span className="text-xs font-medium text-purple-400 uppercase tracking-wider">{prod.category}</span>
-                  <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors mt-0.5">{prod.name}</h3>
-                  <p className="text-sm text-gray-400 mt-1 line-clamp-2">{prod.description}</p>
+                  <span className="text-xs font-medium text-[#528FF0] uppercase tracking-wider">{prod.category}</span>
+                  <h3 className="text-lg font-semibold text-white mt-0.5">{prod.name}</h3>
+                  <p className="text-sm text-slate-400 mt-1 line-clamp-2">{prod.description}</p>
                 </div>
               </div>
 
               {/* Price & Dual Action Buttons */}
-              <div className="mt-6 pt-4 border-t border-white/10 space-y-3">
+              <div className="mt-6 pt-4 border-t border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Price</span>
-                  <span className="text-2xl font-black text-white">₹{prod.price}</span>
+                  <span className="text-xs text-slate-500">Price</span>
+                  <span className="text-2xl font-bold text-white">₹{prod.price}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -311,7 +309,7 @@ export default function ShopPage() {
                       addToCart(prod);
                       setIsCartOpen(true);
                     }}
-                    className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-medium text-xs transition active:scale-95 text-center"
+                    className="py-2.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-xs transition active:scale-95 text-center"
                   >
                     + Add to Cart
                   </button>
@@ -319,7 +317,7 @@ export default function ShopPage() {
                   <button
                     onClick={() => handleDirectPay(prod)}
                     disabled={isPayingThis || activePaymentId !== null}
-                    className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition active:scale-95 shadow-md shadow-purple-600/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    className="py-2.5 px-3 rounded-lg bg-[#528FF0] hover:bg-[#4080E0] text-white font-semibold text-xs transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
                   >
                     {isPayingThis ? (
                       <>
@@ -409,7 +407,7 @@ export default function ShopPage() {
                 <button
                   onClick={handleCartCheckout}
                   disabled={cart.length === 0 || activePaymentId === "cart"}
-                  className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 rounded-xl bg-[#528FF0] hover:bg-[#4080E0] text-white font-semibold text-sm transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm flex items-center justify-center gap-2"
                 >
                   {activePaymentId === "cart" ? (
                     <>
